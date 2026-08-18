@@ -1,0 +1,45 @@
+{
+    "name": "mathphp/mathphp",
+    "description": "A bounded, source-aware scalar expression evaluator for PHP",
+    "keywords": [
+        "expression",
+        "math",
+        "parser",
+        "safe-evaluation"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^11.5",
+        "squizlabs/php_codesniffer": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MathPHP\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MathPHP\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "@php vendor/bin/phpunit --configuration phpunit.xml.dist",
+        "syntax": "@php tools/lint.php",
+        "analyse": "@php vendor/bin/phpstan analyse --configuration phpstan.neon.dist --no-progress",
+        "style": "@php vendor/bin/phpcs --standard=phpcs.xml.dist",
+        "autoload:check": "@composer dump-autoload --optimize --strict-psr --strict-ambiguous",
+        "quality": [
+            "@composer validate --strict",
+            "@autoload:check",
+            "@syntax",
+            "@test",
+            "@analyse",
+            "@style"
+        ]
+    }
+}

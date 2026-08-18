@@ -1,0 +1,11 @@
+/.claude/
+/.claude-state/
+/.idea/
+/.phpunit.cache/
+/.vscode/
+/vendor/
+
+.DS_Store
+composer.phar
+.domain.txt
+AGENTS.md
