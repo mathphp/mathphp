@@ -64,6 +64,32 @@ Math::evaluate(
 and exact integer arithmetic remain integers; decimal/scientific syntax and
 floating-point operations remain floats. Division always returns a float.
 
+## Website
+
+The repository also includes a small companion site with an overview, reference
+docs, and an interactive evaluator backed by this same package:
+
+```console
+php -S 127.0.0.1:8080 -t website/public
+```
+
+Open <http://127.0.0.1:8080/> after starting the local server.
+
+## Optional private extensions
+
+The core evaluator does not require teaching or presentation features. Two
+optional private packages extend it without changing the public evaluator:
+
+- `mathphp/mathphp-explaining` teaches the evaluation order with detailed,
+  translatable steps and partial-result explanations.
+- `mathphp/mathphp-visuals` turns formulas, plots, graphs, charts, and analysis
+  data into renderer-neutral models with accessible SVG and image-ready data
+  URIs.
+
+The explaining package depends on the visuals package only when both layers
+are needed; applications that only need charts can install the visuals package
+directly.
+
 ## Supported public API
 
 The supported v0.1 API consists of:
@@ -78,6 +104,11 @@ Classes and enums under `MathPHP\Ast`, `MathPHP\Parser`, and
 `MathPHP\Evaluator` are implementation details rather than extension points.
 The immutable options and registry are the supported way to customize an
 evaluation.
+
+The optional `Math::evaluateWithObserver()` method is the public instrumentation
+seam for separately distributed tooling. The step-by-step explanation layer is
+maintained as the private `mathphp/mathphp-explaining` package and is not part
+of this free package or its release archive.
 
 ## Language
 

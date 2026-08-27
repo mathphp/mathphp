@@ -1,0 +1,13 @@
+.git
+.github
+.claude
+.codex
+.agents
+AGENTS.md
+CLAUDE.md
+docs
+tests
+tools
+vendor
+*.log
+.DS_Store

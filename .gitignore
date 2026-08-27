@@ -4,6 +4,7 @@
 /.phpunit.cache/
 /.vscode/
 /vendor/
+/private/
 
 .DS_Store
 composer.phar

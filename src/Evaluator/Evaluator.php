@@ -17,6 +17,7 @@ use MathPHP\Ast\UnaryOperator;
 use MathPHP\Ast\VariableNode;
 use MathPHP\Configuration\ResourceLimits;
 use MathPHP\Exception\EvaluationException;
+use MathPHP\Tracing\EvaluationObserver;
 
 final readonly class Evaluator
 {
@@ -25,21 +26,19 @@ final readonly class Evaluator
     public function __construct(
         private Environment $environment,
         ResourceLimits $limits,
+        private ?EvaluationObserver $observer = null,
     ) {
         $this->numbers = new NumericOperations($limits);
     }
 
     public function evaluate(Node $node): int|float
     {
-        return $this->numbers->ensureFinite(
-            $this->evaluateNode($node),
-            $node->span(),
-        );
+        return $this->evaluateNode($node, 0);
     }
 
-    private function evaluateNode(Node $node): int|float
+    private function evaluateNode(Node $node, int $depth): int|float
     {
-        return match (true) {
+        $result = match (true) {
             $node instanceof NumberNode => $this->numbers->ensureFinite(
                 $node->value,
                 $node->span,
@@ -52,23 +51,43 @@ final readonly class Evaluator
                 $this->environment->variable($node->name, $node->span),
                 $node->span,
             ),
-            $node instanceof GroupingNode => $this->evaluateNode($node->expression),
-            $node instanceof UnaryOperationNode => $this->evaluateUnary($node),
-            $node instanceof BinaryOperationNode => $this->evaluateBinary($node),
+            $node instanceof GroupingNode => $this->evaluateNode(
+                $node->expression,
+                $depth + 1,
+            ),
+            $node instanceof UnaryOperationNode => $this->evaluateUnary(
+                $node,
+                $depth,
+            ),
+            $node instanceof BinaryOperationNode => $this->evaluateBinary(
+                $node,
+                $depth,
+            ),
             $node instanceof FactorialNode => $this->numbers->factorial(
-                $this->evaluateNode($node->operand),
+                $this->evaluateNode($node->operand, $depth + 1),
                 $node->operatorSpan,
             ),
-            $node instanceof FunctionCallNode => $this->evaluateFunction($node),
+            $node instanceof FunctionCallNode => $this->evaluateFunction(
+                $node,
+                $depth,
+            ),
             default => throw new \LogicException(
                 \sprintf('Unsupported AST node %s.', $node::class),
             ),
         };
+
+        $result = $this->numbers->ensureFinite($result, $node->span());
+        $this->observer?->evaluated($node, $result, $depth);
+
+        return $result;
     }
 
-    private function evaluateUnary(UnaryOperationNode $node): int|float
+    private function evaluateUnary(
+        UnaryOperationNode $node,
+        int $depth,
+    ): int|float
     {
-        $operand = $this->evaluateNode($node->operand);
+        $operand = $this->evaluateNode($node->operand, $depth + 1);
 
         return match ($node->operator) {
             UnaryOperator::Plus => $this->numbers->positive(
@@ -82,10 +101,13 @@ final readonly class Evaluator
         };
     }
 
-    private function evaluateBinary(BinaryOperationNode $node): int|float
+    private function evaluateBinary(
+        BinaryOperationNode $node,
+        int $depth,
+    ): int|float
     {
-        $left = $this->evaluateNode($node->left);
-        $right = $this->evaluateNode($node->right);
+        $left = $this->evaluateNode($node->left, $depth + 1);
+        $right = $this->evaluateNode($node->right, $depth + 1);
 
         return match ($node->operator) {
             BinaryOperator::Add => $this->numbers->add(
@@ -121,7 +143,10 @@ final readonly class Evaluator
         };
     }
 
-    private function evaluateFunction(FunctionCallNode $node): int|float
+    private function evaluateFunction(
+        FunctionCallNode $node,
+        int $depth,
+    ): int|float
     {
         $definition = $this->environment->functions->find($node->name);
 
@@ -153,7 +178,7 @@ final readonly class Evaluator
 
         $arguments = [];
         foreach ($node->arguments as $argument) {
-            $arguments[] = $this->evaluateNode($argument);
+            $arguments[] = $this->evaluateNode($argument, $depth + 1);
         }
 
         try {
