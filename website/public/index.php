@@ -34,7 +34,7 @@ function formatResult(int|float $result): string
 
 function renderLayout(string $title, string $content, string $active): string
 {
-    $nav = ['home' => 'Overview', 'docs' => 'Docs', 'playground' => 'Playground'];
+    $nav = ['home' => 'Overview', 'packages' => 'Packages', 'docs' => 'Docs', 'playground' => 'Playground', 'pricing' => 'Pricing'];
     $links = '';
     foreach ($nav as $key => $label) {
         $class = $active === $key ? ' class="active"' : '';
@@ -62,8 +62,39 @@ function renderHome(): string
         . '<div class="console-card"><div class="console-top"><span class="console-label">mathphp / playground</span><span class="console-status"><i></i> ready</span></div><div class="console-body"><div><span class="prompt">&gt;</span><span> (subtotal + tax) * 1.05</span></div><div class="console-muted">subtotal = 42.50 &nbsp; tax = 0.20</div><div class="console-result"><span class="result-arrow">→</span><strong>53.55</strong><span class="result-type">float</span></div></div><div class="console-foot"><span>deterministic</span><span>bounded</span><span>typed</span></div></div></div></section>'
         . '<section class="signal-band"><div class="wrap signal-grid"><div><strong>Small surface area.</strong><span>Clear contracts at every edge.</span></div><div><strong>Safe by default.</strong><span>No eval(), no hidden state.</span></div><div><strong>Useful immediately.</strong><span>Operators, functions, variables.</span></div></div></section>'
         . '<section class="feature-section wrap"><div class="section-kicker">Why MathPHP</div><div class="feature-grid"><article><div class="feature-number">01</div><h2>Expressions that stay readable.</h2><p>Write the calculation your users already understand. Variables, familiar operators, and a focused set of math functions.</p><a href="?page=docs#grammar">See the grammar <span>→</span></a></article><article><div class="feature-number">02</div><h2>Errors that tell the truth.</h2><p>Every failure has a stable code and source span, so validation messages can be useful instead of mysterious.</p><a href="?page=docs#errors">Explore error codes <span>→</span></a></article><article><div class="feature-number">03</div><h2>Boundaries you can trust.</h2><p>Overflow, non-finite values, malformed input, and resource limits are handled explicitly and consistently.</p><a href="?page=docs#limits">View the limits <span>→</span></a></article></div></section>'
-        . '<section class="extensions-section wrap" id="extensions"><div class="section-kicker">Optional extensions</div><div class="extensions-heading"><div><h2>Keep the engine free.<br><em>Add the understanding.</em></h2></div><p>MathPHP stays a small, open core. Private add-ons plug into the same contracts when your product needs to teach a calculation or present it beautifully.</p></div><div class="extension-grid"><article class="extension-card extension-card-warm"><div class="extension-top"><span class="extension-index">01</span><span class="extension-badge">Private package</span></div><h3>mathphp-explaining</h3><p>Turn an expression into a clear, ordered lesson: substitutions, operation rules, partial results, source spans, and translated messages.</p><ul><li>Step-by-step evaluation</li><li>English and Danish catalogs</li><li>Observer-based, deterministic output</li></ul><a class="button button-secondary" href="?page=playground">Try “Explain steps” <span>✦</span></a></article><article class="extension-card extension-card-cool"><div class="extension-top"><span class="extension-index">02</span><span class="extension-badge">Private package</span></div><h3>mathphp-visuals</h3><p>Turn formulas and analysis into renderer-neutral data with accessible SVG fallbacks for charts, graphs, matrices, and calculus.</p><ul><li>Plots, areas, roots, and histograms</li><li>SVG and image-ready data URIs</li><li>Bring your own frontend renderer</li></ul><a class="button button-secondary" href="?page=playground">Try “Plot function” <span>⌁</span></a></article></div><div class="extension-foot"><span>Licensed for your team · private GitHub access · updates while active</span><a href="?page=docs#api">Read the integration notes <span>→</span></a></div></section>'
+        . '<section class="extensions-section wrap" id="extensions"><div class="section-kicker">Optional extensions</div><div class="extensions-heading"><div><h2>Keep the engine free.<br><em>Add the understanding.</em></h2></div><p>MathPHP stays a small, open core. Private add-ons plug into the same contracts when your product needs to teach a calculation or present it beautifully.</p></div><div class="extension-grid"><article class="extension-card extension-card-warm"><div class="extension-top"><span class="extension-index">01</span><span class="extension-badge">Private package</span></div><h3>mathphp-explaining</h3><p>Turn an expression into a clear, ordered lesson: substitutions, operation rules, partial results, source spans, and translated messages.</p><ul><li>Step-by-step evaluation</li><li>English and Danish catalogs</li><li>Observer-based, deterministic output</li></ul><a class="button button-secondary" href="?page=explaining">Explore package <span>→</span></a></article><article class="extension-card extension-card-cool"><div class="extension-top"><span class="extension-index">02</span><span class="extension-badge">Private package</span></div><h3>mathphp-visuals</h3><p>Turn formulas and analysis into renderer-neutral data with accessible SVG fallbacks for charts, graphs, matrices, and calculus.</p><ul><li>Plots, areas, roots, and histograms</li><li>SVG and image-ready data URIs</li><li>Bring your own frontend renderer</li></ul><a class="button button-secondary" href="?page=visuals">Explore package <span>→</span></a></article></div><div class="extension-foot"><span>Licensed for your team · private GitHub access · updates while active</span><a href="?page=pricing">See sponsor access <span>→</span></a></div></section>'
         . '<section class="api-callout wrap"><div><div class="section-kicker">A tiny API</div><h2>One call between input and result.</h2><p>Keep the evaluator behind your own form, API, or rule editor. MathPHP does the careful part.</p></div><pre><code><span class="code-keyword">$result</span> = Math::evaluate(<span class="code-string">\'2 * (3 + 4)\'</span>);</code></pre></section>';
+}
+
+function renderPackages(): string
+{
+    return '<section class="page-intro wrap"><div class="eyebrow"><span class="eyebrow-dot"></span>Package catalogue</div><h1>One core.<br><em>Two ways to extend it.</em></h1><p>The evaluator stays free and focused. Add the private package that gives your users a lesson, a picture, or both.</p></section>'
+        . '<section class="package-overview wrap"><div class="package-overview-grid"><article class="package-feature package-feature-warm"><span class="package-label">01 · Private add-on</span><h2>Explain every move.</h2><p><code>mathphp/mathphp-explaining</code> turns an AST evaluation into ordered, translated steps with substitutions, partial results, and source spans.</p><a class="button button-secondary" href="?page=explaining">Explore Explaining <span>→</span></a></article><article class="package-feature package-feature-cool"><span class="package-label">02 · Private add-on</span><h2>Make the result visible.</h2><p><code>mathphp/mathphp-visuals</code> produces portable chart data and accessible SVG fallbacks for plots, matrices, calculus, and statistics.</p><a class="button button-secondary" href="?page=visuals">Explore Visuals <span>→</span></a></article></div><div class="package-note"><strong>Built as additions.</strong><span>Install the free core alone, or load either private package when your product needs it.</span><a href="?page=pricing">See sponsor access and pricing <span>→</span></a></div></section>';
+}
+
+function renderPackage(string $package): string
+{
+    $explaining = $package === 'explaining';
+    $name = $explaining ? 'mathphp-explaining' : 'mathphp-visuals';
+    $title = $explaining ? 'Teach the calculation.' : 'Show the calculation.';
+    $description = $explaining
+        ? 'A private extension that observes the same deterministic evaluator and turns each completed node into a useful, translatable lesson.'
+        : 'A private extension that keeps visual output structured first, with accessible SVG and image-ready fallbacks when a frontend renderer is not available.';
+    $features = $explaining
+        ? '<li>Post-order steps with dependencies</li><li>Substitutions, partial results, and exact spans</li><li>English and Danish translations</li><li>Custom observers without changing core semantics</li>'
+        : '<li>Line plots, areas, roots, and histograms</li><li>Equation, matrix, system, and calculus models</li><li>Renderer-neutral data for your own frontend</li><li>Accessible SVG and image-ready data URIs</li>';
+    $example = $explaining
+        ? '<div class="package-code"><span class="code-comment">// explain the same expression your app evaluates</span><br><span class="code-keyword">$result</span> = (<span class="code-keyword">new</span> Explainer(Translations::create(<span class="code-string">\'en\'</span>)))-&gt;explain(<span class="code-string">\'(5*2)*2\'</span>);</div>'
+        : '<div class="package-code"><span class="code-comment">// keep data and presentation separate</span><br><span class="code-keyword">$plot</span> = (<span class="code-keyword">new</span> Plotter())-&gt;plot(<span class="code-string">\'sin(x)\'</span>, <span class="code-string">\'x\'</span>, 0, 6.28);</div>';
+
+    return '<section class="page-intro wrap"><div class="eyebrow"><span class="eyebrow-dot"></span>Private extension</div><h1>' . $title . '<br><em>' . e($name) . '</em></h1><p>' . $description . '</p></section>'
+        . '<section class="package-detail wrap"><div class="package-detail-grid"><div><span class="package-label">' . e($name) . '</span><h2>Designed to load separately.</h2><p>Keep <code>mathphp/mathphp</code> small and stable. This package adds its own contracts, translations, and presentation models without changing the public evaluator.</p><ul class="package-list">' . $features . '</ul><a class="button button-primary" href="?page=pricing">Get access <span>↗</span></a></div><div>' . $example . '<div class="package-callout"><strong>Private by distribution.</strong><span>Licensed customers receive read-only GitHub access and updates while their sponsorship or license is active.</span></div></div></div></section>';
+}
+
+function renderPricing(): string
+{
+    return '<section class="page-intro wrap"><div class="eyebrow"><span class="eyebrow-dot"></span>Sponsor access</div><h1>Support the core.<br><em>Unlock the extras.</em></h1><p>MathPHP Core remains free. Sponsors receive private repository access to the add-ons, with existing licensed versions remaining usable after access ends.</p></section>'
+        . '<section class="pricing-section wrap"><div class="pricing-grid"><article class="pricing-card"><span class="pricing-kicker">Core</span><h2>Free</h2><div class="pricing-price">€0 <small>forever</small></div><p>The bounded evaluator for every PHP project.</p><ul><li>Public Composer package</li><li>Stable errors and limits</li><li>Community issues and pull requests</li></ul><a class="button button-secondary" href="?page=docs">Read the docs <span>→</span></a></article><article class="pricing-card pricing-card-featured"><span class="pricing-kicker">Individual</span><h2>Plus</h2><div class="pricing-price">€12 <small>/ month</small></div><p>Step-by-step explanations and visual output for one developer.</p><ul><li>Both private add-ons</li><li>Private GitHub read access</li><li>Updates while active</li><li>Perpetual use of obtained versions</li></ul><a class="button button-primary" href="https://github.com/sponsors/mathphp">Sponsor on GitHub <span>↗</span></a></article><article class="pricing-card"><span class="pricing-kicker">Team</span><h2>Team</h2><div class="pricing-price">€39 <small>/ month</small></div><p>Shared access for a small product team.</p><ul><li>Both private add-ons</li><li>Up to five developers</li><li>Commercial internal use</li><li>Priority issue handling</li></ul><a class="button button-secondary" href="https://github.com/sponsors/mathphp">Sponsor on GitHub <span>↗</span></a></article></div><div class="pricing-terms"><strong>How access works</strong><span>GitHub Sponsors automatically syncs private-repository access for eligible tiers. No shared tokens. No forced runtime check-ins.</span><a href="?page=docs#api">Read license and API notes <span>→</span></a></div></section>';
 }
 
 function renderDocs(): string
@@ -372,11 +403,15 @@ if (($_GET['api'] ?? '') === 'capabilities') {
 }
 
 $page = $_GET['page'] ?? 'home';
-$page = in_array($page, ['home', 'docs', 'playground'], true) ? $page : 'home';
+$page = in_array($page, ['home', 'packages', 'explaining', 'visuals', 'docs', 'playground', 'pricing'], true) ? $page : 'home';
 $content = match ($page) {
+    'packages' => renderPackages(),
+    'explaining', 'visuals' => renderPackage($page),
     'docs' => renderDocs(),
     'playground' => renderPlayground(),
+    'pricing' => renderPricing(),
     default => renderHome(),
 };
 
-echo renderLayout(ucfirst($page), $content, $page);
+$activePage = in_array($page, ['explaining', 'visuals'], true) ? 'packages' : $page;
+echo renderLayout(ucfirst($page), $content, $activePage);
