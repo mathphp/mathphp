@@ -8,7 +8,7 @@ normative contract.
 
 The user explicitly chose the `MathPHP` brand, `mathphp/mathphp` Composer
 coordinate, and `MathPHP\` root namespace while accepting the confirmed
-ecosystem collision documented in `docs/IDENTITY-GATE.md`. Do not silently
+ecosystem collision documented in the `mathphp/mathphp-specs` repository. Do not silently
 rename them.
 
 The identity decision is resolved. Publication is permitted only after the
@@ -16,7 +16,7 @@ release checks documented below, including remote PHP 8.3 coverage.
 
 ## Normative contract
 
-`docs/V0.1-CONTRACT.md` defines the required v0.1 language, numeric behavior,
+`mathphp/mathphp-specs/V0.1-CONTRACT.md` defines the required v0.1 language, numeric behavior,
 error model, limits, isolation guarantees, implementation order, and
 traceability IDs. Change that contract deliberately before implementing
 different behavior.
