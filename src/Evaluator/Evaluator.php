@@ -85,8 +85,7 @@ final readonly class Evaluator
     private function evaluateUnary(
         UnaryOperationNode $node,
         int $depth,
-    ): int|float
-    {
+    ): int|float {
         $operand = $this->evaluateNode($node->operand, $depth + 1);
 
         return match ($node->operator) {
@@ -104,8 +103,7 @@ final readonly class Evaluator
     private function evaluateBinary(
         BinaryOperationNode $node,
         int $depth,
-    ): int|float
-    {
+    ): int|float {
         $left = $this->evaluateNode($node->left, $depth + 1);
         $right = $this->evaluateNode($node->right, $depth + 1);
 
@@ -146,8 +144,7 @@ final readonly class Evaluator
     private function evaluateFunction(
         FunctionCallNode $node,
         int $depth,
-    ): int|float
-    {
+    ): int|float {
         $definition = $this->environment->functions->find($node->name);
 
         if ($definition === null) {
