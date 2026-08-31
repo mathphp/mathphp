@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$paths = array_slice($argv, 1);
+$paths = array_slice($argv ?? [], 1);
 
 if ($paths === []) {
     $paths = ['src', 'tests', 'tools'];
