@@ -39,6 +39,7 @@ Math::evaluate(
 - Normative specifications: https://github.com/mathphp/mathphp-specs
 - Private step-by-step explanations: https://github.com/mathphp/mathphp-explaining
 - Private visual models and renderers: https://github.com/mathphp/mathphp-visuals
+- Private unit-aware quantities: https://github.com/mathphp/mathphp-units
 
 The complete API, grammar, examples, and integration guidance live in the
 [documentation repository](https://github.com/mathphp/mathphp-docs). The
@@ -47,6 +48,6 @@ language contract and traceability records live in the
 
 ## Development
 
-The public core is the only package in this repository. The optional explaining
-and visuals packages are distributed separately and loaded by applications
-that need them.
+The public core is the only package in this repository. The optional explaining,
+visuals, and units packages are distributed separately and loaded by
+applications that need them.
