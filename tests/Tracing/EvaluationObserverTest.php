@@ -16,6 +16,23 @@ final class EvaluationObserverTest extends TestCase
         self::assertSame(20, Math::evaluate('(5*2)*2'));
     }
 
+    public function testObserverCanBePassedWithoutVariables(): void
+    {
+        $observer = new class implements EvaluationObserver {
+            public function evaluated(Node $node, int|float $result, int $depth): void
+            {
+            }
+        };
+
+        self::assertSame(20, Math::evaluateWithObserver('(5*2)*2', $observer));
+    }
+
+    public function testObserverIsStillRequired(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Math::evaluateWithObserver('1');
+    }
+
     public function testObserverReceivesDeterministicPostOrderWithDepth(): void
     {
         $events = [];

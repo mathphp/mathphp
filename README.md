@@ -32,6 +32,15 @@ Math::evaluate(
 ); // 100.0
 ```
 
+Extensions can observe the same post-order evaluation without changing the
+scalar result. Pass an observer directly when the expression has no variables,
+or keep the array-first form when it does:
+
+```php
+$result = Math::evaluateWithObserver('2 * (3 + 4)', $observer);
+$result = Math::evaluateWithObserver('gross * tax', ['gross' => 42, 'tax' => 0.2], $observer);
+```
+
 ## Ecosystem
 
 - Website and interactive evaluator: https://mathphp.diderichsen.com

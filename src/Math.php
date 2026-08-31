@@ -36,14 +36,30 @@ final class Math
      * Evaluate while notifying an optional extension observer after each AST
      * node completes. The returned scalar is identical to evaluate().
      *
-     * @param array<string, int|float> $variables
+     * Pass the observer as the second argument when no variables are needed.
+     * The array-first form remains supported for backwards compatibility.
+     *
+     * @param array<string, int|float>|EvaluationObserver $variables
      */
     public static function evaluateWithObserver(
         string $expression,
-        array $variables,
-        EvaluationObserver $observer,
+        array|EvaluationObserver $variables = [],
+        ?EvaluationObserver $observer = null,
         ?EvaluationOptions $options = null,
     ): int|float {
+        if ($variables instanceof EvaluationObserver) {
+            if ($observer !== null) {
+                throw new \InvalidArgumentException(
+                    'Pass either an observer or variables followed by an observer, not both observers.',
+                );
+            }
+            $observer = $variables;
+            $variables = [];
+        }
+        if ($observer === null) {
+            throw new \InvalidArgumentException('An EvaluationObserver is required.');
+        }
+
         $resolvedOptions = $options ?? new EvaluationOptions();
         $environment = new Environment($variables, $resolvedOptions->functions);
         $tokens = (new Lexer($expression, $resolvedOptions->limits))->tokenize();
