@@ -17,7 +17,7 @@ jobs:
         php: ['8.2', '8.3', '8.4', '8.5']
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
