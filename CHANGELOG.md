@@ -38,11 +38,11 @@ follow [Semantic Versioning](https://semver.org/) once it is release-ready.
 
 ### Release blockers
 
-- Remote PHP 8.3 CI evidence is required because PHP 8.3 is unavailable
-  locally.
-- The package must not be published until all final release checks pass and
-  publication is separately approved.
-- This directory is not a Git repository; initialization, tagging, and pushing
-  require separate explicit approval.
+- The package must not be published until the coordinated ecosystem release
+  checks pass and publication is separately approved.
+- The repository is prepared for annotated SemVer tags, but no release tag or
+  package publication has been created yet.
+- Optional private packages remain separately distributed; their access and
+  licensing workflow is intentionally manual and is not automated here.
 
 No version has been released.
