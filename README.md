@@ -8,7 +8,7 @@ never evaluates input with PHP `eval()`. Continuous integration verifies PHP
 ## Installation
 
 ```console
-composer require mathphp/mathphp
+composer require mathphp/mathphp:^0.1
 ```
 
 For development in this checkout:
