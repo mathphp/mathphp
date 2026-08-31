@@ -2,7 +2,8 @@
 
 MathPHP is a small, dependency-free PHP library for safely evaluating scalar
 mathematical expressions. It targets PHP `^8.2`, uses an immutable AST, and
-never evaluates input with PHP `eval()`.
+never evaluates input with PHP `eval()`. Continuous integration verifies PHP
+8.2 through 8.5.
 
 ## Installation
 
