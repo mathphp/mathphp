@@ -46,9 +46,14 @@ final class FunctionRegistryTest extends TestCase
         yield 'absolute integer' => ['abs', [-4], 4, 'int'];
         yield 'absolute float' => ['abs', [-4.5], 4.5, 'float'];
         yield 'square root' => ['sqrt', [9], 3.0, 'float'];
+        yield 'cube root positive' => ['cbrt', [27], 3.0, 'float'];
+        yield 'cube root negative' => ['cbrt', [-8], -2.0, 'float'];
         yield 'sine' => ['sin', [\M_PI / 2], 1.0, 'float'];
         yield 'cosine' => ['cos', [0], 1.0, 'float'];
         yield 'tangent' => ['tan', [\M_PI / 4], 1.0, 'float'];
+        yield 'secant' => ['sec', [0], 1.0, 'float'];
+        yield 'cosecant' => ['csc', [\M_PI / 2], 1.0, 'float'];
+        yield 'cotangent' => ['cot', [\M_PI / 4], 1.0, 'float'];
         yield 'arc sine' => ['asin', [1], \M_PI / 2, 'float'];
         yield 'arc cosine' => ['acos', [0], \M_PI / 2, 'float'];
         yield 'arc tangent' => ['atan', [1], \M_PI / 4, 'float'];
@@ -92,9 +97,13 @@ final class FunctionRegistryTest extends TestCase
     {
         yield 'abs' => ['abs', 1, 1];
         yield 'sqrt' => ['sqrt', 1, 1];
+        yield 'cbrt' => ['cbrt', 1, 1];
         yield 'sin' => ['sin', 1, 1];
         yield 'cos' => ['cos', 1, 1];
         yield 'tan' => ['tan', 1, 1];
+        yield 'sec' => ['sec', 1, 1];
+        yield 'csc' => ['csc', 1, 1];
+        yield 'cot' => ['cot', 1, 1];
         yield 'asin' => ['asin', 1, 1];
         yield 'acos' => ['acos', 1, 1];
         yield 'atan' => ['atan', 1, 1];
@@ -224,6 +233,24 @@ final class FunctionRegistryTest extends TestCase
             [\M_PI / 2],
             \DomainException::class,
             'tan() is undefined where cosine is zero.',
+        ];
+        yield 'secant at pole' => [
+            'sec',
+            [\M_PI / 2],
+            \DomainException::class,
+            'sec() is undefined where cosine is zero.',
+        ];
+        yield 'cosecant at pole' => [
+            'csc',
+            [0],
+            \DomainException::class,
+            'csc() is undefined where sine is zero.',
+        ];
+        yield 'cotangent at pole' => [
+            'cot',
+            [0],
+            \DomainException::class,
+            'cot() is undefined where sine is zero.',
         ];
     }
 

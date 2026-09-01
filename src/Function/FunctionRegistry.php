@@ -38,6 +38,12 @@ final readonly class FunctionRegistry
                 self::squareRoot(...),
             ),
             new FunctionDefinition(
+                'cbrt',
+                1,
+                1,
+                self::cubeRoot(...),
+            ),
+            new FunctionDefinition(
                 'sin',
                 1,
                 1,
@@ -54,6 +60,24 @@ final readonly class FunctionRegistry
                 1,
                 1,
                 self::tangent(...),
+            ),
+            new FunctionDefinition(
+                'sec',
+                1,
+                1,
+                self::secant(...),
+            ),
+            new FunctionDefinition(
+                'csc',
+                1,
+                1,
+                self::cosecant(...),
+            ),
+            new FunctionDefinition(
+                'cot',
+                1,
+                1,
+                self::cotangent(...),
             ),
             new FunctionDefinition(
                 'asin',
@@ -256,6 +280,14 @@ final readonly class FunctionRegistry
         return \sqrt($value);
     }
 
+    /** @param list<int|float> $arguments */
+    private static function cubeRoot(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+
+        return $value < 0.0 ? -\pow(-$value, 1.0 / 3.0) : \pow($value, 1.0 / 3.0);
+    }
+
     /**
      * @param list<int|float> $arguments
      */
@@ -281,6 +313,39 @@ final readonly class FunctionRegistry
         }
 
         return \sin($arguments[0]) / $cosine;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function secant(array $arguments): float
+    {
+        $cosine = \cos($arguments[0]);
+        if (\abs($cosine) <= 1.0E-15) {
+            throw new \DomainException('sec() is undefined where cosine is zero.');
+        }
+
+        return 1.0 / $cosine;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function cosecant(array $arguments): float
+    {
+        $sine = \sin($arguments[0]);
+        if (\abs($sine) <= 1.0E-15) {
+            throw new \DomainException('csc() is undefined where sine is zero.');
+        }
+
+        return 1.0 / $sine;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function cotangent(array $arguments): float
+    {
+        $sine = \sin($arguments[0]);
+        if (\abs($sine) <= 1.0E-15) {
+            throw new \DomainException('cot() is undefined where sine is zero.');
+        }
+
+        return \cos($arguments[0]) / $sine;
     }
 
     /** @param list<int|float> $arguments */

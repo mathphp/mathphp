@@ -3,6 +3,13 @@
 All notable changes will be documented in this file. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.3] - 2026-09-01
+
+### Added
+
+- Added real cube roots (`cbrt`) and reciprocal trigonometric functions
+  (`sec`, `csc`, and `cot`) with explicit pole handling.
+
 ## [0.3.1] - 2026-09-01
 
 ### Added
