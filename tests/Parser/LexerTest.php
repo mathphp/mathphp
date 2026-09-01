@@ -178,6 +178,20 @@ final class LexerTest extends TestCase
         self::assertSame('sqrt', $tokens[3]->lexeme);
     }
 
+    public function testCommonGreekVariablesNormalizeToPortableIdentifiers(): void
+    {
+        $tokens = (new Lexer('α + λ + Δ'))->tokenize();
+
+        self::assertSame(
+            ['alpha', '+', 'lambda', '+', 'Delta', ''],
+            array_map(static fn (Token $token): string => $token->lexeme, $tokens),
+        );
+        self::assertSame(0, $tokens[0]->span->start);
+        self::assertSame(2, $tokens[0]->span->end);
+        self::assertSame(5, $tokens[2]->span->start);
+        self::assertSame(7, $tokens[2]->span->end);
+    }
+
     public function testHostIntegerMaximumIsAcceptedWithLeadingZeroes(): void
     {
         $literal = '000' . (string) \PHP_INT_MAX;
@@ -279,7 +293,7 @@ final class LexerTest extends TestCase
         yield 'unknown byte after valid token' => ['1 @ 2', 2, 3];
         yield 'NUL byte' => ["\0", 0, 1];
         yield 'NUL after operator' => ["1+\0", 2, 3];
-        yield 'unsupported Unicode letter' => ['λ', 0, 1];
+        yield 'unsupported Unicode letter' => ['Ж', 0, 1];
         yield 'four-byte Unicode symbol' => ['😀', 0, 1];
         yield 'invalid UTF-8 byte' => ["\xFF", 0, 1];
         yield 'bare decimal point' => ['.', 0, 1];

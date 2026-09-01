@@ -50,6 +50,11 @@ final class MathTest extends TestCase
         yield 'unicode square root' => ['√16', 4.0, 'float'];
     }
 
+    public function testGreekVariableAliasesResolveAgainstPortableNames(): void
+    {
+        self::assertSame(13, Math::evaluate('α² + λ', ['alpha' => 2, 'lambda' => 9]));
+    }
+
     public function testVariablesAndConstantsAreResolvedCaseSensitively(): void
     {
         $result = Math::evaluate(

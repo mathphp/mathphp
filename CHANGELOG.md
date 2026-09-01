@@ -3,6 +3,14 @@
 All notable changes will be documented in this file. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.4] - 2026-09-01
+
+### Added
+
+- Added portable aliases for common Greek variable notation (`α`, `β`, `γ`,
+  `δ`, `θ`, `λ`, `μ`, `σ`, `ω`, and the remaining standard Greek letters).
+  Aliases preserve source spans while resolving to case-sensitive ASCII names.
+
 ## [0.3.3] - 2026-09-01
 
 ### Added
