@@ -1,7 +1,13 @@
 # Changelog
 
-All notable changes will be documented in this file. The project intends to
-follow [Semantic Versioning](https://semver.org/) once it is release-ready.
+All notable changes will be documented in this file. The project follows
+[Semantic Versioning](https://semver.org/).
+
+## [0.3.1] - 2026-09-01
+
+### Added
+
+- Common Unicode notation aliases: `×`, `÷`, `−`, `π`, `τ`, and `φ`.
 
 ## [0.3.0] - 2026-09-01
 

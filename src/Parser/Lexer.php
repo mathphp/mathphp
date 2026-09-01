@@ -67,6 +67,12 @@ final class Lexer
                 continue;
             }
 
+            $unicodeToken = $this->readUnicodeToken();
+            if ($unicodeToken !== null) {
+                $this->appendToken($tokens, $unicodeToken);
+                continue;
+            }
+
             $this->appendToken($tokens, $this->readOperator());
         }
 
@@ -203,6 +209,32 @@ final class Lexer
             $character,
             new SourceSpan($start, $this->position),
         );
+    }
+
+    private function readUnicodeToken(): ?Token
+    {
+        $start = $this->position;
+        $remaining = \substr($this->expression, $start);
+        $symbols = [
+            '×' => [TokenType::Multiply, '*'],
+            '·' => [TokenType::Multiply, '*'],
+            '÷' => [TokenType::Divide, '/'],
+            '−' => [TokenType::Minus, '-'],
+            'π' => [TokenType::Identifier, 'pi'],
+            'τ' => [TokenType::Identifier, 'tau'],
+            'φ' => [TokenType::Identifier, 'phi'],
+        ];
+
+        foreach ($symbols as $symbol => [$type, $lexeme]) {
+            if (!\str_starts_with($remaining, $symbol)) {
+                continue;
+            }
+
+            $this->position += \strlen($symbol);
+            return new Token($type, $lexeme, new SourceSpan($start, $this->position));
+        }
+
+        return null;
     }
 
     /**

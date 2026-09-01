@@ -260,7 +260,7 @@ final class LexerTest extends TestCase
         yield 'unknown byte after valid token' => ['1 @ 2', 2, 3];
         yield 'NUL byte' => ["\0", 0, 1];
         yield 'NUL after operator' => ["1+\0", 2, 3];
-        yield 'two-byte Unicode letter' => ['π', 0, 1];
+        yield 'unsupported Unicode letter' => ['λ', 0, 1];
         yield 'four-byte Unicode symbol' => ['😀', 0, 1];
         yield 'invalid UTF-8 byte' => ["\xFF", 0, 1];
         yield 'bare decimal point' => ['.', 0, 1];

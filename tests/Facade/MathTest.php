@@ -43,6 +43,9 @@ final class MathTest extends TestCase
         yield 'constant is float' => ['pi', \M_PI, 'float'];
         yield 'tau constant is float' => ['tau', 2 * \M_PI, 'float'];
         yield 'phi constant is float' => ['phi', (1 + \sqrt(5)) / 2, 'float'];
+        yield 'unicode multiplication and pi' => ['2 × π', 2 * \M_PI, 'float'];
+        yield 'unicode division' => ['6 ÷ 2', 3.0, 'float'];
+        yield 'unicode minus' => ['−2 + 5', 3, 'int'];
     }
 
     public function testVariablesAndConstantsAreResolvedCaseSensitively(): void
