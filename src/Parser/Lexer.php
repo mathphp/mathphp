@@ -223,6 +223,17 @@ final class Lexer
             'π' => [TokenType::Identifier, 'pi'],
             'τ' => [TokenType::Identifier, 'tau'],
             'φ' => [TokenType::Identifier, 'phi'],
+            '⁰' => [TokenType::Superscript, '0'],
+            '¹' => [TokenType::Superscript, '1'],
+            '²' => [TokenType::Superscript, '2'],
+            '³' => [TokenType::Superscript, '3'],
+            '⁴' => [TokenType::Superscript, '4'],
+            '⁵' => [TokenType::Superscript, '5'],
+            '⁶' => [TokenType::Superscript, '6'],
+            '⁷' => [TokenType::Superscript, '7'],
+            '⁸' => [TokenType::Superscript, '8'],
+            '⁹' => [TokenType::Superscript, '9'],
+            '√' => [TokenType::SquareRoot, 'sqrt'],
         ];
 
         foreach ($symbols as $symbol => [$type, $lexeme]) {

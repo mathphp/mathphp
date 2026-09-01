@@ -14,6 +14,8 @@ enum TokenType: string
     case Divide = '/';
     case Modulo = '%';
     case Power = '^';
+    case Superscript = 'superscript';
+    case SquareRoot = 'square_root';
     case Factorial = '!';
     case LeftParenthesis = '(';
     case RightParenthesis = ')';

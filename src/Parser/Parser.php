@@ -136,7 +136,8 @@ final class Parser
     {
         return $this->check(TokenType::Number)
             || $this->check(TokenType::LeftParenthesis)
-            || $this->check(TokenType::Identifier);
+            || $this->check(TokenType::Identifier)
+            || $this->check(TokenType::SquareRoot);
     }
 
     private function parsePrefix(int $reservedDepth = 0): Node
@@ -158,6 +159,21 @@ final class Parser
             return $node;
         }
 
+        if ($this->check(TokenType::SquareRoot)) {
+            $symbol = $this->advance();
+            $this->guardProspectiveDepth($reservedDepth, $symbol->span);
+            $operand = $this->parsePrefix($reservedDepth + 1);
+            $node = new FunctionCallNode(
+                'sqrt',
+                [$operand],
+                $symbol->span,
+                new SourceSpan($symbol->span->start, $operand->span()->end),
+            );
+            $this->guardDepth($node, $symbol->span);
+
+            return $node;
+        }
+
         return $this->parsePower($reservedDepth);
     }
 
@@ -165,14 +181,16 @@ final class Parser
     {
         $base = $this->parsePostfix();
 
-        if (!$this->check(TokenType::Power)) {
+        if (!$this->check(TokenType::Power) && !$this->check(TokenType::Superscript)) {
             return $base;
         }
 
         $operator = $this->current();
         $this->guardProspectiveDepth($reservedDepth, $operator->span);
         $this->advance();
-        $exponent = $this->parsePrefix($reservedDepth + 1);
+        $exponent = $operator->type === TokenType::Superscript
+            ? new NumberNode((int) $operator->lexeme, $operator->lexeme, $operator->span)
+            : $this->parsePrefix($reservedDepth + 1);
         $node = new BinaryOperationNode(
             BinaryOperator::Power,
             $base,

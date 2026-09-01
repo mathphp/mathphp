@@ -46,6 +46,8 @@ final class MathTest extends TestCase
         yield 'unicode multiplication and pi' => ['2 × π', 2 * \M_PI, 'float'];
         yield 'unicode division' => ['6 ÷ 2', 3.0, 'float'];
         yield 'unicode minus' => ['−2 + 5', 3, 'int'];
+        yield 'superscript square' => ['2²', 4, 'int'];
+        yield 'unicode square root' => ['√16', 4.0, 'float'];
     }
 
     public function testVariablesAndConstantsAreResolvedCaseSensitively(): void

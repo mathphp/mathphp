@@ -8,6 +8,10 @@ All notable changes will be documented in this file. The project follows
 ### Added
 
 - Common Unicode notation aliases: `×`, `÷`, `−`, `π`, `τ`, and `φ`.
+- Superscript powers (`x²`, `x³`, and other single-digit exponents) and the
+  square-root prefix `√x`.
+- Superscript powers (`x²`, `x³`, and other single-digit exponents) and the
+  square-root prefix `√x`.
 
 ## [0.3.0] - 2026-09-01
 

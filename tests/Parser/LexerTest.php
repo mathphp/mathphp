@@ -159,6 +159,25 @@ final class LexerTest extends TestCase
         self::assertToken($tokens[3], TokenType::Identifier, 'foo', 5, 8);
     }
 
+    public function testSuperscriptAndRadicalNotationHaveDedicatedTokens(): void
+    {
+        $tokens = (new Lexer('x² + √9'))->tokenize();
+
+        self::assertSame(
+            [
+                TokenType::Identifier,
+                TokenType::Superscript,
+                TokenType::Plus,
+                TokenType::SquareRoot,
+                TokenType::Number,
+                TokenType::EndOfInput,
+            ],
+            array_map(static fn (Token $token): TokenType => $token->type, $tokens),
+        );
+        self::assertSame('2', $tokens[1]->lexeme);
+        self::assertSame('sqrt', $tokens[3]->lexeme);
+    }
+
     public function testHostIntegerMaximumIsAcceptedWithLeadingZeroes(): void
     {
         $literal = '000' . (string) \PHP_INT_MAX;

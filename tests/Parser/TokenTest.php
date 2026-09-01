@@ -38,6 +38,8 @@ final class TokenTest extends TestCase
                 '/',
                 '%',
                 '^',
+                'superscript',
+                'square_root',
                 '!',
                 '(',
                 ')',
