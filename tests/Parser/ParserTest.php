@@ -461,12 +461,6 @@ final class ParserTest extends TestCase
             4,
             5,
         ];
-        yield 'missing comma between arguments' => [
-            'f(1 2)',
-            'parse.expected_token',
-            4,
-            5,
-        ];
         yield 'stray leading comma' => [
             ',1',
             'parse.expected_expression',
@@ -505,30 +499,58 @@ final class ParserTest extends TestCase
         ];
     }
 
+    /** @param array<int, mixed> $expectedShape */
     #[DataProvider('implicitMultiplicationProvider')]
-    public function testFullConsumptionRejectsImplicitMultiplication(
+    public function testImplicitMultiplicationBuildsTypedMultiplyNodes(
         string $source,
-        int $expectedStart,
-        int $expectedEnd,
+        array $expectedShape,
+        int $expectedOperatorStart,
+        int $expectedOperatorEnd,
     ): void {
-        self::assertParseError(
-            $source,
-            'parse.trailing_input',
-            $expectedStart,
-            $expectedEnd,
-        );
+        $node = self::parseExpression($source);
+
+        self::assertSame($expectedShape, self::shape($node));
+        self::assertInstanceOf(BinaryOperationNode::class, $node);
+        self::assertSame(BinaryOperator::Multiply, $node->operator);
+        self::assertSame($expectedOperatorStart, $node->operatorSpan->start);
+        self::assertSame($expectedOperatorEnd, $node->operatorSpan->end);
     }
 
     /**
-     * @return iterable<string, array{string, int, int}>
+     * @return iterable<string, array{string, array<mixed>, int, int}>
      */
     public static function implicitMultiplicationProvider(): iterable
     {
-        yield 'number then identifier' => ['2pi', 1, 3];
-        yield 'number then grouping' => ['2(3)', 1, 2];
-        yield 'adjacent groupings' => ['(2)(3)', 3, 4];
-        yield 'adjacent numbers' => ['1 2', 2, 3];
-        yield 'call then identifier' => ['f(1)g(2)', 4, 5];
+        yield 'number then identifier' => [
+            '2pi',
+            ['binary', '*', ['number', '2', 2], ['constant', 'pi']],
+            1,
+            3,
+        ];
+        yield 'number then grouping' => [
+            '2(3)',
+            ['binary', '*', ['number', '2', 2], ['group', ['number', '3', 3]]],
+            1,
+            2,
+        ];
+        yield 'adjacent groupings' => [
+            '(2)(3)',
+            ['binary', '*', ['group', ['number', '2', 2]], ['group', ['number', '3', 3]]],
+            3,
+            4,
+        ];
+        yield 'adjacent numbers' => [
+            '1 2',
+            ['binary', '*', ['number', '1', 1], ['number', '2', 2]],
+            2,
+            3,
+        ];
+        yield 'call then identifier' => [
+            'f(1)g(2)',
+            ['binary', '*', ['call', 'f', [['number', '1', 1]]], ['call', 'g', [['number', '2', 2]]]],
+            4,
+            5,
+        ];
     }
 
     #[DataProvider('deferredSyntaxProvider')]

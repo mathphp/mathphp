@@ -8,7 +8,7 @@ never evaluates input with PHP `eval()`. Continuous integration verifies PHP
 ## Installation
 
 ```console
-composer require mathphp/mathphp:^0.1
+composer require mathphp/mathphp:^0.3
 ```
 
 For development in this checkout:
@@ -27,6 +27,8 @@ Math::evaluate('2 + 3 * 4'); // 14
 Math::evaluate('2^3^2'); // 512
 Math::evaluate('-2^2'); // -4
 Math::evaluate('sqrt(81) + 3!'); // 15.0
+Math::evaluate('2x + 1', ['x' => 4]); // 9
+Math::evaluate('2(3 + 4)'); // 14
 Math::evaluate(
     'gross * (1 - discount)',
     ['gross' => 125, 'discount' => 0.2],
@@ -55,6 +57,11 @@ The complete API, grammar, examples, and integration guidance live in the
 [documentation repository](https://github.com/mathphp/mathphp-docs). The
 language contract and traceability records live in the
 [specifications repository](https://github.com/mathphp/mathphp-specs).
+
+The expression grammar accepts explicit multiplication (`2 * x`) and the
+standard implicit forms (`2x`, `2(x + 1)`, and `(x + 1)(x - 1)`). Identifiers
+remain atomic, so `xy` is one variable name; write `x y` or `x * y` when two
+factors are intended.
 
 ## Development
 

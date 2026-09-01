@@ -110,7 +110,7 @@ final class DocumentationExamplesTest extends TestCase
 
     /**
      * DOC-001 / DEF-001: every explicitly rejected README input remains
-     * outside the v0.1 language.
+     * outside the documented language.
      */
     #[DataProvider('deferredSyntaxProvider')]
     public function testPublishedDeferredSyntaxIsRejected(string $expression): void
@@ -125,10 +125,29 @@ final class DocumentationExamplesTest extends TestCase
      */
     public static function deferredSyntaxProvider(): iterable
     {
-        yield 'implicit identifier multiplication' => ['2pi'];
-        yield 'implicit grouping multiplication' => ['2(3)'];
         yield 'repeated factorial' => ['3!!'];
         yield 'comparison' => ['1 < 2'];
         yield 'call without parentheses' => ['sqrt 4'];
+    }
+
+    /** @param array<string, int|float> $variables */
+    #[DataProvider('implicitMultiplicationProvider')]
+    public function testDocumentedImplicitMultiplicationEvaluates(
+        string $expression,
+        array $variables,
+        int|float $expected,
+    ): void {
+        self::assertSame($expected, Math::evaluate($expression, $variables));
+    }
+
+    /**
+     * @return iterable<string, array{string, array<string, int|float>, int|float}>
+     */
+    public static function implicitMultiplicationProvider(): iterable
+    {
+        yield 'constant factor' => ['2pi', [], 2 * \M_PI];
+        yield 'number and grouping' => ['2(3 + 4)', [], 14];
+        yield 'adjacent groupings' => ['(2 + 1)(3 + 1)', [], 12];
+        yield 'coefficient and variable' => ['2x + 1', ['x' => 4], 9];
     }
 }

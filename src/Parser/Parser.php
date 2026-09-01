@@ -100,16 +100,20 @@ final class Parser
             $this->check(TokenType::Multiply)
             || $this->check(TokenType::Divide)
             || $this->check(TokenType::Modulo)
+            || $this->startsImplicitMultiplication()
         ) {
-            $operator = $this->advance();
+            $implicit = $this->startsImplicitMultiplication();
+            $operator = $implicit ? $this->current() : $this->advance();
             $right = $this->parsePrefix();
             $node = new BinaryOperationNode(
-                match ($operator->type) {
+                $implicit
+                    ? BinaryOperator::Multiply
+                    : match ($operator->type) {
                     TokenType::Multiply => BinaryOperator::Multiply,
                     TokenType::Divide => BinaryOperator::Divide,
                     TokenType::Modulo => BinaryOperator::Modulo,
                     default => throw new \LogicException('Unexpected multiplicative operator.'),
-                },
+                    },
                 $node,
                 $right,
                 $operator->span,
@@ -118,6 +122,21 @@ final class Parser
         }
 
         return $node;
+    }
+
+    /**
+     * Mathematical notation commonly omits the multiplication sign between
+     * two factors (for example `2x`, `2(x + 1)`, or `(x + 1)(x - 1)`).
+     *
+     * Identifiers remain atomic: `xy` is one variable, while `x y` is
+     * interpreted as `x * y`. An identifier followed immediately by `(` is
+     * still parsed as a function call because custom functions are supported.
+     */
+    private function startsImplicitMultiplication(): bool
+    {
+        return $this->check(TokenType::Number)
+            || $this->check(TokenType::LeftParenthesis)
+            || $this->check(TokenType::Identifier);
     }
 
     private function parsePrefix(int $reservedDepth = 0): Node

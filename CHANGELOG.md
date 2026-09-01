@@ -3,6 +3,15 @@
 All notable changes will be documented in this file. The project intends to
 follow [Semantic Versioning](https://semver.org/) once it is release-ready.
 
+## [0.3.0] - 2026-09-01
+
+### Added
+
+- Standard implicit multiplication for adjacent factors such as `2x`,
+  `2(x + 1)`, `(x + 1)(x - 1)`, and whitespace-separated factors.
+- Explicit identifier semantics: names such as `xy` remain one variable,
+  while `x y` is parsed as a product.
+
 ## [0.2.0] - 2026-09-01
 
 ### Added
@@ -18,6 +27,9 @@ follow [Semantic Versioning](https://semver.org/) once it is release-ready.
 
 ### Added
 
+- Standard implicit multiplication in the Core grammar (`2x`, `2(x + 1)`,
+  adjacent groupings, and whitespace-separated factors), while preserving
+  atomic identifier names such as `xy`.
 - Normative v0.1 scalar-expression language, numeric, security, and
   traceability contract.
 - Documented the public-identity collision evidence and decision.

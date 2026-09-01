@@ -205,7 +205,7 @@ final class MalformedExpressionFuzzTest extends TestCase
                 'label' => 'adjacent identifier',
                 'expression' => '1name',
                 'options' => null,
-                'code' => 'parse.trailing_input',
+                'code' => 'eval.unknown_variable',
             ],
             [
                 'label' => 'unknown identifier',
