@@ -196,7 +196,7 @@ final class Parser
                 return $this->parseFunctionCall($identifier);
             }
 
-            if ($identifier->lexeme === 'pi' || $identifier->lexeme === 'e') {
+            if (in_array($identifier->lexeme, ['pi', 'e', 'tau', 'phi'], true)) {
                 return new ConstantNode($identifier->lexeme, $identifier->span);
             }
 

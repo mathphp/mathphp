@@ -69,6 +69,8 @@ final class ParserTest extends TestCase
     {
         $pi = self::parseExpression('pi');
         $e = self::parseExpression('e');
+        $tau = self::parseExpression('tau');
+        $phi = self::parseExpression('phi');
         $capitalPi = self::parseExpression('Pi');
         $capitalE = self::parseExpression('E');
         $variable = self::parseExpression('_value2');
@@ -77,6 +79,10 @@ final class ParserTest extends TestCase
         self::assertSame('pi', $pi->name);
         self::assertInstanceOf(ConstantNode::class, $e);
         self::assertSame('e', $e->name);
+        self::assertInstanceOf(ConstantNode::class, $tau);
+        self::assertSame('tau', $tau->name);
+        self::assertInstanceOf(ConstantNode::class, $phi);
+        self::assertSame('phi', $phi->name);
 
         self::assertInstanceOf(VariableNode::class, $capitalPi);
         self::assertSame('Pi', $capitalPi->name);

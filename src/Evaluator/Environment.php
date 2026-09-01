@@ -37,7 +37,7 @@ final readonly class Environment
                 );
             }
 
-            if ($name === 'pi' || $name === 'e') {
+            if (in_array($name, ['pi', 'e', 'tau', 'phi'], true)) {
                 throw new \InvalidArgumentException(
                     \sprintf(
                         'The constant name "%s" is reserved and cannot be overridden.',
@@ -82,6 +82,8 @@ final readonly class Environment
         return match ($name) {
             'pi' => \M_PI,
             'e' => \M_E,
+            'tau' => 2 * \M_PI,
+            'phi' => (1 + \sqrt(5)) / 2,
             default => throw new \LogicException(
                 \sprintf('Unknown parser-produced constant "%s".', $name),
             ),

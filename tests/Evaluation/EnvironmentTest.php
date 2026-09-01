@@ -83,6 +83,8 @@ final class EnvironmentTest extends TestCase
     {
         yield 'pi' => ['pi'];
         yield 'e' => ['e'];
+        yield 'tau' => ['tau'];
+        yield 'phi' => ['phi'];
     }
 
     #[DataProvider('invalidValueProvider')]
@@ -161,10 +163,14 @@ final class EnvironmentTest extends TestCase
 
         self::assertSame(\M_PI, $environment->constant('pi'));
         self::assertSame(\M_E, $environment->constant('e'));
+        self::assertSame(2 * \M_PI, $environment->constant('tau'));
+        self::assertEqualsWithDelta((1 + \sqrt(5)) / 2, $environment->constant('phi'), 1.0E-12);
         self::assertIsFloat($environment->constant('pi'));
         self::assertIsFloat($environment->constant('e'));
         self::assertTrue(\is_finite($environment->constant('pi')));
         self::assertTrue(\is_finite($environment->constant('e')));
+        self::assertTrue(\is_finite($environment->constant('tau')));
+        self::assertTrue(\is_finite($environment->constant('phi')));
     }
 
     public function testParserCannotProduceAnyOtherConstantName(): void

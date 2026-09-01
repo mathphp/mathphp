@@ -50,6 +50,66 @@ final readonly class FunctionRegistry
                 self::cosine(...),
             ),
             new FunctionDefinition(
+                'tan',
+                1,
+                1,
+                self::tangent(...),
+            ),
+            new FunctionDefinition(
+                'asin',
+                1,
+                1,
+                self::arcSine(...),
+            ),
+            new FunctionDefinition(
+                'acos',
+                1,
+                1,
+                self::arcCosine(...),
+            ),
+            new FunctionDefinition(
+                'atan',
+                1,
+                1,
+                self::arcTangent(...),
+            ),
+            new FunctionDefinition(
+                'sinh',
+                1,
+                1,
+                self::hyperbolicSine(...),
+            ),
+            new FunctionDefinition(
+                'cosh',
+                1,
+                1,
+                self::hyperbolicCosine(...),
+            ),
+            new FunctionDefinition(
+                'tanh',
+                1,
+                1,
+                self::hyperbolicTangent(...),
+            ),
+            new FunctionDefinition(
+                'asinh',
+                1,
+                1,
+                self::arcHyperbolicSine(...),
+            ),
+            new FunctionDefinition(
+                'acosh',
+                1,
+                1,
+                self::arcHyperbolicCosine(...),
+            ),
+            new FunctionDefinition(
+                'atanh',
+                1,
+                1,
+                self::arcHyperbolicTangent(...),
+            ),
+            new FunctionDefinition(
                 'exp',
                 1,
                 1,
@@ -66,6 +126,36 @@ final readonly class FunctionRegistry
                 2,
                 2,
                 self::logarithm(...),
+            ),
+            new FunctionDefinition(
+                'log10',
+                1,
+                1,
+                self::logBaseTen(...),
+            ),
+            new FunctionDefinition(
+                'hypot',
+                2,
+                2,
+                self::hypotenuse(...),
+            ),
+            new FunctionDefinition(
+                'sign',
+                1,
+                1,
+                self::sign(...),
+            ),
+            new FunctionDefinition(
+                'min',
+                1,
+                16,
+                self::minimum(...),
+            ),
+            new FunctionDefinition(
+                'max',
+                1,
+                16,
+                self::maximum(...),
             ),
             new FunctionDefinition(
                 'floor',
@@ -182,6 +272,81 @@ final readonly class FunctionRegistry
         return \cos($arguments[0]);
     }
 
+    /** @param list<int|float> $arguments */
+    private static function tangent(array $arguments): float
+    {
+        $cosine = \cos($arguments[0]);
+        if (\abs($cosine) <= 1.0E-15) {
+            throw new \DomainException('tan() is undefined where cosine is zero.');
+        }
+
+        return \sin($arguments[0]) / $cosine;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcSine(array $arguments): float
+    {
+        self::requireClosedUnitInterval($arguments[0], 'asin');
+        return \asin($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcCosine(array $arguments): float
+    {
+        self::requireClosedUnitInterval($arguments[0], 'acos');
+        return \acos($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcTangent(array $arguments): float
+    {
+        return \atan($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hyperbolicSine(array $arguments): float
+    {
+        return \sinh($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hyperbolicCosine(array $arguments): float
+    {
+        return \cosh($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hyperbolicTangent(array $arguments): float
+    {
+        return \tanh($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcHyperbolicSine(array $arguments): float
+    {
+        return \asinh($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcHyperbolicCosine(array $arguments): float
+    {
+        if ($arguments[0] < 1) {
+            throw new \DomainException('acosh() requires an argument greater than or equal to one.');
+        }
+
+        return \acosh($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcHyperbolicTangent(array $arguments): float
+    {
+        if ($arguments[0] <= -1 || $arguments[0] >= 1) {
+            throw new \DomainException('atanh() requires an argument strictly between -1 and 1.');
+        }
+
+        return \atanh($arguments[0]);
+    }
+
     /**
      * @param list<int|float> $arguments
      */
@@ -226,6 +391,47 @@ final readonly class FunctionRegistry
         }
 
         return \log($value, $base);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function logBaseTen(array $arguments): float
+    {
+        if ($arguments[0] <= 0) {
+            throw new \DomainException('log10() requires a positive argument.');
+        }
+
+        return \log10($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hypotenuse(array $arguments): float
+    {
+        return \hypot($arguments[0], $arguments[1]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function sign(array $arguments): int
+    {
+        return $arguments[0] <=> 0;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function minimum(array $arguments): int|float
+    {
+        return \min(...$arguments);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function maximum(array $arguments): int|float
+    {
+        return \max(...$arguments);
+    }
+
+    private static function requireClosedUnitInterval(int|float $value, string $function): void
+    {
+        if ($value < -1 || $value > 1) {
+            throw new \DomainException($function . '() requires an argument between -1 and 1.');
+        }
     }
 
     /**

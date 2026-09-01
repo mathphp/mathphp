@@ -3,6 +3,17 @@
 All notable changes will be documented in this file. The project intends to
 follow [Semantic Versioning](https://semver.org/) once it is release-ready.
 
+## [0.2.0] - 2026-09-01
+
+### Added
+
+- Expanded the safe built-in function allowlist with tangent and inverse
+  trigonometric functions, hyperbolic functions, `log10`, `hypot`, `sign`, and
+  bounded `min`/`max` aggregates.
+- Added the reserved mathematical constants `tau` and `phi`.
+- Added domain checks for all new functions so invalid values remain structured
+  evaluation errors rather than non-finite results.
+
 ## [Unreleased]
 
 ### Added
@@ -16,7 +27,7 @@ follow [Semantic Versioning](https://semver.org/) once it is release-ready.
 - Isolated per-call evaluator with exact integer overflow handling, finite-float
   enforcement, bounded powers, modulo, and factorial.
 - Immutable variables, options, resource limits, function definitions, and
-  function registry with ten allowlisted built-ins.
+  function registry with the allowlisted built-in catalogue.
 - Source-aware lexical, parse, and evaluation exceptions with stable error
   codes.
 - PHPUnit layer, deterministic property cases, malformed-input fuzz cases,
@@ -45,4 +56,5 @@ follow [Semantic Versioning](https://semver.org/) once it is release-ready.
 - Optional private packages remain separately distributed; their access and
   licensing workflow is intentionally manual and is not automated here.
 
-No version has been released.
+Core `v0.1.0` is released; `v0.2.0` adds the expanded mathematical function
+catalogue described above.

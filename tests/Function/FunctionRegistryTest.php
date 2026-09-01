@@ -48,9 +48,24 @@ final class FunctionRegistryTest extends TestCase
         yield 'square root' => ['sqrt', [9], 3.0, 'float'];
         yield 'sine' => ['sin', [\M_PI / 2], 1.0, 'float'];
         yield 'cosine' => ['cos', [0], 1.0, 'float'];
+        yield 'tangent' => ['tan', [\M_PI / 4], 1.0, 'float'];
+        yield 'arc sine' => ['asin', [1], \M_PI / 2, 'float'];
+        yield 'arc cosine' => ['acos', [0], \M_PI / 2, 'float'];
+        yield 'arc tangent' => ['atan', [1], \M_PI / 4, 'float'];
+        yield 'hyperbolic sine' => ['sinh', [0], 0.0, 'float'];
+        yield 'hyperbolic cosine' => ['cosh', [0], 1.0, 'float'];
+        yield 'hyperbolic tangent' => ['tanh', [0], 0.0, 'float'];
+        yield 'inverse hyperbolic sine' => ['asinh', [0], 0.0, 'float'];
+        yield 'inverse hyperbolic cosine' => ['acosh', [1], 0.0, 'float'];
+        yield 'inverse hyperbolic tangent' => ['atanh', [0], 0.0, 'float'];
         yield 'exponential' => ['exp', [1], \M_E, 'float'];
         yield 'natural logarithm' => ['ln', [\M_E], 1.0, 'float'];
         yield 'logarithm' => ['log', [100, 10], 2.0, 'float'];
+        yield 'base ten logarithm' => ['log10', [100], 2.0, 'float'];
+        yield 'hypotenuse' => ['hypot', [3, 4], 5.0, 'float'];
+        yield 'sign' => ['sign', [-4], -1, 'int'];
+        yield 'minimum' => ['min', [4, 2, 8], 2, 'int'];
+        yield 'maximum' => ['max', [4, 2, 8], 8, 'int'];
         yield 'floor' => ['floor', [-1.2], -2.0, 'float'];
         yield 'ceiling' => ['ceil', [-1.2], -1.0, 'float'];
         yield 'round positive halfway' => ['round', [2.5], 3.0, 'float'];
@@ -79,9 +94,24 @@ final class FunctionRegistryTest extends TestCase
         yield 'sqrt' => ['sqrt', 1, 1];
         yield 'sin' => ['sin', 1, 1];
         yield 'cos' => ['cos', 1, 1];
+        yield 'tan' => ['tan', 1, 1];
+        yield 'asin' => ['asin', 1, 1];
+        yield 'acos' => ['acos', 1, 1];
+        yield 'atan' => ['atan', 1, 1];
+        yield 'sinh' => ['sinh', 1, 1];
+        yield 'cosh' => ['cosh', 1, 1];
+        yield 'tanh' => ['tanh', 1, 1];
+        yield 'asinh' => ['asinh', 1, 1];
+        yield 'acosh' => ['acosh', 1, 1];
+        yield 'atanh' => ['atanh', 1, 1];
         yield 'exp' => ['exp', 1, 1];
         yield 'ln' => ['ln', 1, 1];
         yield 'log' => ['log', 2, 2];
+        yield 'log10' => ['log10', 1, 1];
+        yield 'hypot' => ['hypot', 2, 2];
+        yield 'sign' => ['sign', 1, 1];
+        yield 'min' => ['min', 1, 16];
+        yield 'max' => ['max', 1, 16];
         yield 'floor' => ['floor', 1, 1];
         yield 'ceil' => ['ceil', 1, 1];
         yield 'round' => ['round', 1, 1];
@@ -170,6 +200,30 @@ final class FunctionRegistryTest extends TestCase
             [2, -10],
             \DomainException::class,
             'positive value and a positive base other than one',
+        ];
+        yield 'inverse sine out of range' => [
+            'asin',
+            [2],
+            \DomainException::class,
+            'asin() requires an argument between -1 and 1.',
+        ];
+        yield 'inverse hyperbolic cosine below one' => [
+            'acosh',
+            [0],
+            \DomainException::class,
+            'acosh() requires an argument greater than or equal to one.',
+        ];
+        yield 'inverse hyperbolic tangent at pole' => [
+            'atanh',
+            [1],
+            \DomainException::class,
+            'atanh() requires an argument strictly between -1 and 1.',
+        ];
+        yield 'tangent at pole' => [
+            'tan',
+            [\M_PI / 2],
+            \DomainException::class,
+            'tan() is undefined where cosine is zero.',
         ];
     }
 
