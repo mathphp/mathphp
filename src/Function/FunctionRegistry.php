@@ -158,6 +158,30 @@ final readonly class FunctionRegistry
                 self::logBaseTen(...),
             ),
             new FunctionDefinition(
+                'log2',
+                1,
+                1,
+                self::logBaseTwo(...),
+            ),
+            new FunctionDefinition(
+                'log1p',
+                1,
+                1,
+                self::logOnePlus(...),
+            ),
+            new FunctionDefinition(
+                'expm1',
+                1,
+                1,
+                self::expMinusOne(...),
+            ),
+            new FunctionDefinition(
+                'atan2',
+                2,
+                2,
+                self::arcTangentTwo(...),
+            ),
+            new FunctionDefinition(
                 'hypot',
                 2,
                 2,
@@ -198,6 +222,18 @@ final readonly class FunctionRegistry
                 1,
                 1,
                 self::round(...),
+            ),
+            new FunctionDefinition(
+                'gcd',
+                2,
+                2,
+                self::greatestCommonDivisor(...),
+            ),
+            new FunctionDefinition(
+                'lcm',
+                2,
+                2,
+                self::leastCommonMultiple(...),
             ),
         ];
 
@@ -469,6 +505,42 @@ final readonly class FunctionRegistry
     }
 
     /** @param list<int|float> $arguments */
+    private static function logBaseTwo(array $arguments): float
+    {
+        if ($arguments[0] <= 0) {
+            throw new \DomainException('log2() requires a positive argument.');
+        }
+
+        return \log($arguments[0], 2.0);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function logOnePlus(array $arguments): float
+    {
+        if ($arguments[0] <= -1.0) {
+            throw new \DomainException('log1p() requires an argument greater than -1.');
+        }
+
+        return \log1p($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function expMinusOne(array $arguments): float
+    {
+        return \expm1($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcTangentTwo(array $arguments): float
+    {
+        if ($arguments[0] == 0 && $arguments[1] == 0) {
+            throw new \DomainException('atan2() is undefined when both arguments are zero.');
+        }
+
+        return \atan2($arguments[0], $arguments[1]);
+    }
+
+    /** @param list<int|float> $arguments */
     private static function hypotenuse(array $arguments): float
     {
         return \hypot($arguments[0], $arguments[1]);
@@ -525,5 +597,52 @@ final readonly class FunctionRegistry
             0,
             \PHP_ROUND_HALF_UP,
         );
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function greatestCommonDivisor(array $arguments): int
+    {
+        $left = self::requireInteger($arguments[0], 'gcd');
+        $right = self::requireInteger($arguments[1], 'gcd');
+        $left = abs($left);
+        $right = abs($right);
+        while ($right !== 0) {
+            [$left, $right] = [$right, $left % $right];
+        }
+
+        return $left;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function leastCommonMultiple(array $arguments): int
+    {
+        $left = self::requireInteger($arguments[0], 'lcm');
+        $right = self::requireInteger($arguments[1], 'lcm');
+        if ($left === 0 || $right === 0) {
+            return 0;
+        }
+
+        $left = abs($left);
+        $right = abs($right);
+        $divisor = self::greatestCommonDivisor([$left, $right]);
+        $reduced = intdiv($left, $divisor);
+        if ($reduced > intdiv(\PHP_INT_MAX, $right)) {
+            throw new \OverflowException('lcm() result exceeds the host integer range.');
+        }
+
+        return $reduced * $right;
+    }
+
+    private static function requireInteger(int|float $value, string $function): int
+    {
+        if (
+            !is_finite((float) $value)
+            || floor((float) $value) !== (float) $value
+            || abs((float) $value) > (float) \PHP_INT_MAX
+        ) {
+            throw new \DomainException($function . '() requires finite integer arguments.');
+        }
+
+        return (int) $value;
     }
 }

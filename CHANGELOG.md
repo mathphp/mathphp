@@ -3,6 +3,14 @@
 All notable changes will be documented in this file. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.5] - 2026-09-01
+
+### Added
+
+- Added stable numerical primitives `log2`, `log1p`, and `expm1`.
+- Added two-argument `atan2` with an explicit origin-domain error.
+- Added overflow-safe integer `gcd` and `lcm` functions.
+
 ## [0.3.4] - 2026-09-01
 
 ### Added

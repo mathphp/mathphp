@@ -48,6 +48,9 @@ final class MathTest extends TestCase
         yield 'unicode minus' => ['−2 + 5', 3, 'int'];
         yield 'superscript square' => ['2²', 4, 'int'];
         yield 'unicode square root' => ['√16', 4.0, 'float'];
+        yield 'base two logarithm' => ['log2(8)', 3.0, 'float'];
+        yield 'atan2 geometry' => ['atan2(1, 1)', \M_PI / 4, 'float'];
+        yield 'integer gcd' => ['gcd(84, 30)', 6, 'int'];
     }
 
     public function testGreekVariableAliasesResolveAgainstPortableNames(): void

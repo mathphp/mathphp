@@ -67,6 +67,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'natural logarithm' => ['ln', [\M_E], 1.0, 'float'];
         yield 'logarithm' => ['log', [100, 10], 2.0, 'float'];
         yield 'base ten logarithm' => ['log10', [100], 2.0, 'float'];
+        yield 'base two logarithm' => ['log2', [8], 3.0, 'float'];
+        yield 'log one plus' => ['log1p', [0], 0.0, 'float'];
+        yield 'exponential minus one' => ['expm1', [0], 0.0, 'float'];
+        yield 'atan2' => ['atan2', [1, 1], \M_PI / 4, 'float'];
         yield 'hypotenuse' => ['hypot', [3, 4], 5.0, 'float'];
         yield 'sign' => ['sign', [-4], -1, 'int'];
         yield 'minimum' => ['min', [4, 2, 8], 2, 'int'];
@@ -75,6 +79,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'ceiling' => ['ceil', [-1.2], -1.0, 'float'];
         yield 'round positive halfway' => ['round', [2.5], 3.0, 'float'];
         yield 'round negative halfway' => ['round', [-2.5], -3.0, 'float'];
+        yield 'greatest common divisor' => ['gcd', [84, 30], 6, 'int'];
+        yield 'least common multiple' => ['lcm', [12, 18], 36, 'int'];
     }
 
     #[DataProvider('builtInDefinitionProvider')]
@@ -117,6 +123,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'ln' => ['ln', 1, 1];
         yield 'log' => ['log', 2, 2];
         yield 'log10' => ['log10', 1, 1];
+        yield 'log2' => ['log2', 1, 1];
+        yield 'log1p' => ['log1p', 1, 1];
+        yield 'expm1' => ['expm1', 1, 1];
+        yield 'atan2' => ['atan2', 2, 2];
         yield 'hypot' => ['hypot', 2, 2];
         yield 'sign' => ['sign', 1, 1];
         yield 'min' => ['min', 1, 16];
@@ -124,6 +134,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'floor' => ['floor', 1, 1];
         yield 'ceil' => ['ceil', 1, 1];
         yield 'round' => ['round', 1, 1];
+        yield 'gcd' => ['gcd', 2, 2];
+        yield 'lcm' => ['lcm', 2, 2];
     }
 
     /**
@@ -251,6 +263,36 @@ final class FunctionRegistryTest extends TestCase
             [0],
             \DomainException::class,
             'cot() is undefined where sine is zero.',
+        ];
+        yield 'log2 zero' => [
+            'log2',
+            [0],
+            \DomainException::class,
+            'log2() requires a positive argument.',
+        ];
+        yield 'log1p negative one' => [
+            'log1p',
+            [-1],
+            \DomainException::class,
+            'log1p() requires an argument greater than -1.',
+        ];
+        yield 'atan2 origin' => [
+            'atan2',
+            [0, 0],
+            \DomainException::class,
+            'atan2() is undefined when both arguments are zero.',
+        ];
+        yield 'gcd non-integer' => [
+            'gcd',
+            [2.5, 5],
+            \DomainException::class,
+            'gcd() requires finite integer arguments.',
+        ];
+        yield 'lcm overflow' => [
+            'lcm',
+            [\PHP_INT_MAX, 2],
+            \OverflowException::class,
+            'lcm() result exceeds the host integer range.',
         ];
     }
 
