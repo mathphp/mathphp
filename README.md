@@ -65,10 +65,11 @@ such as `x²`), and the standard implicit forms (`2x`, `2(x + 1)`, and
 `xy` is one variable name; write `x y` or `x * y` when two factors are
 intended.
 
-The built-in function registry includes elementary, trigonometric, hyperbolic,
-numerical, integer, and special functions such as `erf`, `erfc`, `gamma`, and
-`lgamma`. Special-function results are finite and domain-checked; expressions
-that approach poles or overflow return structured evaluation errors.
+The built-in function registry includes elementary, trigonometric (including
+`sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic, numerical,
+integer, and special functions such as `erf`, `erfc`, `gamma`, and `lgamma`.
+Special-function results are finite and domain-checked; expressions that
+approach poles or overflow return structured evaluation errors.
 
 ## Development
 

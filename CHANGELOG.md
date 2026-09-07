@@ -3,6 +3,13 @@
 All notable changes will be documented in this file. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.7] - 2026-09-07
+
+### Added
+
+- Added domain-checked inverse reciprocal trigonometric functions `asec`,
+  `acsc`, and `acot` to the default function registry.
+
 ## [0.3.6] - 2026-09-07
 
 ### Added

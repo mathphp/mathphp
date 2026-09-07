@@ -104,6 +104,24 @@ final readonly class FunctionRegistry
                 self::cotangent(...),
             ),
             new FunctionDefinition(
+                'asec',
+                1,
+                1,
+                self::arcSecant(...),
+            ),
+            new FunctionDefinition(
+                'acsc',
+                1,
+                1,
+                self::arcCosecant(...),
+            ),
+            new FunctionDefinition(
+                'acot',
+                1,
+                1,
+                self::arcCotangent(...),
+            ),
+            new FunctionDefinition(
                 'asin',
                 1,
                 1,
@@ -491,6 +509,32 @@ final readonly class FunctionRegistry
         }
 
         return \cos($arguments[0]) / $sine;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcSecant(array $arguments): float
+    {
+        if (\abs($arguments[0]) < 1.0) {
+            throw new \DomainException('asec() requires an argument with absolute value greater than or equal to one.');
+        }
+
+        return \acos(1.0 / $arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcCosecant(array $arguments): float
+    {
+        if (\abs($arguments[0]) < 1.0) {
+            throw new \DomainException('acsc() requires an argument with absolute value greater than or equal to one.');
+        }
+
+        return \asin(1.0 / $arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcCotangent(array $arguments): float
+    {
+        return \M_PI / 2.0 - \atan($arguments[0]);
     }
 
     /** @param list<int|float> $arguments */

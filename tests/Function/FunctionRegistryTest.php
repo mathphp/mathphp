@@ -58,6 +58,9 @@ final class FunctionRegistryTest extends TestCase
         yield 'secant' => ['sec', [0], 1.0, 'float'];
         yield 'cosecant' => ['csc', [\M_PI / 2], 1.0, 'float'];
         yield 'cotangent' => ['cot', [\M_PI / 4], 1.0, 'float'];
+        yield 'arc secant' => ['asec', [2], \acos(0.5), 'float'];
+        yield 'arc cosecant' => ['acsc', [2], \asin(0.5), 'float'];
+        yield 'arc cotangent' => ['acot', [1], \M_PI / 4, 'float'];
         yield 'arc sine' => ['asin', [1], \M_PI / 2, 'float'];
         yield 'arc cosine' => ['acos', [0], \M_PI / 2, 'float'];
         yield 'arc tangent' => ['atan', [1], \M_PI / 4, 'float'];
@@ -118,6 +121,9 @@ final class FunctionRegistryTest extends TestCase
         yield 'sec' => ['sec', 1, 1];
         yield 'csc' => ['csc', 1, 1];
         yield 'cot' => ['cot', 1, 1];
+        yield 'asec' => ['asec', 1, 1];
+        yield 'acsc' => ['acsc', 1, 1];
+        yield 'acot' => ['acot', 1, 1];
         yield 'asin' => ['asin', 1, 1];
         yield 'acos' => ['acos', 1, 1];
         yield 'atan' => ['atan', 1, 1];
@@ -283,6 +289,18 @@ final class FunctionRegistryTest extends TestCase
             [0],
             \DomainException::class,
             'cot() is undefined where sine is zero.',
+        ];
+        yield 'arc secant inside range gap' => [
+            'asec',
+            [0.5],
+            \DomainException::class,
+            'asec() requires an argument with absolute value greater than or equal to one.',
+        ];
+        yield 'arc cosecant inside range gap' => [
+            'acsc',
+            [-0.5],
+            \DomainException::class,
+            'acsc() requires an argument with absolute value greater than or equal to one.',
         ];
         yield 'log2 zero' => [
             'log2',
