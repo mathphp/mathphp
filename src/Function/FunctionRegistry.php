@@ -44,6 +44,30 @@ final readonly class FunctionRegistry
                 self::cubeRoot(...),
             ),
             new FunctionDefinition(
+                'erf',
+                1,
+                1,
+                self::errorFunction(...),
+            ),
+            new FunctionDefinition(
+                'erfc',
+                1,
+                1,
+                self::complementaryErrorFunction(...),
+            ),
+            new FunctionDefinition(
+                'gamma',
+                1,
+                1,
+                self::gammaFunction(...),
+            ),
+            new FunctionDefinition(
+                'lgamma',
+                1,
+                1,
+                self::logGammaFunction(...),
+            ),
+            new FunctionDefinition(
                 'sin',
                 1,
                 1,
@@ -322,6 +346,91 @@ final readonly class FunctionRegistry
         $value = (float) $arguments[0];
 
         return $value < 0.0 ? -\pow(-$value, 1.0 / 3.0) : \pow($value, 1.0 / 3.0);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function errorFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('erf() requires a finite argument.');
+        }
+        if ($value == 0.0) {
+            return 0.0;
+        }
+
+        // Abramowitz and Stegun 7.1.26: bounded error below 1.5e-7.
+        $sign = $value < 0.0 ? -1.0 : 1.0;
+        $absolute = abs($value);
+        $t = 1.0 / (1.0 + 0.3275911 * $absolute);
+        $polynomial = (
+            (((((1.061405429 * $t - 1.453152027) * $t) + 1.421413741) * $t - 0.284496736) * $t + 0.254829592)
+            * $t
+        );
+        $result = $sign * (1.0 - $polynomial * exp(-$absolute * $absolute));
+
+        return self::finiteSpecialResult($result, 'erf');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function complementaryErrorFunction(array $arguments): float
+    {
+        return self::finiteSpecialResult(1.0 - self::errorFunction($arguments), 'erfc');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function gammaFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value) || abs($value) > 171.0 || ($value <= 0.0 && floor($value) === $value)) {
+            throw new \DomainException('gamma() requires a finite non-pole argument with magnitude at most 171.');
+        }
+
+        $coefficients = [
+            676.5203681218851,
+            -1259.1392167224028,
+            771.32342877765313,
+            -176.61502916214059,
+            12.507343278686905,
+            -0.13857109526572012,
+            9.9843695780195716e-6,
+            1.5056327351493116e-7,
+        ];
+        if ($value < 0.5) {
+            $sine = sin(M_PI * $value);
+            if (abs($sine) <= 1.0e-15) {
+                throw new \DomainException('gamma() is undefined at non-positive integers.');
+            }
+
+            return self::finiteSpecialResult(M_PI / ($sine * self::gammaFunction([1.0 - $value])), 'gamma');
+        }
+
+        $shifted = $value - 1.0;
+        $sum = 0.99999999999980993;
+        foreach ($coefficients as $index => $coefficient) {
+            $sum += $coefficient / ($shifted + $index + 1.0);
+        }
+        $base = $shifted + 7.5;
+        $result = sqrt(2.0 * M_PI) * ($base ** ($shifted + 0.5)) * exp(-$base) * $sum;
+
+        return self::finiteSpecialResult($result, 'gamma');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function logGammaFunction(array $arguments): float
+    {
+        $gamma = self::gammaFunction($arguments);
+
+        return self::finiteSpecialResult(log(abs($gamma)), 'lgamma');
+    }
+
+    private static function finiteSpecialResult(float $value, string $function): float
+    {
+        if (!is_finite($value)) {
+            throw new \OverflowException($function . '() produced a non-finite result.');
+        }
+
+        return $value;
     }
 
     /**

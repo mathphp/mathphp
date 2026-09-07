@@ -3,6 +3,14 @@
 All notable changes will be documented in this file. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.6] - 2026-09-07
+
+### Added
+
+- Added finite, domain-checked special functions `erf`, `erfc`, `gamma`, and
+  `lgamma` to the safe built-in registry.
+- Added Core facade, registry, and domain-boundary tests for the new functions.
+
 ## [0.3.5] - 2026-09-01
 
 ### Added
