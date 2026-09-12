@@ -7,6 +7,8 @@ All notable changes will be documented in this file. The project follows
 
 ### Added
 
+- Added a domain-checked real `lambertw()` built-in with principal and lower
+  real branches (`0` and `-1`).
 - Added finite integer-order `besselj` and `besseli` built-ins with convergent
   series and large-argument asymptotic evaluation.
 - Added positive-real `beta` and `logbeta` built-ins derived from the checked

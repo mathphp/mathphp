@@ -260,6 +260,12 @@ final readonly class FunctionRegistry
                 self::exponential(...),
             ),
             new FunctionDefinition(
+                'lambertw',
+                1,
+                2,
+                self::lambertW(...),
+            ),
+            new FunctionDefinition(
                 'ln',
                 1,
                 1,
@@ -1075,6 +1081,83 @@ final readonly class FunctionRegistry
     private static function exponential(array $arguments): float
     {
         return \exp($arguments[0]);
+    }
+
+    /**
+     * Evaluate a real Lambert-W branch. The optional second argument selects
+     * branch 0 (the default) or branch -1 on the interval [-1/e, 0).
+     *
+     * @param list<int|float> $arguments
+     */
+    private static function lambertW(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        $branch = isset($arguments[1]) ? (float) $arguments[1] : 0.0;
+        if (
+            !is_finite($value)
+            || !is_finite($branch)
+            || floor($branch) !== $branch
+            || !in_array((int) $branch, [0, -1], true)
+        ) {
+            throw new \DomainException('lambertw() supports finite real values and branches 0 or -1.');
+        }
+        $branch = (int) $branch;
+        $critical = -1.0 / M_E;
+        if ($branch === 0 && $value < $critical) {
+            throw new \DomainException(
+                'lambertw() principal branch requires an argument greater than or equal to -1/e.',
+            );
+        }
+        if ($branch === -1 && ($value < $critical || $value >= 0.0)) {
+            throw new \DomainException('lambertw() branch -1 requires an argument in [-1/e, 0).');
+        }
+        if (abs($value - $critical) <= 1.0e-15) {
+            return -1.0;
+        }
+        if ($value === 0.0) {
+            return 0.0;
+        }
+
+        if ($branch === -1) {
+            $logValue = log(-$value);
+            $estimate = $logValue - log(-$logValue);
+            if ($value < -0.25) {
+                $estimate = -1.0 - sqrt(2.0 * (1.0 + M_E * $value));
+            }
+        } elseif ($value < 1.0) {
+            $estimate = $value;
+        } else {
+            $estimate = log($value);
+            $estimate -= log(max(1.0, $estimate));
+        }
+
+        for ($iteration = 0; $iteration < 100; ++$iteration) {
+            $exponential = exp($estimate);
+            $residual = $estimate * $exponential - $value;
+            $denominator = $exponential * ($estimate + 1.0);
+            if (abs($estimate + 1.0) > 1.0e-12) {
+                $denominator -= (($estimate + 2.0) * $residual) / (2.0 * $estimate + 2.0);
+            }
+            if (!is_finite($denominator) || abs($denominator) <= 1.0e-15) {
+                $denominator = $exponential * ($estimate + 1.0);
+            }
+            if (!is_finite($denominator) || abs($denominator) <= 1.0e-15) {
+                throw new \OverflowException('lambertw() failed to converge to a finite result.');
+            }
+            $delta = $residual / $denominator;
+            $estimate -= $delta;
+            if (!is_finite($estimate)) {
+                throw new \OverflowException('lambertw() produced a non-finite result.');
+            }
+            if (abs($delta) <= 1.0e-13 * max(1.0, abs($estimate))) {
+                return $estimate;
+            }
+        }
+
+        if (abs($estimate * exp($estimate) - $value) <= 1.0e-10 * max(1.0, abs($value))) {
+            return $estimate;
+        }
+        throw new \OverflowException('lambertw() failed to converge to a finite result.');
     }
 
     /**

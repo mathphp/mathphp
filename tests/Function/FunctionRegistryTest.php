@@ -96,6 +96,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'inverse hyperbolic cosine' => ['acosh', [1], 0.0, 'float'];
         yield 'inverse hyperbolic tangent' => ['atanh', [0], 0.0, 'float'];
         yield 'exponential' => ['exp', [1], \M_E, 'float'];
+        yield 'Lambert W principal branch' => ['lambertw', [1], 0.5671432904097838, 'float'];
+        yield 'Lambert W lower real branch' => ['lambertw', [-0.1, -1], -3.577152063957297, 'float'];
         yield 'natural logarithm' => ['ln', [\M_E], 1.0, 'float'];
         yield 'logarithm' => ['log', [100, 10], 2.0, 'float'];
         yield 'base ten logarithm' => ['log10', [100], 2.0, 'float'];
@@ -179,6 +181,7 @@ final class FunctionRegistryTest extends TestCase
         yield 'acosh' => ['acosh', 1, 1];
         yield 'atanh' => ['atanh', 1, 1];
         yield 'exp' => ['exp', 1, 1];
+        yield 'lambertw' => ['lambertw', 1, 2];
         yield 'ln' => ['ln', 1, 1];
         yield 'log' => ['log', 2, 2];
         yield 'log10' => ['log10', 1, 1];
@@ -287,6 +290,18 @@ final class FunctionRegistryTest extends TestCase
             [1],
             \DomainException::class,
             'requires a finite real argument greater than one',
+        ];
+        yield 'Lambert W principal branch below real domain' => [
+            'lambertw',
+            [-1],
+            \DomainException::class,
+            'principal branch requires an argument greater than or equal to -1/e',
+        ];
+        yield 'Lambert W lower branch at zero' => [
+            'lambertw',
+            [0, -1],
+            \DomainException::class,
+            'branch -1 requires an argument in [-1/e, 0)',
         ];
         yield 'digamma pole at zero' => [
             'digamma',
