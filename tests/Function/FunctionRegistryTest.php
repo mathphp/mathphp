@@ -80,6 +80,9 @@ final class FunctionRegistryTest extends TestCase
         yield 'arc secant' => ['asec', [2], \acos(0.5), 'float'];
         yield 'arc cosecant' => ['acsc', [2], \asin(0.5), 'float'];
         yield 'arc cotangent' => ['acot', [1], \M_PI / 4, 'float'];
+        yield 'arc hyperbolic secant' => ['asech', [1], 0.0, 'float'];
+        yield 'arc hyperbolic cosecant' => ['acsch', [1], \asinh(1), 'float'];
+        yield 'arc hyperbolic cotangent' => ['acoth', [2], \atanh(0.5), 'float'];
         yield 'arc sine' => ['asin', [1], \M_PI / 2, 'float'];
         yield 'arc cosine' => ['acos', [0], \M_PI / 2, 'float'];
         yield 'arc tangent' => ['atan', [1], \M_PI / 4, 'float'];
@@ -160,6 +163,9 @@ final class FunctionRegistryTest extends TestCase
         yield 'asec' => ['asec', 1, 1];
         yield 'acsc' => ['acsc', 1, 1];
         yield 'acot' => ['acot', 1, 1];
+        yield 'asech' => ['asech', 1, 1];
+        yield 'acsch' => ['acsch', 1, 1];
+        yield 'acoth' => ['acoth', 1, 1];
         yield 'asin' => ['asin', 1, 1];
         yield 'acos' => ['acos', 1, 1];
         yield 'atan' => ['atan', 1, 1];
@@ -353,6 +359,24 @@ final class FunctionRegistryTest extends TestCase
             [1],
             \DomainException::class,
             'atanh() requires an argument strictly between -1 and 1.',
+        ];
+        yield 'inverse hyperbolic secant above one' => [
+            'asech',
+            [2],
+            \DomainException::class,
+            'asech() requires a finite argument strictly greater than zero and at most one.',
+        ];
+        yield 'inverse hyperbolic cosecant at zero' => [
+            'acsch',
+            [0],
+            \DomainException::class,
+            'acsch() requires a finite non-zero argument.',
+        ];
+        yield 'inverse hyperbolic cotangent inside range' => [
+            'acoth',
+            [1],
+            \DomainException::class,
+            'acoth() requires a finite argument with absolute value greater than one.',
         ];
         yield 'hyperbolic cosecant at pole' => [
             'csch',

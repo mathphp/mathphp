@@ -71,7 +71,8 @@ The built-in function registry includes elementary, trigonometric (including
 `sech`, `csch`, and `coth`), numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `gamma`,
 `lgamma`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
-`besseli`. The real zeta implementation requires an argument greater than
+`besseli`, plus inverse hyperbolic functions `asech`, `acsch`, and `acoth`.
+The real zeta implementation requires an argument greater than
 one; digamma and trigamma reject gamma poles. Beta arguments are
 finite and positive; Bessel orders are currently finite
 integers, with real-valued arguments and domain-checked finite results.

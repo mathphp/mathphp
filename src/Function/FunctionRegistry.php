@@ -164,6 +164,24 @@ final readonly class FunctionRegistry
                 self::arcCotangent(...),
             ),
             new FunctionDefinition(
+                'asech',
+                1,
+                1,
+                self::arcHyperbolicSecant(...),
+            ),
+            new FunctionDefinition(
+                'acsch',
+                1,
+                1,
+                self::arcHyperbolicCosecant(...),
+            ),
+            new FunctionDefinition(
+                'acoth',
+                1,
+                1,
+                self::arcHyperbolicCotangent(...),
+            ),
+            new FunctionDefinition(
                 'asin',
                 1,
                 1,
@@ -891,6 +909,41 @@ final readonly class FunctionRegistry
     private static function arcCotangent(array $arguments): float
     {
         return \M_PI / 2.0 - \atan($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcHyperbolicSecant(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value) || $value <= 0.0 || $value > 1.0) {
+            throw new \DomainException(
+                'asech() requires a finite argument strictly greater than zero and at most one.',
+            );
+        }
+
+        return \acosh(1.0 / $value);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcHyperbolicCosecant(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value) || abs($value) <= 1.0E-15) {
+            throw new \DomainException('acsch() requires a finite non-zero argument.');
+        }
+
+        return \asinh(1.0 / $value);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function arcHyperbolicCotangent(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value) || abs($value) <= 1.0) {
+            throw new \DomainException('acoth() requires a finite argument with absolute value greater than one.');
+        }
+
+        return \atanh(1.0 / $value);
     }
 
     /** @param list<int|float> $arguments */

@@ -19,6 +19,8 @@ All notable changes will be documented in this file. The project follows
   with explicit zero-pole validation.
 - Corrected negative integer `besseli` orders to use the identity
   `I₋ₙ(x) = Iₙ(x)` instead of the alternating Bessel-J sign.
+- Added domain-checked inverse hyperbolic reciprocal built-ins `asech`,
+  `acsch`, and `acoth`.
 
 ## [0.3.7] - 2026-09-07
 
