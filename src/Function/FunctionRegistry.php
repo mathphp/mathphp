@@ -140,6 +140,18 @@ final readonly class FunctionRegistry
                 self::regularizedGammaUpper(...),
             ),
             new FunctionDefinition(
+                'gammaincinv',
+                2,
+                2,
+                self::inverseRegularizedGammaLower(...),
+            ),
+            new FunctionDefinition(
+                'gammainccinv',
+                2,
+                2,
+                self::inverseRegularizedGammaUpper(...),
+            ),
+            new FunctionDefinition(
                 'betainc',
                 3,
                 3,
@@ -1056,6 +1068,34 @@ final readonly class FunctionRegistry
         return self::finiteSpecialResult(self::regularizedGammaUpperValue($shape, $value), 'gammaincc');
     }
 
+    /** @param list<int|float> $arguments */
+    private static function inverseRegularizedGammaLower(array $arguments): float
+    {
+        [$shape, $target] = self::requireInverseGammaArguments($arguments, 'gammaincinv', false);
+        if ($target === 0.0) {
+            return 0.0;
+        }
+
+        return self::finiteSpecialResult(
+            self::inverseRegularizedGammaValue($shape, $target),
+            'gammaincinv',
+        );
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function inverseRegularizedGammaUpper(array $arguments): float
+    {
+        [$shape, $target] = self::requireInverseGammaArguments($arguments, 'gammainccinv', true);
+        if ($target === 1.0) {
+            return 0.0;
+        }
+
+        return self::finiteSpecialResult(
+            self::inverseRegularizedGammaValue($shape, 1.0 - $target),
+            'gammainccinv',
+        );
+    }
+
     /**
      * @param list<int|float> $arguments
      * @return array{0: float, 1: float}
@@ -1071,6 +1111,53 @@ final readonly class FunctionRegistry
         }
 
         return [$shape, $value];
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float}
+     */
+    private static function requireInverseGammaArguments(array $arguments, string $function, bool $upper): array
+    {
+        $shape = (float) $arguments[0];
+        $target = (float) $arguments[1];
+        $validTarget = $upper ? $target > 0.0 && $target <= 1.0 : $target >= 0.0 && $target < 1.0;
+        $range = $upper ? '(0, 1]' : '[0, 1)';
+        if (!is_finite($shape) || $shape <= 0.0 || $shape > 171.0 || !is_finite($target) || !$validTarget) {
+            throw new \DomainException(
+                $function . '() requires a finite shape in (0, 171] and a probability in ' . $range . '.',
+            );
+        }
+
+        return [$shape, $target];
+    }
+
+    private static function inverseRegularizedGammaValue(float $shape, float $target): float
+    {
+        $lower = 0.0;
+        $upper = max(1.0, $shape);
+        for ($index = 0; $index < 64; ++$index) {
+            if (self::regularizedGammaLower([$shape, $upper]) >= $target) {
+                break;
+            }
+            $upper *= 2.0;
+            if ($upper >= 1048576.0) {
+                throw new \OverflowException('The gamma quantile exceeds the finite search range.');
+            }
+        }
+        for ($index = 0; $index < 160; ++$index) {
+            $middle = ($lower + $upper) / 2.0;
+            if ($middle === $lower || $middle === $upper) {
+                break;
+            }
+            if (self::regularizedGammaLower([$shape, $middle]) < $target) {
+                $lower = $middle;
+            } else {
+                $upper = $middle;
+            }
+        }
+
+        return ($lower + $upper) / 2.0;
     }
 
     private static function regularizedGammaUpperValue(float $shape, float $value): float

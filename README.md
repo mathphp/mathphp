@@ -70,7 +70,7 @@ The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
 `sech`, `csch`, and `coth`), numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `erfinv`, `erfcinv`, `airyai`, `airybi`, `ellipk`, `ellipe`, `ellipf`, `ellipeinc`, `gamma`,
-`lgamma`, `gammainc`, `gammaincc`, `betainc`, `betaincc`, `betaincinv`, `betainccinv`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
+`lgamma`, `gammainc`, `gammaincc`, `gammaincinv`, `gammainccinv`, `betainc`, `betaincc`, `betaincinv`, `betainccinv`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
 `asech`, `acsch`, and `acoth`.
@@ -89,6 +89,9 @@ real arguments; singular zero arguments are rejected explicitly.
 `sinc(x)` and `sinhc(x)` use their continuous value of `1` at the origin.
 `gammainc(a, x)` and `gammaincc(a, x)` are normalized lower and upper
 incomplete gamma functions, so their values sum to `1` for valid inputs.
+`gammaincinv(a, p)` and `gammainccinv(a, q)` invert those functions on finite
+quantiles, with `p` in `[0, 1)` and `q` in `(0, 1]` because the opposite tail
+endpoints are infinite.
 `erfinv(x)` and `erfcinv(x)` provide the real inverse error-function branches
 for `-1 < x < 1` and `0 < x < 2`, respectively.
 `betainc(a, b, x)` and `betaincc(a, b, x)` are normalized lower and upper

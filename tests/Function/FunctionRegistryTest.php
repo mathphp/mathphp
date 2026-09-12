@@ -84,6 +84,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'regularized upper gamma at one and one' => ['gammaincc', [1, 1], 0.3678794411714423, 'float'];
         yield 'regularized lower gamma at one half and one' => ['gammainc', [0.5, 1], 0.8427007929497149, 'float'];
         yield 'regularized lower gamma at two and three' => ['gammainc', [2, 3], 0.8008517265285442, 'float'];
+        yield 'inverse regularized lower gamma' => ['gammaincinv', [1, 0.6321205588285577], 1.0, 'float'];
+        yield 'inverse regularized upper gamma' => ['gammainccinv', [1, 0.3678794411714423], 1.0, 'float'];
+        yield 'inverse regularized lower gamma endpoint' => ['gammaincinv', [2, 0], 0.0, 'float'];
+        yield 'inverse regularized upper gamma endpoint' => ['gammainccinv', [2, 1], 0.0, 'float'];
         yield 'regularized lower beta at one and one' => ['betainc', [1, 1, 0.3], 0.3, 'float'];
         yield 'regularized upper beta at one and one' => ['betaincc', [1, 1, 0.3], 0.7, 'float'];
         yield 'regularized lower beta at two and three' => ['betainc', [2, 3, 0.5], 0.6875, 'float'];
@@ -338,6 +342,12 @@ final class FunctionRegistryTest extends TestCase
             [1, -1],
             \DomainException::class,
             'require a finite shape in (0, 171]',
+        ];
+        yield 'inverse regularized lower gamma probability one' => [
+            'gammaincinv',
+            [1, 1],
+            \DomainException::class,
+            'requires a finite shape in (0, 171] and a probability in [0, 1)',
         ];
         yield 'regularized beta value above one' => [
             'betainc',

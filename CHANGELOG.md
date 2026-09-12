@@ -110,6 +110,8 @@ All notable changes will be documented in this file. The project follows
 - Added normalized incomplete beta functions `betainc(a, b, x)` and
   `betaincc(a, b, x)` using a stable continued-fraction evaluator on their
   finite real domain.
+- Added finite inverse incomplete-gamma quantiles `gammaincinv(a, p)` and
+  `gammainccinv(a, q)` with tail-aware probability endpoint validation.
 - Added monotone inverse beta quantiles `betaincinv(a, b, p)` and
   `betainccinv(a, b, q)` with endpoint and probability-domain validation.
 - Added accurate real inverse error functions `erfinv(x)` and `erfcinv(x)`
