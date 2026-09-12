@@ -108,6 +108,8 @@ All notable changes will be documented in this file. The project follows
   `gammaincc(a, x)` using convergent series and continued fractions on their
   finite domain.
 - Added finite, series/asymptotic Airy functions `airyai()` and `airybi()`.
+- Added AGM-based complete elliptic integrals `ellipk(m)` and `ellipe(m)` for
+  real parameters `m ≤ 1`, including smooth negative-parameter evaluation.
 
 - Added exact integer-domain combinatorial built-ins: `factorial()`,
   `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with

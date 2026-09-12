@@ -74,6 +74,18 @@ final readonly class FunctionRegistry
                 self::airyBi(...),
             ),
             new FunctionDefinition(
+                'ellipk',
+                1,
+                1,
+                self::completeEllipticK(...),
+            ),
+            new FunctionDefinition(
+                'ellipe',
+                1,
+                1,
+                self::completeEllipticE(...),
+            ),
+            new FunctionDefinition(
                 'gamma',
                 1,
                 1,
@@ -693,6 +705,80 @@ final readonly class FunctionRegistry
         $amplitude = 1.0 / (sqrt(M_PI) * $absolute ** 0.25);
 
         return $amplitude * ($secondSolution ? cos($phase) : sin($phase));
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function completeEllipticK(array $arguments): float
+    {
+        $parameter = self::requireEllipticParameter($arguments, 'ellipk');
+        if ($parameter === 1.0) {
+            throw new \DomainException('ellipk() diverges at parameter one.');
+        }
+
+        [$agM, $unused] = self::ellipticAgm($parameter);
+        return self::finiteSpecialResult(M_PI / (2.0 * $agM), 'ellipk');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function completeEllipticE(array $arguments): float
+    {
+        $parameter = self::requireEllipticParameter($arguments, 'ellipe');
+        if ($parameter === 1.0) {
+            return 1.0;
+        }
+        if ($parameter < 0.0) {
+            return self::finiteSpecialResult(self::ellipticNumericalE($parameter), 'ellipe');
+        }
+
+        [$agM, $correction] = self::ellipticAgm($parameter);
+        $completeK = M_PI / (2.0 * $agM);
+        return self::finiteSpecialResult($completeK * (1.0 - $correction), 'ellipe');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function requireEllipticParameter(array $arguments, string $function): float
+    {
+        $parameter = (float) $arguments[0];
+        if (!is_finite($parameter) || $parameter > 1.0) {
+            throw new \DomainException($function . '() requires a finite real parameter less than or equal to one.');
+        }
+
+        return $parameter;
+    }
+
+    /** @return array{0: float, 1: float} */
+    private static function ellipticAgm(float $parameter): array
+    {
+        $arithmetic = 1.0;
+        $geometric = sqrt(1.0 - $parameter);
+        $correction = $parameter / 2.0;
+        for ($index = 0; $index < 64; ++$index) {
+            $difference = ($arithmetic - $geometric) / 2.0;
+            $correction += (2.0 ** $index) * $difference * $difference;
+            $nextArithmetic = ($arithmetic + $geometric) / 2.0;
+            $nextGeometric = sqrt($arithmetic * $geometric);
+            $arithmetic = $nextArithmetic;
+            $geometric = $nextGeometric;
+            if (abs($arithmetic - $geometric) <= abs($arithmetic) * 1.0E-16) {
+                break;
+            }
+        }
+
+        return [$arithmetic, $correction];
+    }
+
+    private static function ellipticNumericalE(float $parameter): float
+    {
+        $segments = 16384;
+        $step = (M_PI / 2.0) / $segments;
+        $sum = 1.0 + sqrt(1.0 - $parameter);
+        for ($index = 1; $index < $segments; ++$index) {
+            $angle = $index * $step;
+            $weight = $index % 2 === 0 ? 2.0 : 4.0;
+            $sum += $weight * sqrt(1.0 - $parameter * sin($angle) ** 2);
+        }
+
+        return $step * $sum / 3.0;
     }
 
     /** @param list<int|float> $arguments */

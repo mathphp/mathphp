@@ -57,6 +57,13 @@ final class FunctionRegistryTest extends TestCase
         yield 'Airy Bi at one' => ['airybi', [1], 1.2074235949528712, 'float'];
         yield 'Airy Ai at negative one' => ['airyai', [-1], 0.5355608832923522, 'float'];
         yield 'Airy Bi at negative one' => ['airybi', [-1], 0.10399738949694468, 'float'];
+        yield 'complete elliptic K at zero' => ['ellipk', [0], M_PI / 2.0, 'float'];
+        yield 'complete elliptic K at one half' => ['ellipk', [0.5], 1.8540746773013719, 'float'];
+        yield 'complete elliptic E at zero' => ['ellipe', [0], M_PI / 2.0, 'float'];
+        yield 'complete elliptic E at one half' => ['ellipe', [0.5], 1.3506438810476755, 'float'];
+        yield 'complete elliptic E at one' => ['ellipe', [1], 1.0, 'float'];
+        yield 'complete elliptic K at negative one' => ['ellipk', [-1], 1.3110287771460598, 'float'];
+        yield 'complete elliptic E at negative one' => ['ellipe', [-1], 1.9100988945138562, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
         yield 'regularized lower gamma at one and one' => ['gammainc', [1, 1], 0.6321205588285577, 'float'];
@@ -297,6 +304,18 @@ final class FunctionRegistryTest extends TestCase
             [1, -1],
             \DomainException::class,
             'require a finite shape in (0, 171]',
+        ];
+        yield 'complete elliptic K at one' => [
+            'ellipk',
+            [1],
+            \DomainException::class,
+            'diverges at parameter one',
+        ];
+        yield 'complete elliptic E above one' => [
+            'ellipe',
+            [1.1],
+            \DomainException::class,
+            'requires a finite real parameter less than or equal to one',
         ];
         yield 'Bessel J non-integer order' => [
             'besselj',
