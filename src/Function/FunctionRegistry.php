@@ -86,6 +86,18 @@ final readonly class FunctionRegistry
                 self::zetaFunction(...),
             ),
             new FunctionDefinition(
+                'digamma',
+                1,
+                1,
+                self::digammaFunction(...),
+            ),
+            new FunctionDefinition(
+                'trigamma',
+                1,
+                1,
+                self::trigammaFunction(...),
+            ),
+            new FunctionDefinition(
                 'besselj',
                 2,
                 2,
@@ -587,6 +599,65 @@ final readonly class FunctionRegistry
         }
 
         return self::finiteSpecialResult($sum + $tail + $correction, 'zeta');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function digammaFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        self::requireGammaDerivativeArgument($value, 'digamma');
+        if ($value < 0.5) {
+            $reflected = self::digammaFunction([1.0 - $value]) - M_PI / tan(M_PI * $value);
+
+            return self::finiteSpecialResult($reflected, 'digamma');
+        }
+
+        $result = 0.0;
+        while ($value < 16.0) {
+            $result -= 1.0 / $value;
+            $value += 1.0;
+        }
+        $inverse = 1.0 / $value;
+        $inverseSquared = $inverse * $inverse;
+        $result += log($value) - 0.5 * $inverse - $inverseSquared * (
+            1.0 / 12.0 - $inverseSquared * (1.0 / 120.0 - $inverseSquared * (1.0 / 252.0 - $inverseSquared / 240.0))
+        );
+
+        return self::finiteSpecialResult($result, 'digamma');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function trigammaFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        self::requireGammaDerivativeArgument($value, 'trigamma');
+        if ($value < 0.5) {
+            $sine = sin(M_PI * $value);
+            $reflected = (M_PI * M_PI) / ($sine * $sine) - self::trigammaFunction([1.0 - $value]);
+
+            return self::finiteSpecialResult($reflected, 'trigamma');
+        }
+
+        $result = 0.0;
+        while ($value < 16.0) {
+            $result += 1.0 / ($value * $value);
+            $value += 1.0;
+        }
+        $inverse = 1.0 / $value;
+        $inverseSquared = $inverse * $inverse;
+        $result += $inverse + 0.5 * $inverseSquared + $inverseSquared * $inverse / 6.0
+            - $inverseSquared ** 2 * $inverse / 30.0
+            + $inverseSquared ** 3 * $inverse / 42.0
+            - $inverseSquared ** 4 * $inverse / 30.0;
+
+        return self::finiteSpecialResult($result, 'trigamma');
+    }
+
+    private static function requireGammaDerivativeArgument(float $value, string $function): void
+    {
+        if (!is_finite($value) || ($value <= 0.0 && floor($value) === $value)) {
+            throw new \DomainException($function . '() requires a finite non-pole real argument.');
+        }
     }
 
     /** @param list<int|float> $arguments */

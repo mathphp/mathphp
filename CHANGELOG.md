@@ -13,6 +13,8 @@ All notable changes will be documented in this file. The project follows
   gamma implementation.
 - Added real Riemann `zeta(s)` evaluation for finite `s > 1` using
   Euler–Maclaurin summation.
+- Added real `digamma()` and `trigamma()` gamma-derivative built-ins with
+  recurrence, reflection, asymptotic evaluation, and pole checks.
 
 ## [0.3.7] - 2026-09-07
 
