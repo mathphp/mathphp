@@ -70,7 +70,7 @@ The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
 `sech`, `csch`, and `coth`), numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `erfinv`, `erfcinv`, `airyai`, `airybi`, `ellipk`, `ellipe`, `ellipf`, `ellipeinc`, `gamma`,
-`lgamma`, `gammainc`, `gammaincc`, `betainc`, `betaincc`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
+`lgamma`, `gammainc`, `gammaincc`, `betainc`, `betaincc`, `betaincinv`, `betainccinv`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
 `asech`, `acsch`, and `acoth`.
@@ -92,8 +92,11 @@ incomplete gamma functions, so their values sum to `1` for valid inputs.
 `erfinv(x)` and `erfcinv(x)` provide the real inverse error-function branches
 for `-1 < x < 1` and `0 < x < 2`, respectively.
 `betainc(a, b, x)` and `betaincc(a, b, x)` are normalized lower and upper
- incomplete beta functions on `a > 0`, `b > 0`, and `0 ≤ x ≤ 1`; their values
- sum to `1` for valid inputs.
+incomplete beta functions on `a > 0`, `b > 0`, and `0 ≤ x ≤ 1`; their values
+sum to `1` for valid inputs.
+`betaincinv(a, b, p)` and `betainccinv(a, b, q)` invert those normalized
+functions for probabilities in `[0, 1]`, returning the corresponding `x` in
+`[0, 1]`.
 `airyai(x)` and `airybi(x)` use finite power-series and asymptotic evaluation
 with explicit overflow errors for values outside the floating-point range.
 `ellipk(m)` and `ellipe(m)` use the complete real elliptic integrals with

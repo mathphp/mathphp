@@ -152,6 +152,18 @@ final readonly class FunctionRegistry
                 self::regularizedBetaUpper(...),
             ),
             new FunctionDefinition(
+                'betaincinv',
+                3,
+                3,
+                self::inverseRegularizedBetaLower(...),
+            ),
+            new FunctionDefinition(
+                'betainccinv',
+                3,
+                3,
+                self::inverseRegularizedBetaUpper(...),
+            ),
+            new FunctionDefinition(
                 'beta',
                 2,
                 2,
@@ -1133,6 +1145,26 @@ final readonly class FunctionRegistry
         );
     }
 
+    /** @param list<int|float> $arguments */
+    private static function inverseRegularizedBetaLower(array $arguments): float
+    {
+        [$left, $right, $target] = self::requireInverseBetaArguments($arguments, 'betaincinv');
+        return self::finiteSpecialResult(
+            self::inverseRegularizedBetaValue($left, $right, $target),
+            'betaincinv',
+        );
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function inverseRegularizedBetaUpper(array $arguments): float
+    {
+        [$left, $right, $target] = self::requireInverseBetaArguments($arguments, 'betainccinv');
+        return self::finiteSpecialResult(
+            self::inverseRegularizedBetaValue($left, $right, 1.0 - $target),
+            'betainccinv',
+        );
+    }
+
     /**
      * @param list<int|float> $arguments
      * @return array{0: float, 1: float, 2: float}
@@ -1160,6 +1192,61 @@ final readonly class FunctionRegistry
         }
 
         return [$left, $right, $value];
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float, 2: float}
+     */
+    private static function requireInverseBetaArguments(array $arguments, string $function): array
+    {
+        $left = (float) $arguments[0];
+        $right = (float) $arguments[1];
+        $target = (float) $arguments[2];
+        if (
+            !is_finite($left)
+            || !is_finite($right)
+            || $left <= 0.0
+            || $right <= 0.0
+            || $left > 171.0
+            || $right > 171.0
+            || $left + $right > 171.0
+            || !is_finite($target)
+            || $target < 0.0
+            || $target > 1.0
+        ) {
+            throw new \DomainException(
+                $function . '() requires finite positive shapes with sum at most 171 and a probability in [0, 1].',
+            );
+        }
+
+        return [$left, $right, $target];
+    }
+
+    private static function inverseRegularizedBetaValue(float $left, float $right, float $target): float
+    {
+        if ($target === 0.0) {
+            return 0.0;
+        }
+        if ($target === 1.0) {
+            return 1.0;
+        }
+
+        $lower = 0.0;
+        $upper = 1.0;
+        for ($index = 0; $index < 160; ++$index) {
+            $middle = ($lower + $upper) / 2.0;
+            if ($middle === $lower || $middle === $upper) {
+                break;
+            }
+            if (self::regularizedBetaValue($left, $right, $middle) < $target) {
+                $lower = $middle;
+            } else {
+                $upper = $middle;
+            }
+        }
+
+        return ($lower + $upper) / 2.0;
     }
 
     private static function regularizedBetaValue(float $left, float $right, float $value): float

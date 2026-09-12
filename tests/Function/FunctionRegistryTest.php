@@ -88,6 +88,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'regularized upper beta at one and one' => ['betaincc', [1, 1, 0.3], 0.7, 'float'];
         yield 'regularized lower beta at two and three' => ['betainc', [2, 3, 0.5], 0.6875, 'float'];
         yield 'regularized beta complement at two and three' => ['betaincc', [2, 3, 0.5], 0.3125, 'float'];
+        yield 'inverse regularized lower beta' => ['betaincinv', [2, 3, 0.6875], 0.5, 'float'];
+        yield 'inverse regularized upper beta' => ['betainccinv', [2, 3, 0.3125], 0.5, 'float'];
+        yield 'inverse regularized beta lower endpoint' => ['betaincinv', [2, 3, 0], 0.0, 'float'];
+        yield 'inverse regularized beta upper endpoint' => ['betainccinv', [2, 3, 0], 1.0, 'float'];
         yield 'beta at two and three' => ['beta', [2, 3], 1.0 / 12.0, 'float'];
         yield 'log beta at two and three' => ['logbeta', [2, 3], log(1.0 / 12.0), 'float'];
         yield 'zeta at two' => ['zeta', [2], M_PI * M_PI / 6.0, 'float'];
@@ -340,6 +344,12 @@ final class FunctionRegistryTest extends TestCase
             [1, 1, 1.1],
             \DomainException::class,
             'require finite positive shapes with sum at most 171 and a value in [0, 1]',
+        ];
+        yield 'inverse regularized beta probability above one' => [
+            'betaincinv',
+            [1, 1, 1.1],
+            \DomainException::class,
+            'requires finite positive shapes with sum at most 171 and a probability in [0, 1]',
         ];
         yield 'complete elliptic K at one' => [
             'ellipk',
