@@ -71,7 +71,7 @@ The built-in function registry includes elementary, trigonometric (including
 `sech`, `csch`, and `coth`), numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `gamma`,
 `lgamma`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
-`besseli`, plus real Lambert-W `lambertw`, and inverse hyperbolic functions
+`besseli`, plus `polygamma`, real Lambert-W `lambertw`, and inverse hyperbolic functions
 `asech`, `acsch`, and `acoth`.
 The real zeta implementation requires an argument greater than
 one; digamma and trigamma reject gamma poles. Beta arguments are
@@ -81,6 +81,8 @@ Combinatorial functions include exact integer-domain
 `factorial`, `binomial`/`choose`/`ncr`, and `permutation`/`permute`/`npr`.
 Special-function results are finite and domain-checked; expressions that
 approach poles or overflow return structured evaluation errors.
+`polygamma(m, x)` accepts integer orders from 0 through 32 and evaluates the
+real non-pole branch with convergent asymptotics.
 `lambertw(z)` evaluates the principal real branch, while `lambertw(z, -1)`
 selects the lower real branch on `-1/e <= z < 0`.
 

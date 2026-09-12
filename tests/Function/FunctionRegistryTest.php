@@ -61,6 +61,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'digamma at one half' => ['digamma', [0.5], -0.5772156649015329 - 2.0 * log(2.0), 'float'];
         yield 'trigamma at one' => ['trigamma', [1], M_PI * M_PI / 6.0, 'float'];
         yield 'trigamma at one half' => ['trigamma', [0.5], M_PI * M_PI / 2.0, 'float'];
+        yield 'polygamma order two at one' => ['polygamma', [2, 1], -2.4041138063191885, 'float'];
+        yield 'polygamma order three at one' => ['polygamma', [3, 1], M_PI ** 4 / 15.0, 'float'];
+        yield 'polygamma order two at one half' => ['polygamma', [2, 0.5], -14.0 * 1.2020569031595942, 'float'];
+        yield 'polygamma order zero delegates to digamma' => ['polygamma', [0, 1], -0.5772156649015329, 'float'];
         yield 'Bessel J zero at zero' => ['besselj', [0, 0], 1.0, 'float'];
         yield 'Bessel J zero at two' => ['besselj', [0, 2], 0.22389077914123567, 'float'];
         yield 'modified Bessel I zero at zero' => ['besseli', [0, 0], 1.0, 'float'];
@@ -314,6 +318,12 @@ final class FunctionRegistryTest extends TestCase
             [-2],
             \DomainException::class,
             'requires a finite non-pole real argument',
+        ];
+        yield 'polygamma non-integer order' => [
+            'polygamma',
+            [0.5, 1],
+            \DomainException::class,
+            'requires an integer order',
         ];
         yield 'natural log zero' => [
             'ln',

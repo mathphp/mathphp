@@ -98,6 +98,12 @@ final readonly class FunctionRegistry
                 self::trigammaFunction(...),
             ),
             new FunctionDefinition(
+                'polygamma',
+                2,
+                2,
+                self::polygammaFunction(...),
+            ),
+            new FunctionDefinition(
                 'besselj',
                 2,
                 2,
@@ -700,6 +706,54 @@ final readonly class FunctionRegistry
         if (!is_finite($value) || ($value <= 0.0 && floor($value) === $value)) {
             throw new \DomainException($function . '() requires a finite non-pole real argument.');
         }
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function polygammaFunction(array $arguments): float
+    {
+        $order = (float) $arguments[0];
+        $value = (float) $arguments[1];
+        if (!is_finite($order) || floor($order) !== $order || $order < 0.0 || $order > 32.0) {
+            throw new \DomainException('polygamma() requires an integer order from 0 through 32.');
+        }
+        self::requireGammaDerivativeArgument($value, 'polygamma');
+        $integerOrder = (int) $order;
+        if ($integerOrder === 0) {
+            return self::digammaFunction([$value]);
+        }
+        if ($integerOrder === 1) {
+            return self::trigammaFunction([$value]);
+        }
+
+        $factorial = 1.0;
+        for ($index = 2; $index <= $integerOrder; ++$index) {
+            $factorial *= $index;
+        }
+        $seriesSign = $integerOrder % 2 === 0 ? -1.0 : 1.0;
+        $recurrenceSign = -$seriesSign;
+        $result = 0.0;
+        while ($value <= 16.0) {
+            $result -= $recurrenceSign * $factorial / ($value ** ($integerOrder + 1));
+            $value += 1.0;
+        }
+        $termScale = $seriesSign * $factorial;
+        $sum = 0.0;
+        $index = 0;
+        for (; $index < 200000; ++$index) {
+            $term = $termScale / (($value + $index) ** ($integerOrder + 1));
+            $sum += $term;
+            if (abs($term) <= max(1.0, abs($sum)) * 1.0E-15) {
+                break;
+            }
+        }
+        $power = $integerOrder + 1;
+        $tailBase = $value + $index + 1.0;
+        $tail = ($tailBase ** (1 - $power)) / ($power - 1)
+            + 0.5 * ($tailBase ** (-$power))
+            + ($power / 12.0) * ($tailBase ** (-$power - 1));
+        $sum += $termScale * $tail;
+
+        return self::finiteSpecialResult($result + $sum, 'polygamma');
     }
 
     /** @param list<int|float> $arguments */

@@ -96,6 +96,10 @@ All notable changes will be documented in this file. The project follows
 
 ### Added
 
+- Added the domain-checked `polygamma(order, argument)` built-in for integer
+  orders from 0 through 32, including digamma and trigamma compatibility at
+  orders zero and one.
+
 - Added exact integer-domain combinatorial built-ins: `factorial()`,
   `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with
   `permute()`/`npr()` aliases). Domain validation and host-integer overflow
