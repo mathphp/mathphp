@@ -65,6 +65,12 @@ final class FunctionRegistryTest extends TestCase
         yield 'Bessel J zero at two' => ['besselj', [0, 2], 0.22389077914123567, 'float'];
         yield 'modified Bessel I zero at zero' => ['besseli', [0, 0], 1.0, 'float'];
         yield 'modified Bessel I zero at one' => ['besseli', [0, 1], 1.2660658777520084, 'float'];
+        yield 'modified Bessel I negative order matches positive order' => [
+            'besseli',
+            [-1, 1],
+            0.565159103992485,
+            'float',
+        ];
         yield 'sine' => ['sin', [\M_PI / 2], 1.0, 'float'];
         yield 'cosine' => ['cos', [0], 1.0, 'float'];
         yield 'tangent' => ['tan', [\M_PI / 4], 1.0, 'float'];

@@ -17,6 +17,8 @@ All notable changes will be documented in this file. The project follows
   recurrence, reflection, asymptotic evaluation, and pole checks.
 - Added stable reciprocal hyperbolic built-ins `sech()`, `csch()`, and `coth()`
   with explicit zero-pole validation.
+- Corrected negative integer `besseli` orders to use the identity
+  `I₋ₙ(x) = Iₙ(x)` instead of the alternating Bessel-J sign.
 
 ## [0.3.7] - 2026-09-07
 

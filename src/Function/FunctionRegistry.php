@@ -725,9 +725,6 @@ final readonly class FunctionRegistry
         $sign = 1.0;
         if ($order < 0) {
             $order = -$order;
-            if ($order % 2 !== 0) {
-                $sign = -1.0;
-            }
         }
         if ($value < 0.0) {
             if ($order % 2 !== 0) {
