@@ -75,6 +75,12 @@ final class FunctionRegistryTest extends TestCase
             0.565159103992485,
             'float',
         ];
+        yield 'Bessel Y zero at one' => ['bessely', [0, 1], 0.08825696421567697, 'float'];
+        yield 'Bessel Y one at one' => ['bessely', [1, 1], -0.7812128213002887, 'float'];
+        yield 'Bessel Y two at one' => ['bessely', [2, 1], -1.650682606816254, 'float'];
+        yield 'modified Bessel K zero at one' => ['besselk', [0, 1], 0.4210244382407083, 'float'];
+        yield 'modified Bessel K one at one' => ['besselk', [1, 1], 0.6019072301972346, 'float'];
+        yield 'modified Bessel K two at one' => ['besselk', [2, 1], 1.6248388986351774, 'float'];
         yield 'sine' => ['sin', [\M_PI / 2], 1.0, 'float'];
         yield 'cosine' => ['cos', [0], 1.0, 'float'];
         yield 'tangent' => ['tan', [\M_PI / 4], 1.0, 'float'];
@@ -276,6 +282,18 @@ final class FunctionRegistryTest extends TestCase
             [0.5, 1],
             \DomainException::class,
             'requires a finite integer order',
+        ];
+        yield 'Bessel Y zero argument' => [
+            'bessely',
+            [0, 0],
+            \DomainException::class,
+            'requires a finite positive real argument',
+        ];
+        yield 'modified Bessel K negative argument' => [
+            'besselk',
+            [0, -1],
+            \DomainException::class,
+            'requires a finite positive real argument',
         ];
         yield 'beta non-positive first argument' => [
             'beta',

@@ -99,6 +99,9 @@ All notable changes will be documented in this file. The project follows
 - Added the domain-checked `polygamma(order, argument)` built-in for integer
   orders from 0 through 32, including digamma and trigamma compatibility at
   orders zero and one.
+- Added integer-order `bessely()` and `besselk()` built-ins with convergent
+  series, order recurrence, large-argument asymptotics, and positive-domain
+  validation.
 
 - Added exact integer-domain combinatorial built-ins: `factorial()`,
   `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with

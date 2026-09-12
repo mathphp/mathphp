@@ -116,6 +116,18 @@ final readonly class FunctionRegistry
                 self::modifiedBesselI(...),
             ),
             new FunctionDefinition(
+                'bessely',
+                2,
+                2,
+                self::besselY(...),
+            ),
+            new FunctionDefinition(
+                'besselk',
+                2,
+                2,
+                self::modifiedBesselK(...),
+            ),
+            new FunctionDefinition(
                 'sin',
                 1,
                 1,
@@ -817,6 +829,117 @@ final readonly class FunctionRegistry
         return self::finiteSpecialResult($sign * $result, 'besseli');
     }
 
+    /** @param list<int|float> $arguments */
+    private static function besselY(array $arguments): float
+    {
+        $order = self::requireIntegerOrder($arguments[0], 'bessely');
+        $value = (float) $arguments[1];
+        if (!is_finite($value) || $value <= 0.0) {
+            throw new \DomainException('bessely() requires a finite positive real argument.');
+        }
+        $sign = 1.0;
+        if ($order < 0) {
+            $order = -$order;
+            if ($order % 2 !== 0) {
+                $sign = -1.0;
+            }
+        }
+        if ($value > 40.0) {
+            return self::finiteSpecialResult($sign * self::besselYAsymptotic($order, $value), 'bessely');
+        }
+        [$previous, $current] = self::besselYSeriesSeeds($value);
+        if ($order === 0) {
+            return self::finiteSpecialResult($sign * $previous, 'bessely');
+        }
+        if ($order === 1) {
+            return self::finiteSpecialResult($sign * $current, 'bessely');
+        }
+        for ($index = 1; $index < $order; ++$index) {
+            [$previous, $current] = [$current, (2.0 * $index / $value) * $current - $previous];
+        }
+
+        return self::finiteSpecialResult($sign * $current, 'bessely');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function modifiedBesselK(array $arguments): float
+    {
+        $order = self::requireIntegerOrder($arguments[0], 'besselk');
+        $value = (float) $arguments[1];
+        if (!is_finite($value) || $value <= 0.0) {
+            throw new \DomainException('besselk() requires a finite positive real argument.');
+        }
+        $order = abs($order);
+        if ($value > 40.0) {
+            return self::finiteSpecialResult(self::besselKAsymptotic($order, $value), 'besselk');
+        }
+        [$previous, $current] = self::besselKSeriesSeeds($value);
+        if ($order === 0) {
+            return self::finiteSpecialResult($previous, 'besselk');
+        }
+        if ($order === 1) {
+            return self::finiteSpecialResult($current, 'besselk');
+        }
+        for ($index = 1; $index < $order; ++$index) {
+            [$previous, $current] = [$current, $previous + (2.0 * $index / $value) * $current];
+        }
+
+        return self::finiteSpecialResult($current, 'besselk');
+    }
+
+    /** @return array{0: float, 1: float} */
+    private static function besselYSeriesSeeds(float $value): array
+    {
+        $quarter = ($value / 2.0) ** 2;
+        $j0 = self::besselSeries(0, $value, false);
+        $j1 = self::besselSeries(1, $value, false);
+        $logTerm = log($value / 2.0) + 0.5772156649015328606;
+        $series = 0.0;
+        $derivativeSeries = 0.0;
+        $term = 1.0;
+        $harmonic = 0.0;
+        for ($index = 1; $index <= 1000; ++$index) {
+            $term *= -$quarter / ($index * $index);
+            $harmonic += 1.0 / $index;
+            $series -= $term * $harmonic;
+            $derivativeSeries -= $term * $harmonic * (2.0 * $index / $value);
+            if (abs($term) <= max(1.0, abs($series)) * 1.0E-16) {
+                break;
+            }
+        }
+        $factor = 2.0 / M_PI;
+        $y0 = $factor * ($logTerm * $j0 + $series);
+        $y1 = -$factor * ($j0 / $value - $logTerm * $j1 + $derivativeSeries);
+
+        return [$y0, $y1];
+    }
+
+    /** @return array{0: float, 1: float} */
+    private static function besselKSeriesSeeds(float $value): array
+    {
+        $quarter = ($value / 2.0) ** 2;
+        $i0 = self::besselSeries(0, $value, true);
+        $i1 = self::besselSeries(1, $value, true);
+        $logTerm = log($value / 2.0) + 0.5772156649015328606;
+        $series = 0.0;
+        $derivativeSeries = 0.0;
+        $term = 1.0;
+        $harmonic = 0.0;
+        for ($index = 1; $index <= 1000; ++$index) {
+            $term *= $quarter / ($index * $index);
+            $harmonic += 1.0 / $index;
+            $series += $term * $harmonic;
+            $derivativeSeries += $term * $harmonic * (2.0 * $index / $value);
+            if (abs($term) <= max(1.0, abs($series)) * 1.0E-16) {
+                break;
+            }
+        }
+        $k0 = -$logTerm * $i0 + $series;
+        $k1 = $i0 / $value + $logTerm * $i1 - $derivativeSeries;
+
+        return [$k0, $k1];
+    }
+
     private static function requireIntegerOrder(int|float $value, string $function): int
     {
         if (!is_finite((float) $value) || floor((float) $value) !== (float) $value || abs((float) $value) > 100000.0) {
@@ -861,6 +984,33 @@ final readonly class FunctionRegistry
         $amplitude = sqrt(2.0 / (M_PI * $value));
 
         return $amplitude * ((1.0 - $second + $third) * cos($phase) - ($first - $sineCorrection) * sin($phase));
+    }
+
+    private static function besselYAsymptotic(int $order, float $value): float
+    {
+        $mu = 4.0 * $order * $order;
+        $z = 8.0 * $value;
+        $phase = $value - $order * M_PI / 2.0 - M_PI / 4.0;
+        $first = ($mu - 1.0) / $z;
+        $second = ($mu - 1.0) * ($mu - 9.0) / (2.0 * $z * $z);
+        $third = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) * ($mu - 49.0) / (24.0 * $z ** 4);
+        $sineCorrection = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) / (6.0 * $z ** 3);
+        $amplitude = sqrt(2.0 / (M_PI * $value));
+
+        return $amplitude * ((1.0 - $second + $third) * sin($phase) + ($first - $sineCorrection) * cos($phase));
+    }
+
+    private static function besselKAsymptotic(int $order, float $value): float
+    {
+        $mu = 4.0 * $order * $order;
+        $inverse = 1.0 / (8.0 * $value);
+        $first = ($mu - 1.0) * $inverse;
+        $second = ($mu - 1.0) * ($mu - 9.0) * $inverse ** 2 / 2.0;
+        $third = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) * $inverse ** 3 / 6.0;
+        $fourth = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) * ($mu - 49.0) * $inverse ** 4 / 24.0;
+        $amplitude = sqrt(M_PI / (2.0 * $value)) * exp(-$value);
+
+        return $amplitude * (1.0 + $first + $second + $third + $fourth);
     }
 
     private static function besselIAsymptotic(int $order, float $value): float
