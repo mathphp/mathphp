@@ -104,6 +104,9 @@ All notable changes will be documented in this file. The project follows
   validation.
 - Added finite, overflow-checked `erfi()`, normalized `sinc()`, and normalized
   hyperbolic `sinhc()` built-ins with continuous zero limits.
+- Added normalized incomplete gamma functions `gammainc(a, x)` and
+  `gammaincc(a, x)` using convergent series and continued fractions on their
+  finite domain.
 
 - Added exact integer-domain combinatorial built-ins: `factorial()`,
   `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with

@@ -53,6 +53,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'imaginary error function at one' => ['erfi', [1], 1.6504257587975428, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
+        yield 'regularized lower gamma at one and one' => ['gammainc', [1, 1], 0.6321205588285577, 'float'];
+        yield 'regularized upper gamma at one and one' => ['gammaincc', [1, 1], 0.3678794411714423, 'float'];
+        yield 'regularized lower gamma at one half and one' => ['gammainc', [0.5, 1], 0.8427007929497149, 'float'];
+        yield 'regularized lower gamma at two and three' => ['gammainc', [2, 3], 0.8008517265285442, 'float'];
         yield 'beta at two and three' => ['beta', [2, 3], 1.0 / 12.0, 'float'];
         yield 'log beta at two and three' => ['logbeta', [2, 3], log(1.0 / 12.0), 'float'];
         yield 'zeta at two' => ['zeta', [2], M_PI * M_PI / 6.0, 'float'];
@@ -275,6 +279,18 @@ final class FunctionRegistryTest extends TestCase
             [-3],
             \DomainException::class,
             'gamma() requires a finite non-pole argument',
+        ];
+        yield 'regularized gamma zero shape' => [
+            'gammainc',
+            [0, 1],
+            \DomainException::class,
+            'require a finite shape in (0, 171]',
+        ];
+        yield 'regularized gamma negative value' => [
+            'gammaincc',
+            [1, -1],
+            \DomainException::class,
+            'require a finite shape in (0, 171]',
         ];
         yield 'Bessel J non-integer order' => [
             'besselj',

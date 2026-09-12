@@ -74,6 +74,18 @@ final readonly class FunctionRegistry
                 self::logGammaFunction(...),
             ),
             new FunctionDefinition(
+                'gammainc',
+                2,
+                2,
+                self::regularizedGammaLower(...),
+            ),
+            new FunctionDefinition(
+                'gammaincc',
+                2,
+                2,
+                self::regularizedGammaUpper(...),
+            ),
+            new FunctionDefinition(
                 'beta',
                 2,
                 2,
@@ -670,6 +682,94 @@ final readonly class FunctionRegistry
         $gamma = self::gammaFunction($arguments);
 
         return self::finiteSpecialResult(log(abs($gamma)), 'lgamma');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function regularizedGammaLower(array $arguments): float
+    {
+        [$shape, $value] = self::requireIncompleteGammaArguments($arguments);
+        if ($value === 0.0) {
+            return 0.0;
+        }
+        if ($value >= $shape + 1.0) {
+            return self::finiteSpecialResult(1.0 - self::regularizedGammaUpperValue($shape, $value), 'gammainc');
+        }
+        $term = 1.0 / $shape;
+        $sum = $term;
+        for ($index = 1; $index <= 10000; ++$index) {
+            $term *= $value / ($shape + $index);
+            $sum += $term;
+            if (abs($term) <= abs($sum) * 1.0E-15) {
+                break;
+            }
+        }
+        $prefactor = exp(-$value + $shape * log($value) - self::logGammaPositive($shape));
+        return self::finiteSpecialResult($prefactor * $sum, 'gammainc');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function regularizedGammaUpper(array $arguments): float
+    {
+        [$shape, $value] = self::requireIncompleteGammaArguments($arguments);
+        if ($value === 0.0) {
+            return 1.0;
+        }
+        return self::finiteSpecialResult(self::regularizedGammaUpperValue($shape, $value), 'gammaincc');
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float}
+     */
+    private static function requireIncompleteGammaArguments(array $arguments): array
+    {
+        $shape = (float) $arguments[0];
+        $value = (float) $arguments[1];
+        if (!is_finite($shape) || $shape <= 0.0 || $shape > 171.0 || !is_finite($value) || $value < 0.0) {
+            throw new \DomainException(
+                'gammainc() and gammaincc() require a finite shape in (0, 171] and a non-negative value.',
+            );
+        }
+
+        return [$shape, $value];
+    }
+
+    private static function regularizedGammaUpperValue(float $shape, float $value): float
+    {
+        if ($value < $shape + 1.0) {
+            return 1.0 - self::regularizedGammaLower([$shape, $value]);
+        }
+        $fpmIn = 1.0E-300;
+        $b = $value + 1.0 - $shape;
+        $c = 1.0 / $fpmIn;
+        $d = 1.0 / max($b, $fpmIn);
+        $h = $d;
+        for ($index = 1; $index <= 10000; ++$index) {
+            $an = -$index * ($index - $shape);
+            $b += 2.0;
+            $d = $an * $d + $b;
+            if (abs($d) < $fpmIn) {
+                $d = $fpmIn;
+            }
+            $c = $b + $an / $c;
+            if (abs($c) < $fpmIn) {
+                $c = $fpmIn;
+            }
+            $d = 1.0 / $d;
+            $delta = $d * $c;
+            $h *= $delta;
+            if (abs($delta - 1.0) <= 1.0E-15) {
+                break;
+            }
+        }
+        $prefactor = exp(-$value + $shape * log($value) - self::logGammaPositive($shape));
+
+        return $prefactor * $h;
+    }
+
+    private static function logGammaPositive(float $value): float
+    {
+        return log(self::gammaFunction([$value]));
     }
 
     /** @param list<int|float> $arguments */
