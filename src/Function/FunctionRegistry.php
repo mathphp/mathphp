@@ -68,6 +68,18 @@ final readonly class FunctionRegistry
                 self::logGammaFunction(...),
             ),
             new FunctionDefinition(
+                'beta',
+                2,
+                2,
+                self::betaFunction(...),
+            ),
+            new FunctionDefinition(
+                'logbeta',
+                2,
+                2,
+                self::logBetaFunction(...),
+            ),
+            new FunctionDefinition(
                 'besselj',
                 2,
                 2,
@@ -494,6 +506,40 @@ final readonly class FunctionRegistry
         $gamma = self::gammaFunction($arguments);
 
         return self::finiteSpecialResult(log(abs($gamma)), 'lgamma');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function betaFunction(array $arguments): float
+    {
+        self::requirePositiveBetaArguments($arguments);
+        $logValue = self::logBetaFunction($arguments);
+
+        return self::finiteSpecialResult(exp($logValue), 'beta');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function logBetaFunction(array $arguments): float
+    {
+        self::requirePositiveBetaArguments($arguments);
+        $left = log(self::gammaFunction([$arguments[0]]));
+        $right = log(self::gammaFunction([$arguments[1]]));
+        $sum = log(self::gammaFunction([(float) $arguments[0] + (float) $arguments[1]]));
+        $value = $left + $right - $sum;
+
+        return self::finiteSpecialResult($value, 'logbeta');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function requirePositiveBetaArguments(array $arguments): void
+    {
+        if (
+            !is_finite((float) $arguments[0])
+            || !is_finite((float) $arguments[1])
+            || $arguments[0] <= 0
+            || $arguments[1] <= 0
+        ) {
+            throw new \DomainException('beta() and logbeta() require two finite positive arguments.');
+        }
     }
 
     /** @param list<int|float> $arguments */

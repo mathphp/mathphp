@@ -9,6 +9,8 @@ All notable changes will be documented in this file. The project follows
 
 - Added finite integer-order `besselj` and `besseli` built-ins with convergent
   series and large-argument asymptotic evaluation.
+- Added positive-real `beta` and `logbeta` built-ins derived from the checked
+  gamma implementation.
 
 ## [0.3.7] - 2026-09-07
 
