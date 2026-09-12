@@ -50,6 +50,7 @@ final class FunctionRegistryTest extends TestCase
         yield 'cube root negative' => ['cbrt', [-8], -2.0, 'float'];
         yield 'error function at zero' => ['erf', [0], 0.0, 'float'];
         yield 'complementary error function at zero' => ['erfc', [0], 1.0, 'float'];
+        yield 'imaginary error function at one' => ['erfi', [1], 1.6504257587975428, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
         yield 'beta at two and three' => ['beta', [2, 3], 1.0 / 12.0, 'float'];
@@ -114,6 +115,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'base two logarithm' => ['log2', [8], 3.0, 'float'];
         yield 'log one plus' => ['log1p', [0], 0.0, 'float'];
         yield 'exponential minus one' => ['expm1', [0], 0.0, 'float'];
+        yield 'normalized sinc at zero' => ['sinc', [0], 1.0, 'float'];
+        yield 'normalized sinc at pi' => ['sinc', [M_PI], 0.0, 'float'];
+        yield 'normalized hyperbolic sinc at zero' => ['sinhc', [0], 1.0, 'float'];
+        yield 'normalized hyperbolic sinc at one' => ['sinhc', [1], 1.1752011936438014, 'float'];
         yield 'atan2' => ['atan2', [1, 1], \M_PI / 4, 'float'];
         yield 'hypotenuse' => ['hypot', [3, 4], 5.0, 'float'];
         yield 'sign' => ['sign', [-4], -1, 'int'];

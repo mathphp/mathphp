@@ -56,6 +56,12 @@ final readonly class FunctionRegistry
                 self::complementaryErrorFunction(...),
             ),
             new FunctionDefinition(
+                'erfi',
+                1,
+                1,
+                self::imaginaryErrorFunction(...),
+            ),
+            new FunctionDefinition(
                 'gamma',
                 1,
                 1,
@@ -320,6 +326,18 @@ final readonly class FunctionRegistry
                 self::expMinusOne(...),
             ),
             new FunctionDefinition(
+                'sinc',
+                1,
+                1,
+                self::sinc(...),
+            ),
+            new FunctionDefinition(
+                'sinhc',
+                1,
+                1,
+                self::sinhc(...),
+            ),
+            new FunctionDefinition(
                 'atan2',
                 2,
                 2,
@@ -538,6 +556,74 @@ final readonly class FunctionRegistry
     private static function complementaryErrorFunction(array $arguments): float
     {
         return self::finiteSpecialResult(1.0 - self::errorFunction($arguments), 'erfc');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function imaginaryErrorFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('erfi() requires a finite argument.');
+        }
+        if ($value === 0.0) {
+            return 0.0;
+        }
+        $sign = $value < 0.0 ? -1.0 : 1.0;
+        $absolute = abs($value);
+        $square = $absolute * $absolute;
+        if ($square < 500.0) {
+            $term = $absolute;
+            $sum = $term;
+            for ($index = 1; $index <= 1000; ++$index) {
+                $term *= $square / $index;
+                $addend = $term / (2.0 * $index + 1.0);
+                $sum += $addend;
+                if (abs($addend) <= abs($sum) * 1.0E-15) {
+                    break;
+                }
+            }
+            return self::finiteSpecialResult($sign * (2.0 / sqrt(M_PI)) * $sum, 'erfi');
+        }
+
+        $term = 1.0;
+        $sum = 1.0;
+        for ($index = 1; $index <= 1000; ++$index) {
+            $term *= (2.0 * $index - 1.0) / (2.0 * $square);
+            $sum += $term;
+            if (abs($term) <= abs($sum) * 1.0E-15) {
+                break;
+            }
+        }
+        $result = exp($square) * $sum / (sqrt(M_PI) * $absolute);
+        return self::finiteSpecialResult($sign * $result, 'erfi');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function sinc(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('sinc() requires a finite argument.');
+        }
+        if ($value === 0.0) {
+            return 1.0;
+        }
+
+        return sin($value) / $value;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function sinhc(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('sinhc() requires a finite argument.');
+        }
+        if ($value === 0.0) {
+            return 1.0;
+        }
+
+        return self::finiteSpecialResult(sinh($value) / $value, 'sinhc');
     }
 
     /** @param list<int|float> $arguments */

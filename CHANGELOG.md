@@ -102,6 +102,8 @@ All notable changes will be documented in this file. The project follows
 - Added integer-order `bessely()` and `besselk()` built-ins with convergent
   series, order recurrence, large-argument asymptotics, and positive-domain
   validation.
+- Added finite, overflow-checked `erfi()`, normalized `sinc()`, and normalized
+  hyperbolic `sinhc()` built-ins with continuous zero limits.
 
 - Added exact integer-domain combinatorial built-ins: `factorial()`,
   `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with
