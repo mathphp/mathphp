@@ -110,6 +110,8 @@ All notable changes will be documented in this file. The project follows
 - Added normalized incomplete beta functions `betainc(a, b, x)` and
   `betaincc(a, b, x)` using a stable continued-fraction evaluator on their
   finite real domain.
+- Added accurate real inverse error functions `erfinv(x)` and `erfcinv(x)`
+  with strict open-interval domain validation.
 - Added finite, series/asymptotic Airy functions `airyai()` and `airybi()`.
 - Added AGM-based complete elliptic integrals `ellipk(m)` and `ellipe(m)` for
   real parameters `m ≤ 1`, including smooth negative-parameter evaluation.

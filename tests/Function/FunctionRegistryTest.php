@@ -49,8 +49,14 @@ final class FunctionRegistryTest extends TestCase
         yield 'cube root positive' => ['cbrt', [27], 3.0, 'float'];
         yield 'cube root negative' => ['cbrt', [-8], -2.0, 'float'];
         yield 'error function at zero' => ['erf', [0], 0.0, 'float'];
+        yield 'error function at one' => ['erf', [1], 0.8427007929497149, 'float'];
         yield 'complementary error function at zero' => ['erfc', [0], 1.0, 'float'];
+        yield 'complementary error function at one' => ['erfc', [1], 0.15729920705028513, 'float'];
         yield 'imaginary error function at one' => ['erfi', [1], 1.6504257587975428, 'float'];
+        yield 'inverse error function at one half' => ['erfinv', [0.5], 0.4769362762044699, 'float'];
+        yield 'inverse complementary error function at one and a half' => [
+            'erfcinv', [1.5], -0.4769362762044699, 'float',
+        ];
         yield 'Airy Ai at zero' => ['airyai', [0], 0.3550280538878172, 'float'];
         yield 'Airy Ai at one' => ['airyai', [1], 0.13529241631288147, 'float'];
         yield 'Airy Bi at zero' => ['airybi', [0], 0.6149266274460007, 'float'];
@@ -292,6 +298,18 @@ final class FunctionRegistryTest extends TestCase
             [-1],
             \DomainException::class,
             'sqrt() requires a non-negative argument.',
+        ];
+        yield 'inverse error function endpoint' => [
+            'erfinv',
+            [1],
+            \DomainException::class,
+            'requires a finite argument strictly between -1 and 1',
+        ];
+        yield 'inverse complementary error function endpoint' => [
+            'erfcinv',
+            [0],
+            \DomainException::class,
+            'requires a finite argument strictly between 0 and 2',
         ];
         yield 'gamma pole at zero' => [
             'gamma',

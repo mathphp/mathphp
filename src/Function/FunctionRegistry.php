@@ -62,6 +62,18 @@ final readonly class FunctionRegistry
                 self::imaginaryErrorFunction(...),
             ),
             new FunctionDefinition(
+                'erfinv',
+                1,
+                1,
+                self::inverseErrorFunction(...),
+            ),
+            new FunctionDefinition(
+                'erfcinv',
+                1,
+                1,
+                self::inverseComplementaryErrorFunction(...),
+            ),
+            new FunctionDefinition(
                 'airyai',
                 1,
                 1,
@@ -605,15 +617,35 @@ final readonly class FunctionRegistry
             return 0.0;
         }
 
-        // Abramowitz and Stegun 7.1.26: bounded error below 1.5e-7.
         $sign = $value < 0.0 ? -1.0 : 1.0;
         $absolute = abs($value);
-        $t = 1.0 / (1.0 + 0.3275911 * $absolute);
-        $polynomial = (
-            (((((1.061405429 * $t - 1.453152027) * $t) + 1.421413741) * $t - 0.284496736) * $t + 0.254829592)
-            * $t
-        );
-        $result = $sign * (1.0 - $polynomial * exp(-$absolute * $absolute));
+        if ($absolute <= 4.0) {
+            $square = $absolute * $absolute;
+            $term = $absolute;
+            $sum = $term;
+            for ($index = 1; $index <= 256; ++$index) {
+                $term *= -$square / $index;
+                $addend = $term / (2.0 * $index + 1.0);
+                $sum += $addend;
+                if (abs($addend) <= abs($sum) * 1.0E-16) {
+                    break;
+                }
+            }
+            $result = $sign * (2.0 / sqrt(M_PI)) * $sum;
+        } else {
+            $square = $absolute * $absolute;
+            $term = 1.0;
+            $sum = 1.0;
+            for ($index = 1; $index <= 256; ++$index) {
+                $term *= -(2.0 * $index - 1.0) / (2.0 * $square);
+                if (abs($term) > abs($sum)) {
+                    break;
+                }
+                $sum += $term;
+            }
+            $complement = exp(-$square) * $sum / ($absolute * sqrt(M_PI));
+            $result = $sign * (1.0 - $complement);
+        }
 
         return self::finiteSpecialResult($result, 'erf');
     }
@@ -622,6 +654,42 @@ final readonly class FunctionRegistry
     private static function complementaryErrorFunction(array $arguments): float
     {
         return self::finiteSpecialResult(1.0 - self::errorFunction($arguments), 'erfc');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function inverseErrorFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value) || $value <= -1.0 || $value >= 1.0) {
+            throw new \DomainException('erfinv() requires a finite argument strictly between -1 and 1.');
+        }
+        if ($value === 0.0) {
+            return 0.0;
+        }
+
+        $lower = -8.0;
+        $upper = 8.0;
+        for ($index = 0; $index < 128; ++$index) {
+            $middle = ($lower + $upper) / 2.0;
+            if (self::errorFunction([$middle]) < $value) {
+                $lower = $middle;
+            } else {
+                $upper = $middle;
+            }
+        }
+
+        return self::finiteSpecialResult(($lower + $upper) / 2.0, 'erfinv');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function inverseComplementaryErrorFunction(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value) || $value <= 0.0 || $value >= 2.0) {
+            throw new \DomainException('erfcinv() requires a finite argument strictly between 0 and 2.');
+        }
+
+        return self::inverseErrorFunction([1.0 - $value]);
     }
 
     /** @param list<int|float> $arguments */
