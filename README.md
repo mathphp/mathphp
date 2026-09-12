@@ -70,7 +70,7 @@ The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
 `sech`, `csch`, and `coth`), numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `airyai`, `airybi`, `ellipk`, `ellipe`, `ellipf`, `ellipeinc`, `gamma`,
-`lgamma`, `gammainc`, `gammaincc`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
+`lgamma`, `gammainc`, `gammaincc`, `betainc`, `betaincc`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
 `asech`, `acsch`, and `acoth`.
@@ -89,6 +89,9 @@ real arguments; singular zero arguments are rejected explicitly.
 `sinc(x)` and `sinhc(x)` use their continuous value of `1` at the origin.
 `gammainc(a, x)` and `gammaincc(a, x)` are normalized lower and upper
 incomplete gamma functions, so their values sum to `1` for valid inputs.
+`betainc(a, b, x)` and `betaincc(a, b, x)` are normalized lower and upper
+ incomplete beta functions on `a > 0`, `b > 0`, and `0 ≤ x ≤ 1`; their values
+ sum to `1` for valid inputs.
 `airyai(x)` and `airybi(x)` use finite power-series and asymptotic evaluation
 with explicit overflow errors for values outside the floating-point range.
 `ellipk(m)` and `ellipe(m)` use the complete real elliptic integrals with

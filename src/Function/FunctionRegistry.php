@@ -128,6 +128,18 @@ final readonly class FunctionRegistry
                 self::regularizedGammaUpper(...),
             ),
             new FunctionDefinition(
+                'betainc',
+                3,
+                3,
+                self::regularizedBetaLower(...),
+            ),
+            new FunctionDefinition(
+                'betaincc',
+                3,
+                3,
+                self::regularizedBetaUpper(...),
+            ),
+            new FunctionDefinition(
                 'beta',
                 2,
                 2,
@@ -1017,6 +1029,140 @@ final readonly class FunctionRegistry
     private static function logGammaPositive(float $value): float
     {
         return log(self::gammaFunction([$value]));
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function regularizedBetaLower(array $arguments): float
+    {
+        [$left, $right, $value] = self::requireIncompleteBetaArguments($arguments);
+        if ($value === 0.0) {
+            return 0.0;
+        }
+        if ($value === 1.0) {
+            return 1.0;
+        }
+
+        return self::finiteSpecialResult(
+            self::regularizedBetaValue($left, $right, $value),
+            'betainc',
+        );
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function regularizedBetaUpper(array $arguments): float
+    {
+        [$left, $right, $value] = self::requireIncompleteBetaArguments($arguments);
+        if ($value === 0.0) {
+            return 1.0;
+        }
+        if ($value === 1.0) {
+            return 0.0;
+        }
+
+        return self::finiteSpecialResult(
+            1.0 - self::regularizedBetaValue($left, $right, $value),
+            'betaincc',
+        );
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float, 2: float}
+     */
+    private static function requireIncompleteBetaArguments(array $arguments): array
+    {
+        $left = (float) $arguments[0];
+        $right = (float) $arguments[1];
+        $value = (float) $arguments[2];
+        if (
+            !is_finite($left)
+            || !is_finite($right)
+            || $left <= 0.0
+            || $right <= 0.0
+            || $left > 171.0
+            || $right > 171.0
+            || $left + $right > 171.0
+            || !is_finite($value)
+            || $value < 0.0
+            || $value > 1.0
+        ) {
+            throw new \DomainException(
+                'betainc() and betaincc() require finite positive shapes with sum at most 171 and a value in [0, 1].',
+            );
+        }
+
+        return [$left, $right, $value];
+    }
+
+    private static function regularizedBetaValue(float $left, float $right, float $value): float
+    {
+        $threshold = ($left + 1.0) / ($left + $right + 2.0);
+        if ($value <= $threshold) {
+            $factor = self::incompleteBetaFactor($left, $right, $value);
+            return $factor * self::incompleteBetaContinuedFraction($left, $right, $value) / $left;
+        }
+
+        $factor = self::incompleteBetaFactor($right, $left, 1.0 - $value);
+        return 1.0 - $factor * self::incompleteBetaContinuedFraction($right, $left, 1.0 - $value) / $right;
+    }
+
+    private static function incompleteBetaFactor(float $left, float $right, float $value): float
+    {
+        return exp(
+            self::logGammaPositive($left + $right)
+            - self::logGammaPositive($left)
+            - self::logGammaPositive($right)
+            + $left * log($value)
+            + $right * log1p(-$value),
+        );
+    }
+
+    private static function incompleteBetaContinuedFraction(float $left, float $right, float $value): float
+    {
+        $fpmIn = 1.0E-300;
+        $continued = 1.0;
+        $c = 1.0;
+        $d = 1.0 - ($left + $right) * $value / ($left + 1.0);
+        if (abs($d) < $fpmIn) {
+            $d = $fpmIn;
+        }
+        $d = 1.0 / $d;
+        $continued = $d;
+        for ($index = 1; $index <= 10000; ++$index) {
+            $step = 2.0 * $index;
+            $numerator = $index * ($right - $index) * $value
+                / (($left + $step - 1.0) * ($left + $step));
+            $d = 1.0 + $numerator * $d;
+            if (abs($d) < $fpmIn) {
+                $d = $fpmIn;
+            }
+            $c = 1.0 + $numerator / $c;
+            if (abs($c) < $fpmIn) {
+                $c = $fpmIn;
+            }
+            $d = 1.0 / $d;
+            $delta = $d * $c;
+            $continued *= $delta;
+
+            $numerator = -($left + $index) * ($left + $right + $index) * $value
+                / (($left + $step) * ($left + $step + 1.0));
+            $d = 1.0 + $numerator * $d;
+            if (abs($d) < $fpmIn) {
+                $d = $fpmIn;
+            }
+            $c = 1.0 + $numerator / $c;
+            if (abs($c) < $fpmIn) {
+                $c = $fpmIn;
+            }
+            $d = 1.0 / $d;
+            $delta = $d * $c;
+            $continued *= $delta;
+            if (abs($delta - 1.0) <= 1.0E-15) {
+                break;
+            }
+        }
+
+        return $continued;
     }
 
     /** @param list<int|float> $arguments */
