@@ -86,6 +86,24 @@ final readonly class FunctionRegistry
                 self::completeEllipticE(...),
             ),
             new FunctionDefinition(
+                'ellipf',
+                2,
+                2,
+                self::incompleteEllipticF(...),
+            ),
+            new FunctionDefinition(
+                'ellipkinc',
+                2,
+                2,
+                self::incompleteEllipticF(...),
+            ),
+            new FunctionDefinition(
+                'ellipeinc',
+                2,
+                2,
+                self::incompleteEllipticE(...),
+            ),
+            new FunctionDefinition(
                 'gamma',
                 1,
                 1,
@@ -779,6 +797,64 @@ final readonly class FunctionRegistry
         }
 
         return $step * $sum / 3.0;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function incompleteEllipticF(array $arguments): float
+    {
+        [$angle, $parameter] = self::requireIncompleteEllipticArguments($arguments, 'ellipf');
+        return self::finiteSpecialResult(self::ellipticIncompleteIntegral($angle, $parameter, false), 'ellipf');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function incompleteEllipticE(array $arguments): float
+    {
+        [$angle, $parameter] = self::requireIncompleteEllipticArguments($arguments, 'ellipeinc');
+        return self::finiteSpecialResult(self::ellipticIncompleteIntegral($angle, $parameter, true), 'ellipeinc');
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float}
+     */
+    private static function requireIncompleteEllipticArguments(array $arguments, string $function): array
+    {
+        $angle = (float) $arguments[0];
+        $parameter = (float) $arguments[1];
+        if (!is_finite($angle) || !is_finite($parameter) || $parameter > 1.0) {
+            throw new \DomainException(
+                $function . '() requires finite arguments with a real parameter less than or equal to one.',
+            );
+        }
+        if ($parameter === 1.0 && abs($angle) >= M_PI / 2.0) {
+            throw new \DomainException($function . '() is singular at ±pi/2 when the parameter is one.');
+        }
+
+        return [$angle, $parameter];
+    }
+
+    private static function ellipticIncompleteIntegral(float $angle, float $parameter, bool $secondKind): float
+    {
+        if ($angle === 0.0) {
+            return 0.0;
+        }
+        $sign = $angle < 0.0 ? -1.0 : 1.0;
+        $upper = abs($angle);
+        $segments = max(1024, min(262144, (int) ceil($upper * 2048.0)));
+        if ($segments % 2 !== 0) {
+            ++$segments;
+        }
+        $step = $upper / $segments;
+        $sum = 0.0;
+        for ($index = 0; $index <= $segments; ++$index) {
+            $position = $index * $step;
+            $factor = 1.0 - $parameter * sin($position) ** 2;
+            $value = $secondKind ? sqrt($factor) : 1.0 / sqrt($factor);
+            $weight = $index === 0 || $index === $segments ? 1.0 : ($index % 2 === 0 ? 2.0 : 4.0);
+            $sum += $weight * $value;
+        }
+
+        return $sign * $step * $sum / 3.0;
     }
 
     /** @param list<int|float> $arguments */

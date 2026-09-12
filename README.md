@@ -69,7 +69,7 @@ intended.
 The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
 `sech`, `csch`, and `coth`), numerical,
-integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `airyai`, `airybi`, `ellipk`, `ellipe`, `gamma`,
+integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `airyai`, `airybi`, `ellipk`, `ellipe`, `ellipf`, `ellipeinc`, `gamma`,
 `lgamma`, `gammainc`, `gammaincc`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
@@ -93,6 +93,8 @@ incomplete gamma functions, so their values sum to `1` for valid inputs.
 with explicit overflow errors for values outside the floating-point range.
 `ellipk(m)` and `ellipe(m)` use the complete real elliptic integrals with
 parameter `m ≤ 1`; `ellipk(1)` is explicitly divergent.
+`ellipf(phi, m)`/`ellipkinc(phi, m)` and `ellipeinc(phi, m)` provide incomplete
+forms on the same real parameter domain and reject singular endpoints.
 `lambertw(z)` evaluates the principal real branch, while `lambertw(z, -1)`
 selects the lower real branch on `-1/e <= z < 0`.
 

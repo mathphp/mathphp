@@ -64,6 +64,14 @@ final class FunctionRegistryTest extends TestCase
         yield 'complete elliptic E at one' => ['ellipe', [1], 1.0, 'float'];
         yield 'complete elliptic K at negative one' => ['ellipk', [-1], 1.3110287771460598, 'float'];
         yield 'complete elliptic E at negative one' => ['ellipe', [-1], 1.9100988945138562, 'float'];
+        yield 'incomplete elliptic F at zero parameter' => ['ellipf', [M_PI / 4.0, 0], M_PI / 4.0, 'float'];
+        yield 'incomplete elliptic K alias at complete angle' => [
+            'ellipkinc', [M_PI / 2.0, 0.5], 1.8540746773013719, 'float',
+        ];
+        yield 'incomplete elliptic E alias at complete angle' => [
+            'ellipeinc', [M_PI / 2.0, 0.5], 1.3506438810476755, 'float',
+        ];
+        yield 'incomplete elliptic E at zero parameter' => ['ellipeinc', [-M_PI / 4.0, 0], -M_PI / 4.0, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
         yield 'regularized lower gamma at one and one' => ['gammainc', [1, 1], 0.6321205588285577, 'float'];
@@ -316,6 +324,12 @@ final class FunctionRegistryTest extends TestCase
             [1.1],
             \DomainException::class,
             'requires a finite real parameter less than or equal to one',
+        ];
+        yield 'incomplete elliptic F singular endpoint' => [
+            'ellipf',
+            [M_PI / 2.0, 1],
+            \DomainException::class,
+            'singular at ±pi/2',
         ];
         yield 'Bessel J non-integer order' => [
             'besselj',
