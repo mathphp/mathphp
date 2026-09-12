@@ -11,6 +11,8 @@ All notable changes will be documented in this file. The project follows
   series and large-argument asymptotic evaluation.
 - Added positive-real `beta` and `logbeta` built-ins derived from the checked
   gamma implementation.
+- Added real Riemann `zeta(s)` evaluation for finite `s > 1` using
+  Euler–Maclaurin summation.
 
 ## [0.3.7] - 2026-09-07
 

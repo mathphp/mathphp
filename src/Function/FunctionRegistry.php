@@ -80,6 +80,12 @@ final readonly class FunctionRegistry
                 self::logBetaFunction(...),
             ),
             new FunctionDefinition(
+                'zeta',
+                1,
+                1,
+                self::zetaFunction(...),
+            ),
+            new FunctionDefinition(
                 'besselj',
                 2,
                 2,
@@ -540,6 +546,47 @@ final readonly class FunctionRegistry
         ) {
             throw new \DomainException('beta() and logbeta() require two finite positive arguments.');
         }
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function zetaFunction(array $arguments): float
+    {
+        $exponent = (float) $arguments[0];
+        if (!is_finite($exponent) || $exponent <= 1.0) {
+            throw new \DomainException('zeta() currently requires a finite real argument greater than one.');
+        }
+
+        $limit = 128;
+        $sum = 0.0;
+        for ($index = 1; $index <= $limit; ++$index) {
+            $sum += $index ** (-$exponent);
+        }
+        $tail = $limit ** (1.0 - $exponent) / ($exponent - 1.0) - 0.5 * $limit ** (-$exponent);
+        $bernoulli = [
+            1 => 1.0 / 6.0,
+            2 => -1.0 / 30.0,
+            3 => 1.0 / 42.0,
+            4 => -1.0 / 30.0,
+            5 => 5.0 / 66.0,
+            6 => -691.0 / 2730.0,
+            7 => 7.0 / 6.0,
+            8 => -3617.0 / 510.0,
+        ];
+        $correction = 0.0;
+        foreach ($bernoulli as $index => $number) {
+            $order = 2 * $index;
+            $rising = 1.0;
+            $factorial = 1.0;
+            for ($factor = 0; $factor < $order - 1; ++$factor) {
+                $rising *= $exponent + $factor;
+            }
+            for ($factor = 2; $factor <= $order; ++$factor) {
+                $factorial *= $factor;
+            }
+            $correction += $number / $factorial * $rising * $limit ** (-$exponent - $order + 1.0);
+        }
+
+        return self::finiteSpecialResult($sum + $tail + $correction, 'zeta');
     }
 
     /** @param list<int|float> $arguments */

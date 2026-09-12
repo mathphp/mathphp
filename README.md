@@ -69,7 +69,8 @@ intended.
 The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic, numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `gamma`,
-`lgamma`, `beta`, `logbeta`, `besselj`, and `besseli`. Beta arguments are
+`lgamma`, `beta`, `logbeta`, `zeta`, `besselj`, and `besseli`. The real zeta
+implementation requires an argument greater than one. Beta arguments are
 finite and positive; Bessel orders are currently finite
 integers, with real-valued arguments and domain-checked finite results.
 Combinatorial functions include exact integer-domain
