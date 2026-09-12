@@ -78,6 +78,12 @@ final class FunctionRegistryTest extends TestCase
             'ellipeinc', [M_PI / 2.0, 0.5], 1.3506438810476755, 'float',
         ];
         yield 'incomplete elliptic E at zero parameter' => ['ellipeinc', [-M_PI / 4.0, 0], -M_PI / 4.0, 'float'];
+        yield 'complete elliptic Pi at zero characteristic' => ['ellippi', [0, 0.5], 1.8540746773013719, 'float'];
+        yield 'complete elliptic Pi at zero parameter' => ['ellippi', [0.5, 0], 2.221441469079183, 'float'];
+        yield 'incomplete elliptic Pi at zero characteristic' => [
+            'ellippinc', [M_PI / 2.0, 0, 0.5], 1.8540746773013719, 'float',
+        ];
+        yield 'incomplete elliptic Pi at zero parameters' => ['ellippinc', [M_PI / 4.0, 0, 0], M_PI / 4.0, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
         yield 'regularized lower gamma at one and one' => ['gammainc', [1, 1], 0.6321205588285577, 'float'];
@@ -378,6 +384,18 @@ final class FunctionRegistryTest extends TestCase
             [M_PI / 2.0, 1],
             \DomainException::class,
             'singular at ±pi/2',
+        ];
+        yield 'complete elliptic Pi singular characteristic' => [
+            'ellippi',
+            [1, 0],
+            \DomainException::class,
+            'characteristic n < 1',
+        ];
+        yield 'incomplete elliptic Pi singular endpoint' => [
+            'ellippinc',
+            [M_PI / 2.0, 0, 1],
+            \DomainException::class,
+            'singular at and beyond ±pi/2',
         ];
         yield 'Bessel J non-integer order' => [
             'besselj',

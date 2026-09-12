@@ -69,7 +69,7 @@ intended.
 The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
 `sech`, `csch`, and `coth`), numerical,
-integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `erfinv`, `erfcinv`, `airyai`, `airybi`, `ellipk`, `ellipe`, `ellipf`, `ellipeinc`, `gamma`,
+integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `erfinv`, `erfcinv`, `airyai`, `airybi`, `ellipk`, `ellipe`, `ellipf`, `ellipeinc`, `ellippi`, `ellippinc`, `gamma`,
 `lgamma`, `gammainc`, `gammaincc`, `gammaincinv`, `gammainccinv`, `betainc`, `betaincc`, `betaincinv`, `betainccinv`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
@@ -106,6 +106,9 @@ with explicit overflow errors for values outside the floating-point range.
 parameter `m ≤ 1`; `ellipk(1)` is explicitly divergent.
 `ellipf(phi, m)`/`ellipkinc(phi, m)` and `ellipeinc(phi, m)` provide incomplete
 forms on the same real parameter domain and reject singular endpoints.
+`ellippi(n, m)` and `ellippinc(phi, n, m)` provide the real third-kind
+elliptic integral for `n < 1`; complete `Pi` requires `m < 1`, while the
+incomplete form rejects paths through the `m = 1` singular endpoint.
 `lambertw(z)` evaluates the principal real branch, while `lambertw(z, -1)`
 selects the lower real branch on `-1/e <= z < 0`.
 

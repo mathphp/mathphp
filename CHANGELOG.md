@@ -121,6 +121,8 @@ All notable changes will be documented in this file. The project follows
   real parameters `m ≤ 1`, including smooth negative-parameter evaluation.
 - Added incomplete elliptic first- and second-kind functions `ellipf()` /
   `ellipkinc()` and `ellipeinc()` with singular-endpoint validation.
+- Added real third-kind elliptic integrals `ellippi(n, m)` and
+  `ellippinc(phi, n, m)` with characteristic and singularity validation.
 
 - Added exact integer-domain combinatorial built-ins: `factorial()`,
   `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with

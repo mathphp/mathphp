@@ -116,6 +116,18 @@ final readonly class FunctionRegistry
                 self::incompleteEllipticE(...),
             ),
             new FunctionDefinition(
+                'ellippi',
+                2,
+                2,
+                self::completeEllipticPi(...),
+            ),
+            new FunctionDefinition(
+                'ellippinc',
+                3,
+                3,
+                self::incompleteEllipticPi(...),
+            ),
+            new FunctionDefinition(
                 'gamma',
                 1,
                 1,
@@ -915,6 +927,95 @@ final readonly class FunctionRegistry
     {
         [$angle, $parameter] = self::requireIncompleteEllipticArguments($arguments, 'ellipeinc');
         return self::finiteSpecialResult(self::ellipticIncompleteIntegral($angle, $parameter, true), 'ellipeinc');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function completeEllipticPi(array $arguments): float
+    {
+        [$characteristic, $parameter] = self::requireCompleteEllipticPiArguments($arguments);
+        return self::finiteSpecialResult(
+            self::ellipticThirdIntegral(M_PI / 2.0, $characteristic, $parameter),
+            'ellippi',
+        );
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function incompleteEllipticPi(array $arguments): float
+    {
+        [$angle, $characteristic, $parameter] = self::requireIncompleteEllipticPiArguments($arguments);
+        return self::finiteSpecialResult(
+            self::ellipticThirdIntegral($angle, $characteristic, $parameter),
+            'ellippinc',
+        );
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float}
+     */
+    private static function requireCompleteEllipticPiArguments(array $arguments): array
+    {
+        $characteristic = (float) $arguments[0];
+        $parameter = (float) $arguments[1];
+        if (!is_finite($characteristic) || !is_finite($parameter) || $characteristic >= 1.0 || $parameter >= 1.0) {
+            throw new \DomainException(
+                'ellippi() requires finite real characteristic n < 1 and parameter m < 1.',
+            );
+        }
+
+        return [$characteristic, $parameter];
+    }
+
+    /**
+     * @param list<int|float> $arguments
+     * @return array{0: float, 1: float, 2: float}
+     */
+    private static function requireIncompleteEllipticPiArguments(array $arguments): array
+    {
+        $angle = (float) $arguments[0];
+        $characteristic = (float) $arguments[1];
+        $parameter = (float) $arguments[2];
+        if (
+            !is_finite($angle)
+            || !is_finite($characteristic)
+            || !is_finite($parameter)
+            || $characteristic >= 1.0
+            || $parameter > 1.0
+        ) {
+            throw new \DomainException(
+                'ellippinc() requires finite angle and real characteristic n < 1 with parameter m <= 1.',
+            );
+        }
+        if ($parameter === 1.0 && abs($angle) >= M_PI / 2.0) {
+            throw new \DomainException('ellippinc() is singular at and beyond ±pi/2 when the parameter is one.');
+        }
+
+        return [$angle, $characteristic, $parameter];
+    }
+
+    private static function ellipticThirdIntegral(float $angle, float $characteristic, float $parameter): float
+    {
+        if ($angle === 0.0) {
+            return 0.0;
+        }
+        $sign = $angle < 0.0 ? -1.0 : 1.0;
+        $upper = abs($angle);
+        $segments = max(1024, min(262144, (int) ceil($upper * 2048.0)));
+        if ($segments % 2 !== 0) {
+            ++$segments;
+        }
+        $step = $upper / $segments;
+        $sum = 0.0;
+        for ($index = 0; $index <= $segments; ++$index) {
+            $position = $index * $step;
+            $sineSquared = sin($position) ** 2;
+            $factor = 1.0 - $parameter * $sineSquared;
+            $value = 1.0 / ((1.0 - $characteristic * $sineSquared) * sqrt($factor));
+            $weight = $index === 0 || $index === $segments ? 1.0 : ($index % 2 === 0 ? 2.0 : 4.0);
+            $sum += $weight * $value;
+        }
+
+        return $sign * $step * $sum / 3.0;
     }
 
     /**
