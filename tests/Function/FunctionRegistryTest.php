@@ -51,6 +51,12 @@ final class FunctionRegistryTest extends TestCase
         yield 'error function at zero' => ['erf', [0], 0.0, 'float'];
         yield 'complementary error function at zero' => ['erfc', [0], 1.0, 'float'];
         yield 'imaginary error function at one' => ['erfi', [1], 1.6504257587975428, 'float'];
+        yield 'Airy Ai at zero' => ['airyai', [0], 0.3550280538878172, 'float'];
+        yield 'Airy Ai at one' => ['airyai', [1], 0.13529241631288147, 'float'];
+        yield 'Airy Bi at zero' => ['airybi', [0], 0.6149266274460007, 'float'];
+        yield 'Airy Bi at one' => ['airybi', [1], 1.2074235949528712, 'float'];
+        yield 'Airy Ai at negative one' => ['airyai', [-1], 0.5355608832923522, 'float'];
+        yield 'Airy Bi at negative one' => ['airybi', [-1], 0.10399738949694468, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
         yield 'regularized lower gamma at one and one' => ['gammainc', [1, 1], 0.6321205588285577, 'float'];

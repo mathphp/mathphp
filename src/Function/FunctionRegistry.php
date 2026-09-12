@@ -62,6 +62,18 @@ final readonly class FunctionRegistry
                 self::imaginaryErrorFunction(...),
             ),
             new FunctionDefinition(
+                'airyai',
+                1,
+                1,
+                self::airyAi(...),
+            ),
+            new FunctionDefinition(
+                'airybi',
+                1,
+                1,
+                self::airyBi(...),
+            ),
+            new FunctionDefinition(
                 'gamma',
                 1,
                 1,
@@ -608,6 +620,79 @@ final readonly class FunctionRegistry
         }
         $result = exp($square) * $sum / (sqrt(M_PI) * $absolute);
         return self::finiteSpecialResult($sign * $result, 'erfi');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function airyAi(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('airyai() requires a finite argument.');
+        }
+
+        return self::finiteSpecialResult(self::airyValue($value, false), 'airyai');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function airyBi(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('airybi() requires a finite argument.');
+        }
+
+        return self::finiteSpecialResult(self::airyValue($value, true), 'airybi');
+    }
+
+    private static function airyValue(float $value, bool $secondSolution): float
+    {
+        if (abs($value) <= 12.0) {
+            $gammaOneThird = 2.6789385347077476337;
+            $gammaTwoThirds = 1.3541179394264004169;
+            $a0 = $secondSolution
+                ? 1.0 / (($gammaTwoThirds) * (3.0 ** (1.0 / 6.0)))
+                : 1.0 / (($gammaTwoThirds) * (3.0 ** (2.0 / 3.0)));
+            $a1 = $secondSolution
+                ? (3.0 ** (1.0 / 6.0)) / $gammaOneThird
+                : -1.0 / ((3.0 ** (1.0 / 3.0)) * $gammaOneThird);
+            $coefficients = [$a0, $a1, 0.0];
+            for ($index = 1; $index <= 240; ++$index) {
+                $coefficients[$index + 2] = $coefficients[$index - 1] / (($index + 2.0) * ($index + 1.0));
+            }
+            $power = 1.0;
+            $sum = 0.0;
+            foreach ($coefficients as $index => $coefficient) {
+                if ($index > 0) {
+                    $power *= $value;
+                }
+                $term = $coefficient * ($index === 0 ? 1.0 : $power);
+                $sum += $term;
+                if ($index > 24 && abs($term) <= max(1.0, abs($sum)) * 1.0E-16) {
+                    break;
+                }
+            }
+
+            return $sum;
+        }
+
+        $absolute = abs($value);
+        $zeta = (2.0 / 3.0) * ($absolute ** 1.5);
+        $first = 5.0 / (72.0 * $zeta);
+        $second = 385.0 / (10368.0 * $zeta * $zeta);
+        $third = 85085.0 / (2239488.0 * $zeta ** 3);
+        if ($value > 0.0) {
+            $correction = $secondSolution
+                ? 1.0 + $first + $second + $third
+                : 1.0 - $first + $second - $third;
+            $exponent = $secondSolution ? exp($zeta) : exp(-$zeta);
+            $scale = $secondSolution ? 1.0 / sqrt(M_PI) : 1.0 / (2.0 * sqrt(M_PI));
+
+            return $scale * $absolute ** (-0.25) * $exponent * $correction;
+        }
+        $phase = $zeta + M_PI / 4.0;
+        $amplitude = 1.0 / (sqrt(M_PI) * $absolute ** 0.25);
+
+        return $amplitude * ($secondSolution ? cos($phase) : sin($phase));
     }
 
     /** @param list<int|float> $arguments */

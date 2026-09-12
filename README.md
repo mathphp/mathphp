@@ -69,7 +69,7 @@ intended.
 The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
 `sech`, `csch`, and `coth`), numerical,
-integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `gamma`,
+integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `airyai`, `airybi`, `gamma`,
 `lgamma`, `gammainc`, `gammaincc`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
@@ -89,6 +89,8 @@ real arguments; singular zero arguments are rejected explicitly.
 `sinc(x)` and `sinhc(x)` use their continuous value of `1` at the origin.
 `gammainc(a, x)` and `gammaincc(a, x)` are normalized lower and upper
 incomplete gamma functions, so their values sum to `1` for valid inputs.
+`airyai(x)` and `airybi(x)` use finite power-series and asymptotic evaluation
+with explicit overflow errors for values outside the floating-point range.
 `lambertw(z)` evaluates the principal real branch, while `lambertw(z, -1)`
 selects the lower real branch on `-1/e <= z < 0`.
 
