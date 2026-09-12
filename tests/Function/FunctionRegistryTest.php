@@ -52,6 +52,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'complementary error function at zero' => ['erfc', [0], 1.0, 'float'];
         yield 'gamma at five' => ['gamma', [5], 24.0, 'float'];
         yield 'log gamma at five' => ['lgamma', [5], log(24.0), 'float'];
+        yield 'Bessel J zero at zero' => ['besselj', [0, 0], 1.0, 'float'];
+        yield 'Bessel J zero at two' => ['besselj', [0, 2], 0.22389077914123567, 'float'];
+        yield 'modified Bessel I zero at zero' => ['besseli', [0, 0], 1.0, 'float'];
+        yield 'modified Bessel I zero at one' => ['besseli', [0, 1], 1.2660658777520084, 'float'];
         yield 'sine' => ['sin', [\M_PI / 2], 1.0, 'float'];
         yield 'cosine' => ['cos', [0], 1.0, 'float'];
         yield 'tangent' => ['tan', [\M_PI / 4], 1.0, 'float'];
@@ -122,6 +126,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'erfc' => ['erfc', 1, 1];
         yield 'gamma' => ['gamma', 1, 1];
         yield 'lgamma' => ['lgamma', 1, 1];
+        yield 'besselj' => ['besselj', 2, 2];
+        yield 'besseli' => ['besseli', 2, 2];
         yield 'sin' => ['sin', 1, 1];
         yield 'cos' => ['cos', 1, 1];
         yield 'tan' => ['tan', 1, 1];
@@ -219,6 +225,18 @@ final class FunctionRegistryTest extends TestCase
             [-3],
             \DomainException::class,
             'gamma() requires a finite non-pole argument',
+        ];
+        yield 'Bessel J non-integer order' => [
+            'besselj',
+            [0.5, 1],
+            \DomainException::class,
+            'requires a finite integer order',
+        ];
+        yield 'modified Bessel I non-integer order' => [
+            'besseli',
+            [0.5, 1],
+            \DomainException::class,
+            'requires a finite integer order',
         ];
         yield 'natural log zero' => [
             'ln',

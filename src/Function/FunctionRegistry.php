@@ -68,6 +68,18 @@ final readonly class FunctionRegistry
                 self::logGammaFunction(...),
             ),
             new FunctionDefinition(
+                'besselj',
+                2,
+                2,
+                self::besselJ(...),
+            ),
+            new FunctionDefinition(
+                'besseli',
+                2,
+                2,
+                self::modifiedBesselI(...),
+            ),
+            new FunctionDefinition(
                 'sin',
                 1,
                 1,
@@ -482,6 +494,129 @@ final readonly class FunctionRegistry
         $gamma = self::gammaFunction($arguments);
 
         return self::finiteSpecialResult(log(abs($gamma)), 'lgamma');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function besselJ(array $arguments): float
+    {
+        $order = self::requireIntegerOrder($arguments[0], 'besselj');
+        $value = (float) $arguments[1];
+        if (!is_finite($value)) {
+            throw new \DomainException('besselj() requires a finite real argument.');
+        }
+        if ($value === 0.0) {
+            return $order === 0 ? 1.0 : 0.0;
+        }
+
+        $sign = 1.0;
+        if ($order < 0) {
+            $order = -$order;
+            if ($order % 2 !== 0) {
+                $sign = -1.0;
+            }
+        }
+        if ($value < 0.0) {
+            if ($order % 2 !== 0) {
+                $sign *= -1.0;
+            }
+            $value = -$value;
+        }
+
+        $result = $value <= 40.0
+            ? self::besselSeries($order, $value, false)
+            : self::besselJAsymptotic($order, $value);
+        return self::finiteSpecialResult($sign * $result, 'besselj');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function modifiedBesselI(array $arguments): float
+    {
+        $order = self::requireIntegerOrder($arguments[0], 'besseli');
+        $value = (float) $arguments[1];
+        if (!is_finite($value)) {
+            throw new \DomainException('besseli() requires a finite real argument.');
+        }
+        if ($value === 0.0) {
+            return $order === 0 ? 1.0 : 0.0;
+        }
+
+        $sign = 1.0;
+        if ($order < 0) {
+            $order = -$order;
+            if ($order % 2 !== 0) {
+                $sign = -1.0;
+            }
+        }
+        if ($value < 0.0) {
+            if ($order % 2 !== 0) {
+                $sign *= -1.0;
+            }
+            $value = -$value;
+        }
+
+        $result = $value <= 40.0
+            ? self::besselSeries($order, $value, true)
+            : self::besselIAsymptotic($order, $value);
+        return self::finiteSpecialResult($sign * $result, 'besseli');
+    }
+
+    private static function requireIntegerOrder(int|float $value, string $function): int
+    {
+        if (!is_finite((float) $value) || floor((float) $value) !== (float) $value || abs((float) $value) > 100000.0) {
+            throw new \DomainException($function . '() currently requires a finite integer order.');
+        }
+
+        return (int) $value;
+    }
+
+    private static function besselSeries(int $order, float $value, bool $modified): float
+    {
+        $half = $value / 2.0;
+        $term = 1.0;
+        for ($index = 1; $index <= $order; ++$index) {
+            $term *= $half / $index;
+        }
+        $sum = $term;
+        $square = $half * $half;
+        for ($index = 1; $index <= 1000; ++$index) {
+            $term *= $square / ($index * ($index + $order));
+            if (!$modified) {
+                $term *= -1.0;
+            }
+            $sum += $term;
+            if (abs($term) <= max(1.0, abs($sum)) * 1.0E-15) {
+                break;
+            }
+        }
+
+        return $sum;
+    }
+
+    private static function besselJAsymptotic(int $order, float $value): float
+    {
+        $mu = 4.0 * $order * $order;
+        $z = 8.0 * $value;
+        $phase = $value - $order * M_PI / 2.0 - M_PI / 4.0;
+        $first = ($mu - 1.0) / $z;
+        $second = ($mu - 1.0) * ($mu - 9.0) / (2.0 * $z * $z);
+        $third = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) * ($mu - 49.0) / (24.0 * $z ** 4);
+        $sineCorrection = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) / (6.0 * $z ** 3);
+        $amplitude = sqrt(2.0 / (M_PI * $value));
+
+        return $amplitude * ((1.0 - $second + $third) * cos($phase) - ($first - $sineCorrection) * sin($phase));
+    }
+
+    private static function besselIAsymptotic(int $order, float $value): float
+    {
+        $mu = 4.0 * $order * $order;
+        $z = 8.0 * $value;
+        $first = ($mu - 1.0) / $z;
+        $second = ($mu - 1.0) * ($mu - 9.0) / (2.0 * $z * $z);
+        $third = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) / (6.0 * $z ** 3);
+        $fourth = ($mu - 1.0) * ($mu - 9.0) * ($mu - 25.0) * ($mu - 49.0) / (24.0 * $z ** 4);
+        $amplitude = exp($value) / sqrt(2.0 * M_PI * $value);
+
+        return $amplitude * (1.0 - $first + $second - $third + $fourth);
     }
 
     private static function finiteSpecialResult(float $value, string $function): float

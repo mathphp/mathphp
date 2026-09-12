@@ -3,6 +3,13 @@
 All notable changes will be documented in this file. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Added finite integer-order `besselj` and `besseli` built-ins with convergent
+  series and large-argument asymptotic evaluation.
+
 ## [0.3.7] - 2026-09-07
 
 ### Added
