@@ -51,6 +51,9 @@ final class MathTest extends TestCase
         yield 'base two logarithm' => ['log2(8)', 3.0, 'float'];
         yield 'atan2 geometry' => ['atan2(1, 1)', \M_PI / 4, 'float'];
         yield 'integer gcd' => ['gcd(84, 30)', 6, 'int'];
+        yield 'factorial function' => ['factorial(5)', 120, 'int'];
+        yield 'binomial coefficient' => ['binomial(5, 2)', 10, 'int'];
+        yield 'permutation count' => ['permutation(5, 2)', 20, 'int'];
         yield 'error function' => ['erf(0)', 0.0, 'float'];
         yield 'gamma function' => ['gamma(5)', 24.0, 'float'];
     }

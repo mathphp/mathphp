@@ -27,6 +27,7 @@ Math::evaluate('2 + 3 * 4'); // 14
 Math::evaluate('2^3^2'); // 512
 Math::evaluate('-2^2'); // -4
 Math::evaluate('sqrt(81) + 3!'); // 15.0
+Math::evaluate('binomial(10, 3) + permutation(4, 2)'); // 132
 Math::evaluate('2x + 1', ['x' => 4]); // 9
 Math::evaluate('2(3 + 4)'); // 14
 Math::evaluate(
@@ -67,7 +68,9 @@ intended.
 
 The built-in function registry includes elementary, trigonometric (including
 `sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic, numerical,
-integer, and special functions such as `erf`, `erfc`, `gamma`, and `lgamma`.
+integer, combinatorial, and special functions such as `erf`, `erfc`, `gamma`,
+and `lgamma`. Combinatorial functions include exact integer-domain
+`factorial`, `binomial`/`choose`/`ncr`, and `permutation`/`permute`/`npr`.
 Special-function results are finite and domain-checked; expressions that
 approach poles or overflow return structured evaluation errors.
 

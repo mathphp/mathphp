@@ -88,6 +88,13 @@ final class FunctionRegistryTest extends TestCase
         yield 'round negative halfway' => ['round', [-2.5], -3.0, 'float'];
         yield 'greatest common divisor' => ['gcd', [84, 30], 6, 'int'];
         yield 'least common multiple' => ['lcm', [12, 18], 36, 'int'];
+        yield 'factorial function' => ['factorial', [5], 120, 'int'];
+        yield 'binomial coefficient' => ['binomial', [5, 2], 10, 'int'];
+        yield 'choose alias' => ['choose', [5, 2], 10, 'int'];
+        yield 'ncr alias' => ['ncr', [5, 2], 10, 'int'];
+        yield 'permutation count' => ['permutation', [5, 2], 20, 'int'];
+        yield 'permute alias' => ['permute', [5, 2], 20, 'int'];
+        yield 'npr alias' => ['npr', [5, 2], 20, 'int'];
     }
 
     #[DataProvider('builtInDefinitionProvider')]
@@ -150,6 +157,13 @@ final class FunctionRegistryTest extends TestCase
         yield 'round' => ['round', 1, 1];
         yield 'gcd' => ['gcd', 2, 2];
         yield 'lcm' => ['lcm', 2, 2];
+        yield 'factorial' => ['factorial', 1, 1];
+        yield 'binomial' => ['binomial', 2, 2];
+        yield 'choose' => ['choose', 2, 2];
+        yield 'ncr' => ['ncr', 2, 2];
+        yield 'permutation' => ['permutation', 2, 2];
+        yield 'permute' => ['permute', 2, 2];
+        yield 'npr' => ['npr', 2, 2];
     }
 
     /**
@@ -331,6 +345,42 @@ final class FunctionRegistryTest extends TestCase
             [\PHP_INT_MAX, 2],
             \OverflowException::class,
             'lcm() result exceeds the host integer range.',
+        ];
+        yield 'factorial negative' => [
+            'factorial',
+            [-1],
+            \DomainException::class,
+            'factorial() requires non-negative integer arguments.',
+        ];
+        yield 'binomial non-integer' => [
+            'binomial',
+            [5.5, 2],
+            \DomainException::class,
+            'binomial() requires finite integer arguments.',
+        ];
+        yield 'binomial k above n' => [
+            'binomial',
+            [2, 3],
+            \DomainException::class,
+            'binomial() requires k to be less than or equal to n.',
+        ];
+        yield 'binomial overflow' => [
+            'binomial',
+            [67, 33],
+            \OverflowException::class,
+            'binomial() result exceeds the host integer range.',
+        ];
+        yield 'permutation k above n' => [
+            'permutation',
+            [2, 3],
+            \DomainException::class,
+            'permutation() requires k to be less than or equal to n.',
+        ];
+        yield 'permutation overflow' => [
+            'permutation',
+            [21, 21],
+            \OverflowException::class,
+            'permutation() result exceeds the host integer range.',
         ];
     }
 

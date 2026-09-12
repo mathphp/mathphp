@@ -75,6 +75,11 @@ All notable changes will be documented in this file. The project follows
 
 ### Added
 
+- Added exact integer-domain combinatorial built-ins: `factorial()`,
+  `binomial()` (with `choose()`/`ncr()` aliases), and `permutation()` (with
+  `permute()`/`npr()` aliases). Domain validation and host-integer overflow
+  checks keep large or invalid requests explicit.
+
 - Standard implicit multiplication in the Core grammar (`2x`, `2(x + 1)`,
   adjacent groupings, and whitespace-separated factors), while preserving
   atomic identifier names such as `xy`.

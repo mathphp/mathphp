@@ -277,6 +277,48 @@ final readonly class FunctionRegistry
                 2,
                 self::leastCommonMultiple(...),
             ),
+            new FunctionDefinition(
+                'factorial',
+                1,
+                1,
+                self::factorialFunction(...),
+            ),
+            new FunctionDefinition(
+                'binomial',
+                2,
+                2,
+                self::binomial(...),
+            ),
+            new FunctionDefinition(
+                'choose',
+                2,
+                2,
+                self::binomial(...),
+            ),
+            new FunctionDefinition(
+                'ncr',
+                2,
+                2,
+                self::binomial(...),
+            ),
+            new FunctionDefinition(
+                'permutation',
+                2,
+                2,
+                self::permutation(...),
+            ),
+            new FunctionDefinition(
+                'permute',
+                2,
+                2,
+                self::permutation(...),
+            ),
+            new FunctionDefinition(
+                'npr',
+                2,
+                2,
+                self::permutation(...),
+            ),
         ];
 
         $indexedDefinitions = [];
@@ -784,6 +826,104 @@ final readonly class FunctionRegistry
         }
 
         return $reduced * $right;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function factorialFunction(array $arguments): int
+    {
+        $operand = self::requireNonNegativeInteger($arguments[0], 'factorial');
+
+        return self::factorialValue($operand, 'factorial');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function binomial(array $arguments): int
+    {
+        $n = self::requireNonNegativeInteger($arguments[0], 'binomial');
+        $k = self::requireNonNegativeInteger($arguments[1], 'binomial');
+        if ($k > $n) {
+            throw new \DomainException('binomial() requires k to be less than or equal to n.');
+        }
+
+        $k = min($k, $n - $k);
+        $result = 1;
+        for ($index = 1; $index <= $k; ++$index) {
+            $numerator = $n - $k + $index;
+            $denominator = $index;
+            $common = self::integerGcd($numerator, $denominator);
+            $numerator = intdiv($numerator, $common);
+            $denominator = intdiv($denominator, $common);
+            $common = self::integerGcd($result, $denominator);
+            $result = intdiv($result, $common);
+            $denominator = intdiv($denominator, $common);
+            if ($denominator !== 1) {
+                throw new \LogicException('binomial() reduction failed to produce an integer.');
+            }
+            if ($result > intdiv(\PHP_INT_MAX, $numerator)) {
+                throw new \OverflowException('binomial() result exceeds the host integer range.');
+            }
+            $result *= $numerator;
+        }
+
+        return $result;
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function permutation(array $arguments): int
+    {
+        $n = self::requireNonNegativeInteger($arguments[0], 'permutation');
+        $k = self::requireNonNegativeInteger($arguments[1], 'permutation');
+        if ($k > $n) {
+            throw new \DomainException('permutation() requires k to be less than or equal to n.');
+        }
+        if ($k === 0) {
+            return 1;
+        }
+
+        $result = 1;
+        for ($value = $n - $k + 1; $value <= $n; ++$value) {
+            if ($value !== 0 && $result > intdiv(\PHP_INT_MAX, $value)) {
+                throw new \OverflowException('permutation() result exceeds the host integer range.');
+            }
+            $result *= $value;
+            if ($value === $n) {
+                break;
+            }
+        }
+
+        return $result;
+    }
+
+    private static function factorialValue(int $operand, string $function): int
+    {
+        $result = 1;
+        for ($factor = 2; $factor <= $operand; ++$factor) {
+            if ($result > intdiv(\PHP_INT_MAX, $factor)) {
+                throw new \OverflowException($function . '() result exceeds the host integer range.');
+            }
+            $result *= $factor;
+        }
+
+        return $result;
+    }
+
+    private static function integerGcd(int $left, int $right): int
+    {
+        while ($right !== 0) {
+            [$left, $right] = [$right, $left % $right];
+        }
+
+        return abs($left);
+    }
+
+    private static function requireNonNegativeInteger(int|float $value, string $function): int
+    {
+        $integer = self::requireInteger($value, $function);
+        if ($integer < 0) {
+            throw new \DomainException($function . '() requires non-negative integer arguments.');
+        }
+
+        return $integer;
     }
 
     private static function requireInteger(int|float $value, string $function): int
