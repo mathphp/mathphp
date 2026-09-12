@@ -15,6 +15,8 @@ All notable changes will be documented in this file. The project follows
   Euler–Maclaurin summation.
 - Added real `digamma()` and `trigamma()` gamma-derivative built-ins with
   recurrence, reflection, asymptotic evaluation, and pole checks.
+- Added stable reciprocal hyperbolic built-ins `sech()`, `csch()`, and `coth()`
+  with explicit zero-pole validation.
 
 ## [0.3.7] - 2026-09-07
 

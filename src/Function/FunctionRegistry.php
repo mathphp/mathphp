@@ -200,6 +200,24 @@ final readonly class FunctionRegistry
                 self::hyperbolicTangent(...),
             ),
             new FunctionDefinition(
+                'sech',
+                1,
+                1,
+                self::hyperbolicSecant(...),
+            ),
+            new FunctionDefinition(
+                'csch',
+                1,
+                1,
+                self::hyperbolicCosecant(...),
+            ),
+            new FunctionDefinition(
+                'coth',
+                1,
+                1,
+                self::hyperbolicCotangent(...),
+            ),
+            new FunctionDefinition(
                 'asinh',
                 1,
                 1,
@@ -914,6 +932,65 @@ final readonly class FunctionRegistry
     private static function hyperbolicTangent(array $arguments): float
     {
         return \tanh($arguments[0]);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hyperbolicSecant(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        $absolute = \abs($value);
+        if ($absolute > 20.0) {
+            $decay = \exp(-$absolute);
+            $result = 2.0 * $decay / (1.0 + $decay * $decay);
+
+            return self::finiteSpecialResult($result, 'sech');
+        }
+
+        return self::finiteSpecialResult(1.0 / \cosh($value), 'sech');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hyperbolicCosecant(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (\abs($value) <= 1.0E-15) {
+            throw new \DomainException('csch() is undefined at zero.');
+        }
+
+        $absolute = \abs($value);
+        if ($absolute <= 20.0) {
+            return self::finiteSpecialResult(1.0 / \sinh($value), 'csch');
+        }
+
+        $decay = \exp(-$absolute);
+        $result = 2.0 * $decay / (1.0 - $decay * $decay);
+        if ($value < 0.0) {
+            $result = -$result;
+        }
+
+        return self::finiteSpecialResult($result, 'csch');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function hyperbolicCotangent(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (\abs($value) <= 1.0E-15) {
+            throw new \DomainException('coth() is undefined at zero.');
+        }
+
+        $absolute = \abs($value);
+        if ($absolute <= 20.0) {
+            return self::finiteSpecialResult(\cosh($value) / \sinh($value), 'coth');
+        }
+
+        $decay = \exp(-$absolute);
+        $result = (1.0 + $decay * $decay) / (1.0 - $decay * $decay);
+        if ($value < 0.0) {
+            $result = -$result;
+        }
+
+        return self::finiteSpecialResult($result, 'coth');
     }
 
     /** @param list<int|float> $arguments */

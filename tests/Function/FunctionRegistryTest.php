@@ -80,6 +80,9 @@ final class FunctionRegistryTest extends TestCase
         yield 'hyperbolic sine' => ['sinh', [0], 0.0, 'float'];
         yield 'hyperbolic cosine' => ['cosh', [0], 1.0, 'float'];
         yield 'hyperbolic tangent' => ['tanh', [0], 0.0, 'float'];
+        yield 'hyperbolic secant' => ['sech', [0], 1.0, 'float'];
+        yield 'hyperbolic cosecant' => ['csch', [\asinh(1)], 1.0, 'float'];
+        yield 'hyperbolic cotangent' => ['coth', [\asinh(1)], \sqrt(2.0), 'float'];
         yield 'inverse hyperbolic sine' => ['asinh', [0], 0.0, 'float'];
         yield 'inverse hyperbolic cosine' => ['acosh', [1], 0.0, 'float'];
         yield 'inverse hyperbolic tangent' => ['atanh', [0], 0.0, 'float'];
@@ -157,6 +160,9 @@ final class FunctionRegistryTest extends TestCase
         yield 'sinh' => ['sinh', 1, 1];
         yield 'cosh' => ['cosh', 1, 1];
         yield 'tanh' => ['tanh', 1, 1];
+        yield 'sech' => ['sech', 1, 1];
+        yield 'csch' => ['csch', 1, 1];
+        yield 'coth' => ['coth', 1, 1];
         yield 'asinh' => ['asinh', 1, 1];
         yield 'acosh' => ['acosh', 1, 1];
         yield 'atanh' => ['atanh', 1, 1];
@@ -341,6 +347,18 @@ final class FunctionRegistryTest extends TestCase
             [1],
             \DomainException::class,
             'atanh() requires an argument strictly between -1 and 1.',
+        ];
+        yield 'hyperbolic cosecant at pole' => [
+            'csch',
+            [0],
+            \DomainException::class,
+            'csch() is undefined at zero.',
+        ];
+        yield 'hyperbolic cotangent at pole' => [
+            'coth',
+            [0],
+            \DomainException::class,
+            'coth() is undefined at zero.',
         ];
         yield 'tangent at pole' => [
             'tan',

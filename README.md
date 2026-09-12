@@ -67,7 +67,8 @@ such as `x²`), and the standard implicit forms (`2x`, `2(x + 1)`, and
 intended.
 
 The built-in function registry includes elementary, trigonometric (including
-`sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic, numerical,
+`sec`, `csc`, `cot`, `asec`, `acsc`, and `acot`), hyperbolic (including
+`sech`, `csch`, and `coth`), numerical,
 integer, combinatorial, and special functions such as `erf`, `erfc`, `gamma`,
 `lgamma`, `beta`, `logbeta`, `zeta`, `digamma`, `trigamma`, `besselj`, and
 `besseli`. The real zeta implementation requires an argument greater than
