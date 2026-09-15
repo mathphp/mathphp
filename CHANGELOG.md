@@ -17,6 +17,8 @@ All notable changes will be documented in this file. The project follows
   Euler–Maclaurin summation.
 - Added `zetaprime(s)` using the derivative of the same Euler–Maclaurin
   approximation, with the same finite-domain guard as `zeta(s)`.
+- Added `airyaiprime()` and `airybiprime()` built-ins using the matching
+  Airy power-series and asymptotic derivative branches.
 - Added real `digamma()` and `trigamma()` gamma-derivative built-ins with
   recurrence, reflection, asymptotic evaluation, and pole checks.
 - Added stable reciprocal hyperbolic built-ins `sech()`, `csch()`, and `coth()`

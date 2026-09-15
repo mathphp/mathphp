@@ -80,10 +80,22 @@ final readonly class FunctionRegistry
                 self::airyAi(...),
             ),
             new FunctionDefinition(
+                'airyaiprime',
+                1,
+                1,
+                self::airyAiPrime(...),
+            ),
+            new FunctionDefinition(
                 'airybi',
                 1,
                 1,
                 self::airyBi(...),
+            ),
+            new FunctionDefinition(
+                'airybiprime',
+                1,
+                1,
+                self::airyBiPrime(...),
             ),
             new FunctionDefinition(
                 'ellipk',
@@ -796,9 +808,31 @@ final readonly class FunctionRegistry
         return self::finiteSpecialResult(self::airyValue($value, true), 'airybi');
     }
 
+    /** @param list<int|float> $arguments */
+    private static function airyAiPrime(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('airyaiprime() requires a finite argument.');
+        }
+
+        return self::finiteSpecialResult(self::airyDerivative($value, false), 'airyaiprime');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function airyBiPrime(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('airybiprime() requires a finite argument.');
+        }
+
+        return self::finiteSpecialResult(self::airyDerivative($value, true), 'airybiprime');
+    }
+
     private static function airyValue(float $value, bool $secondSolution): float
     {
-        if (abs($value) <= 12.0) {
+        if (abs($value) <= 3.0) {
             $gammaOneThird = 2.6789385347077476337;
             $gammaTwoThirds = 1.3541179394264004169;
             $a0 = $secondSolution
@@ -845,6 +879,69 @@ final readonly class FunctionRegistry
         $amplitude = 1.0 / (sqrt(M_PI) * $absolute ** 0.25);
 
         return $amplitude * ($secondSolution ? cos($phase) : sin($phase));
+    }
+
+    private static function airyDerivative(float $value, bool $secondSolution): float
+    {
+        if (abs($value) <= 3.0) {
+            $gammaOneThird = 2.6789385347077476337;
+            $gammaTwoThirds = 1.3541179394264004169;
+            $a0 = $secondSolution
+                ? 1.0 / (($gammaTwoThirds) * (3.0 ** (1.0 / 6.0)))
+                : 1.0 / (($gammaTwoThirds) * (3.0 ** (2.0 / 3.0)));
+            $a1 = $secondSolution
+                ? (3.0 ** (1.0 / 6.0)) / $gammaOneThird
+                : -1.0 / ((3.0 ** (1.0 / 3.0)) * $gammaOneThird);
+            $coefficients = [$a0, $a1, 0.0];
+            for ($index = 1; $index <= 240; ++$index) {
+                $coefficients[$index + 2] = $coefficients[$index - 1] / (($index + 2.0) * ($index + 1.0));
+            }
+            $power = 1.0;
+            $sum = 0.0;
+            foreach ($coefficients as $index => $coefficient) {
+                if ($index > 1) {
+                    $power *= $value;
+                }
+                if ($index === 0) {
+                    continue;
+                }
+                $term = $index * $coefficient * $power;
+                $sum += $term;
+                if ($index > 24 && abs($term) <= max(1.0, abs($sum)) * 1.0E-16) {
+                    break;
+                }
+            }
+
+            return $sum;
+        }
+
+        $absolute = abs($value);
+        $zeta = (2.0 / 3.0) * ($absolute ** 1.5);
+        $first = 5.0 / (72.0 * $zeta);
+        $second = 385.0 / (10368.0 * $zeta * $zeta);
+        $third = 85085.0 / (2239488.0 * $zeta ** 3);
+        if ($value > 0.0) {
+            $correction = $secondSolution
+                ? 1.0 + $first + $second + $third
+                : 1.0 - $first + $second - $third;
+            $correctionDerivative = $secondSolution
+                ? -$first - 2.0 * $second - 3.0 * $third
+                : $first - 2.0 * $second + 3.0 * $third;
+            $logDerivative = ($secondSolution ? 1.0 : -1.0) * sqrt($value) - 1.0 / (4.0 * $value);
+            $scale = $secondSolution ? 1.0 / sqrt(M_PI) : 1.0 / (2.0 * sqrt(M_PI));
+            $envelope = $scale * $absolute ** (-0.25) * ($secondSolution ? exp($zeta) : exp(-$zeta));
+
+            return $envelope * ($logDerivative * $correction + sqrt($value) / $zeta * $correctionDerivative);
+        }
+
+        $phase = $zeta + M_PI / 4.0;
+        $amplitude = 1.0 / (sqrt(M_PI) * $absolute ** 0.25);
+        $amplitudeDerivative = $amplitude / (4.0 * $absolute);
+        $phaseDerivative = -sqrt($absolute);
+
+        return $secondSolution
+            ? $amplitudeDerivative * cos($phase) - $amplitude * $phaseDerivative * sin($phase)
+            : $amplitudeDerivative * sin($phase) + $amplitude * $phaseDerivative * cos($phase);
     }
 
     /** @param list<int|float> $arguments */

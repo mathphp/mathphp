@@ -59,8 +59,12 @@ final class FunctionRegistryTest extends TestCase
         ];
         yield 'Airy Ai at zero' => ['airyai', [0], 0.3550280538878172, 'float'];
         yield 'Airy Ai at one' => ['airyai', [1], 0.13529241631288147, 'float'];
+        yield 'Airy Ai derivative at zero' => ['airyaiprime', [0], -0.2588194037928068, 'float'];
+        yield 'Airy Ai derivative at one' => ['airyaiprime', [1], -0.1591474412967932, 'float'];
         yield 'Airy Bi at zero' => ['airybi', [0], 0.6149266274460007, 'float'];
         yield 'Airy Bi at one' => ['airybi', [1], 1.2074235949528712, 'float'];
+        yield 'Airy Bi derivative at zero' => ['airybiprime', [0], 0.4482883573538264, 'float'];
+        yield 'Airy Bi derivative at one' => ['airybiprime', [1], 0.9324359333927756, 'float'];
         yield 'Airy Ai at negative one' => ['airyai', [-1], 0.5355608832923522, 'float'];
         yield 'Airy Bi at negative one' => ['airybi', [-1], 0.10399738949694468, 'float'];
         yield 'complete elliptic K at zero' => ['ellipk', [0], M_PI / 2.0, 'float'];
@@ -211,6 +215,10 @@ final class FunctionRegistryTest extends TestCase
         yield 'abs' => ['abs', 1, 1];
         yield 'sqrt' => ['sqrt', 1, 1];
         yield 'cbrt' => ['cbrt', 1, 1];
+        yield 'airyai' => ['airyai', 1, 1];
+        yield 'airyaiprime' => ['airyaiprime', 1, 1];
+        yield 'airybi' => ['airybi', 1, 1];
+        yield 'airybiprime' => ['airybiprime', 1, 1];
         yield 'erf' => ['erf', 1, 1];
         yield 'erfc' => ['erfc', 1, 1];
         yield 'gamma' => ['gamma', 1, 1];
