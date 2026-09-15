@@ -48,6 +48,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'square root' => ['sqrt', [9], 3.0, 'float'];
         yield 'cube root positive' => ['cbrt', [27], 3.0, 'float'];
         yield 'cube root negative' => ['cbrt', [-8], -2.0, 'float'];
+        yield 'fourth root' => ['root', [81, 4], 3.0, 'float'];
+        yield 'nth root alias negative odd degree' => ['nthroot', [-8, 3], -2.0, 'float'];
         yield 'error function at zero' => ['erf', [0], 0.0, 'float'];
         yield 'error function at one' => ['erf', [1], 0.8427007929497149, 'float'];
         yield 'complementary error function at zero' => ['erfc', [0], 1.0, 'float'];
@@ -217,6 +219,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'abs' => ['abs', 1, 1];
         yield 'sqrt' => ['sqrt', 1, 1];
         yield 'cbrt' => ['cbrt', 1, 1];
+        yield 'root' => ['root', 2, 2];
+        yield 'nthroot' => ['nthroot', 2, 2];
         yield 'airyai' => ['airyai', 1, 1];
         yield 'airyaiprime' => ['airyaiprime', 1, 1];
         yield 'airybi' => ['airybi', 1, 1];
@@ -339,6 +343,18 @@ final class FunctionRegistryTest extends TestCase
             [-1],
             \DomainException::class,
             'sqrt() requires a non-negative argument.',
+        ];
+        yield 'zero root degree' => [
+            'root',
+            [16, 0],
+            \DomainException::class,
+            'root() requires a positive integer degree.',
+        ];
+        yield 'even root of negative radicand' => [
+            'nthroot',
+            [-16, 2],
+            \DomainException::class,
+            'root() cannot take an even root of a negative radicand.',
         ];
         yield 'inverse error function endpoint' => [
             'erfinv',

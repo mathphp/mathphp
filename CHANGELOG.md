@@ -54,6 +54,8 @@ All notable changes will be documented in this file. The project follows
   including nested bars and implicit multiplication such as `2|x|`.
 - Added Unicode floor and ceiling brackets (`⌊x⌋`, `⌈x⌉`) as safe aliases for
   `floor(x)` and `ceil(x)`.
+- Added domain-checked general real roots via `root(value, degree)` and the
+  `nthroot` alias.
 - Added stable numerical primitives `log2`, `log1p`, and `expm1`.
 - Added two-argument `atan2` with an explicit origin-domain error.
 - Added overflow-safe integer `gcd` and `lcm` functions.

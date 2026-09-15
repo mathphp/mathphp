@@ -44,6 +44,18 @@ final readonly class FunctionRegistry
                 self::cubeRoot(...),
             ),
             new FunctionDefinition(
+                'root',
+                2,
+                2,
+                self::nthRoot(...),
+            ),
+            new FunctionDefinition(
+                'nthroot',
+                2,
+                2,
+                self::nthRoot(...),
+            ),
+            new FunctionDefinition(
                 'erf',
                 1,
                 1,
@@ -670,6 +682,31 @@ final readonly class FunctionRegistry
         $value = (float) $arguments[0];
 
         return $value < 0.0 ? -\pow(-$value, 1.0 / 3.0) : \pow($value, 1.0 / 3.0);
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function nthRoot(array $arguments): float
+    {
+        $value = (float) $arguments[0];
+        if (!is_finite($value)) {
+            throw new \DomainException('root() requires a finite real radicand.');
+        }
+
+        $degree = self::requireInteger($arguments[1], 'root');
+        if ($degree < 1) {
+            throw new \DomainException('root() requires a positive integer degree.');
+        }
+        if ($value < 0.0 && $degree % 2 === 0) {
+            throw new \DomainException('root() cannot take an even root of a negative radicand.');
+        }
+
+        if ($value === 0.0) {
+            return 0.0;
+        }
+
+        return $value < 0.0
+            ? -\pow(-$value, 1.0 / $degree)
+            : \pow($value, 1.0 / $degree);
     }
 
     /** @param list<int|float> $arguments */

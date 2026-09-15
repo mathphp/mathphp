@@ -98,6 +98,12 @@ final class EvaluatorTest extends TestCase
         self::assertSame(2.0, \MathPHP\Math::evaluate('⌈1.2⌉'));
     }
 
+    public function testGeneralRootFunctionSupportsEvenAndOddRealRoots(): void
+    {
+        self::assertSame(3.0, \MathPHP\Math::evaluate('root(81, 4)'));
+        self::assertSame(-2.0, \MathPHP\Math::evaluate('nthroot(-8, 3)'));
+    }
+
     public function testFinalResultNormalizationRemovesVariableSignedZero(): void
     {
         $evaluator = self::evaluator(['negative_zero' => -0.0]);
