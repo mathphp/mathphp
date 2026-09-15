@@ -50,6 +50,8 @@ All notable changes will be documented in this file. The project follows
 
 ### Added
 
+- Added absolute-value bar notation (`|x|`) as a safe alias for `abs(x)`,
+  including nested bars and implicit multiplication such as `2|x|`.
 - Added stable numerical primitives `log2`, `log1p`, and `expm1`.
 - Added two-argument `atan2` with an explicit origin-domain error.
 - Added overflow-safe integer `gcd` and `lcm` functions.

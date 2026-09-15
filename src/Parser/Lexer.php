@@ -197,6 +197,7 @@ final class Lexer
             '(' => TokenType::LeftParenthesis,
             ')' => TokenType::RightParenthesis,
             ',' => TokenType::Comma,
+            '|' => TokenType::AbsoluteValueBar,
             default => throw new LexicalException(
                 \sprintf('Unknown character %s', $this->describeByte($character)),
                 'lex.unknown_character',

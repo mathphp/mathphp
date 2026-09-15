@@ -99,7 +99,7 @@ final class LexerTest extends TestCase
 
     public function testEveryOperatorAndDelimiterHasItsOwnToken(): void
     {
-        $source = '+-*/%^!(),';
+        $source = '+-*/%^!(),|';
         $expectedTypes = [
             TokenType::Plus,
             TokenType::Minus,
@@ -111,10 +111,11 @@ final class LexerTest extends TestCase
             TokenType::LeftParenthesis,
             TokenType::RightParenthesis,
             TokenType::Comma,
+            TokenType::AbsoluteValueBar,
         ];
         $tokens = (new Lexer($source))->tokenize();
 
-        self::assertCount(11, $tokens);
+        self::assertCount(12, $tokens);
 
         foreach ($expectedTypes as $position => $expectedType) {
             self::assertToken(
@@ -126,7 +127,7 @@ final class LexerTest extends TestCase
             );
         }
 
-        self::assertToken($tokens[10], TokenType::EndOfInput, '', 10, 10);
+        self::assertToken($tokens[11], TokenType::EndOfInput, '', 11, 11);
     }
 
     public function testAlphabeticTextAfterANumberStartsASeparateToken(): void

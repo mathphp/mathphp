@@ -367,6 +367,26 @@ final class ParserTest extends TestCase
         self::assertSame(4, $node->operatorSpan->end);
     }
 
+    /** @param array<int, mixed> $expectedShape */
+    #[DataProvider('absoluteValueProvider')]
+    public function testAbsoluteValueBarsLowerToAbsFunctionCalls(
+        string $source,
+        array $expectedShape,
+    ): void {
+        self::assertSame($expectedShape, self::shape(self::parseExpression($source)));
+    }
+
+    /**
+     * @return iterable<string, array{string, array<mixed>}>
+     */
+    public static function absoluteValueProvider(): iterable
+    {
+        yield 'single variable' => ['|x|', ['call', 'abs', [['variable', 'x']]]];
+        yield 'grouped expression' => ['|x - 2|', ['call', 'abs', [['binary', '-', ['variable', 'x'], ['number', '2', 2]]]]];
+        yield 'nested absolute value' => ['||x| - 1|', ['call', 'abs', [['binary', '-', ['call', 'abs', [['variable', 'x']]], ['number', '1', 1]]]]];
+        yield 'implicit multiplication' => ['2|x|', ['binary', '*', ['number', '2', 2], ['call', 'abs', [['variable', 'x']]]]];
+    }
+
     #[DataProvider('parseFailureProvider')]
     public function testMalformedGrammarReportsStableCodeAndExactSpan(
         string $source,
@@ -479,6 +499,12 @@ final class ParserTest extends TestCase
             1,
             2,
         ];
+        yield 'unmatched absolute-value delimiter' => [
+            '1||2',
+            'parse.expected_token',
+            4,
+            4,
+        ];
         yield 'leading closing delimiter' => [
             ')',
             'parse.expected_expression',
@@ -580,7 +606,6 @@ final class ParserTest extends TestCase
         yield 'assignment' => ['x=1', 1];
         yield 'comparison' => ['1<2', 1];
         yield 'logical and' => ['1&&2', 1];
-        yield 'logical or' => ['1||2', 1];
         yield 'array syntax' => ['x[1]', 1];
         yield 'string syntax' => ['"x"', 0];
         yield 'comment syntax' => ['1#comment', 1];

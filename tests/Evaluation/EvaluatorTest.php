@@ -86,6 +86,12 @@ final class EvaluatorTest extends TestCase
         self::assertSame('float', \get_debug_type($e));
     }
 
+    public function testAbsoluteValueBarsEvaluateLikeAbsFunction(): void
+    {
+        self::assertSame(-3, \MathPHP\Math::evaluate('|-3| - 6'));
+        self::assertSame(10, \MathPHP\Math::evaluate('2|x - 1|', ['x' => 6]));
+    }
+
     public function testFinalResultNormalizationRemovesVariableSignedZero(): void
     {
         $evaluator = self::evaluator(['negative_zero' => -0.0]);

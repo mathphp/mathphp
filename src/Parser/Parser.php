@@ -25,6 +25,8 @@ final class Parser
 
     private int $nesting = 0;
 
+    private int $absoluteValueDepth = 0;
+
     private ResourceLimits $limits;
 
     /**
@@ -49,6 +51,7 @@ final class Parser
     {
         $this->position = 0;
         $this->nesting = 0;
+        $this->absoluteValueDepth = 0;
 
         if ($this->check(TokenType::EndOfInput)) {
             throw new ParseException(
@@ -137,7 +140,8 @@ final class Parser
         return $this->check(TokenType::Number)
             || $this->check(TokenType::LeftParenthesis)
             || $this->check(TokenType::Identifier)
-            || $this->check(TokenType::SquareRoot);
+            || $this->check(TokenType::SquareRoot)
+            || ($this->check(TokenType::AbsoluteValueBar) && $this->absoluteValueDepth === 0);
     }
 
     private function parsePrefix(int $reservedDepth = 0): Node
@@ -256,6 +260,33 @@ final class Parser
 
             $node = new GroupingNode(
                 $expression,
+                new SourceSpan($opening->span->start, $closing->span->end),
+            );
+            $this->guardDepth($node, $opening->span);
+
+            return $node;
+        }
+
+        if ($this->check(TokenType::AbsoluteValueBar)) {
+            $opening = $this->advance();
+            $this->enterNesting($opening->span);
+            ++$this->absoluteValueDepth;
+
+            try {
+                $expression = $this->parseAdditive();
+                $closing = $this->consume(
+                    TokenType::AbsoluteValueBar,
+                    'Expected "|" after absolute-value expression',
+                );
+            } finally {
+                --$this->absoluteValueDepth;
+                --$this->nesting;
+            }
+
+            $node = new FunctionCallNode(
+                'abs',
+                [$expression],
+                $opening->span,
                 new SourceSpan($opening->span->start, $closing->span->end),
             );
             $this->guardDepth($node, $opening->span);

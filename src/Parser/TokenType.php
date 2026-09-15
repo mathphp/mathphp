@@ -20,5 +20,6 @@ enum TokenType: string
     case LeftParenthesis = '(';
     case RightParenthesis = ')';
     case Comma = ',';
+    case AbsoluteValueBar = '|';
     case EndOfInput = 'eof';
 }

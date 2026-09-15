@@ -30,6 +30,7 @@ Math::evaluate('sqrt(81) + 3!'); // 15.0
 Math::evaluate('binomial(10, 3) + permutation(4, 2)'); // 132
 Math::evaluate('2x + 1', ['x' => 4]); // 9
 Math::evaluate('2(3 + 4)'); // 14
+Math::evaluate('|x - 2|', ['x' => 5]); // 3
 Math::evaluate(
     'gross * (1 - discount)',
     ['gross' => 125, 'discount' => 0.2],
@@ -59,7 +60,8 @@ The complete API, grammar, examples, and integration guidance live in the
 language contract and traceability records live in the
 [specifications repository](https://github.com/mathphp/mathphp-specs).
 
-The expression grammar accepts explicit multiplication (`2 * x`), common
+The expression grammar accepts explicit multiplication (`2 * x`), absolute
+value bars (`|x - 2|`), common
 Unicode notation (`×`, `÷`, `−`, `√`, `π`, `τ`, `φ`, and superscript powers
 such as `x²`), and the standard implicit forms (`2x`, `2(x + 1)`, and
 `(x + 1)(x - 1)`). Identifiers remain atomic, so
