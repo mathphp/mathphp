@@ -107,6 +107,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'zeta at two' => ['zeta', [2], M_PI * M_PI / 6.0, 'float'];
         yield 'zeta at three' => ['zeta', [3], 1.2020569031595942, 'float'];
         yield 'zeta at one point five' => ['zeta', [1.5], 2.612375348685488, 'float'];
+        yield 'zeta derivative at two' => ['zetaprime', [2], -0.9375482543158437, 'float'];
+        yield 'zeta derivative at three' => ['zetaprime', [3], -0.1981262428856369, 'float'];
         yield 'digamma at one' => ['digamma', [1], -0.5772156649015329, 'float'];
         yield 'digamma at one half' => ['digamma', [0.5], -0.5772156649015329 - 2.0 * log(2.0), 'float'];
         yield 'trigamma at one' => ['trigamma', [1], M_PI * M_PI / 6.0, 'float'];
@@ -216,6 +218,7 @@ final class FunctionRegistryTest extends TestCase
         yield 'beta' => ['beta', 2, 2];
         yield 'logbeta' => ['logbeta', 2, 2];
         yield 'zeta' => ['zeta', 1, 1];
+        yield 'zetaprime' => ['zetaprime', 1, 1];
         yield 'digamma' => ['digamma', 1, 1];
         yield 'trigamma' => ['trigamma', 1, 1];
         yield 'besselj' => ['besselj', 2, 2];
@@ -435,6 +438,12 @@ final class FunctionRegistryTest extends TestCase
         ];
         yield 'zeta pole at one' => [
             'zeta',
+            [1],
+            \DomainException::class,
+            'requires a finite real argument greater than one',
+        ];
+        yield 'zeta derivative pole at one' => [
+            'zetaprime',
             [1],
             \DomainException::class,
             'requires a finite real argument greater than one',

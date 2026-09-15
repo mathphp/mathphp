@@ -15,6 +15,8 @@ All notable changes will be documented in this file. The project follows
   gamma implementation.
 - Added real Riemann `zeta(s)` evaluation for finite `s > 1` using
   Euler–Maclaurin summation.
+- Added `zetaprime(s)` using the derivative of the same Euler–Maclaurin
+  approximation, with the same finite-domain guard as `zeta(s)`.
 - Added real `digamma()` and `trigamma()` gamma-derivative built-ins with
   recurrence, reflection, asymptotic evaluation, and pole checks.
 - Added stable reciprocal hyperbolic built-ins `sech()`, `csch()`, and `coth()`

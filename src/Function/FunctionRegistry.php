@@ -206,6 +206,12 @@ final readonly class FunctionRegistry
                 self::zetaFunction(...),
             ),
             new FunctionDefinition(
+                'zetaprime',
+                1,
+                1,
+                self::zetaDerivativeFunction(...),
+            ),
+            new FunctionDefinition(
                 'digamma',
                 1,
                 1,
@@ -1581,6 +1587,53 @@ final readonly class FunctionRegistry
         }
 
         return self::finiteSpecialResult($sum + $tail + $correction, 'zeta');
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function zetaDerivativeFunction(array $arguments): float
+    {
+        $exponent = (float) $arguments[0];
+        if (!is_finite($exponent) || $exponent <= 1.0) {
+            throw new \DomainException('zetaprime() currently requires a finite real argument greater than one.');
+        }
+
+        $limit = 128;
+        $logLimit = log($limit);
+        $derivative = 0.0;
+        for ($index = 1; $index <= $limit; ++$index) {
+            $derivative -= log($index) * $index ** (-$exponent);
+        }
+        $power = $limit ** (1.0 - $exponent);
+        $derivative += $power * (-$logLimit / ($exponent - 1.0) - 1.0 / (($exponent - 1.0) ** 2));
+        $derivative += 0.5 * $logLimit * $limit ** (-$exponent);
+
+        $bernoulli = [
+            1 => 1.0 / 6.0,
+            2 => -1.0 / 30.0,
+            3 => 1.0 / 42.0,
+            4 => -1.0 / 30.0,
+            5 => 5.0 / 66.0,
+            6 => -691.0 / 2730.0,
+            7 => 7.0 / 6.0,
+            8 => -3617.0 / 510.0,
+        ];
+        foreach ($bernoulli as $index => $number) {
+            $order = 2 * $index;
+            $rising = 1.0;
+            $logRisingDerivative = 0.0;
+            $factorial = 1.0;
+            for ($factor = 0; $factor < $order - 1; ++$factor) {
+                $rising *= $exponent + $factor;
+                $logRisingDerivative += 1.0 / ($exponent + $factor);
+            }
+            for ($factor = 2; $factor <= $order; ++$factor) {
+                $factorial *= $factor;
+            }
+            $term = $number / $factorial * $rising * $limit ** (-$exponent - $order + 1.0);
+            $derivative += $term * ($logRisingDerivative - $logLimit);
+        }
+
+        return self::finiteSpecialResult($derivative, 'zetaprime');
     }
 
     /** @param list<int|float> $arguments */
