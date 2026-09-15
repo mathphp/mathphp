@@ -74,6 +74,8 @@ integer, combinatorial, and special functions such as `erf`, `erfc`, `erfi`, `er
 `besseli`, plus `polygamma`, integer-order `bessely`/`besselk`, real Lambert-W
 `lambertw`, and inverse hyperbolic functions
 `asech`, `acsch`, and `acoth`.
+Integer helpers also include the truncated-remainder aliases `mod` and
+`modulo`; both require finite integer operands and reject a zero divisor.
 The real zeta and `zetaprime` implementations require an argument greater
 than one; digamma and trigamma reject gamma poles. Beta arguments are
 finite and positive; Bessel orders are currently finite

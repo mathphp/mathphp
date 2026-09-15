@@ -7,6 +7,9 @@ All notable changes will be documented in this file. The project follows
 
 ### Added
 
+- Added `mod()` and `modulo()` truncated-integer-remainder built-ins with
+  explicit integer and zero-divisor validation.
+
 - Added a domain-checked real `lambertw()` built-in with principal and lower
   real branches (`0` and `-1`).
 - Added finite integer-order `besselj` and `besseli` built-ins with convergent

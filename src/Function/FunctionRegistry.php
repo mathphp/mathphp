@@ -518,6 +518,18 @@ final readonly class FunctionRegistry
                 self::round(...),
             ),
             new FunctionDefinition(
+                'mod',
+                2,
+                2,
+                self::modulo(...),
+            ),
+            new FunctionDefinition(
+                'modulo',
+                2,
+                2,
+                self::modulo(...),
+            ),
+            new FunctionDefinition(
                 'gcd',
                 2,
                 2,
@@ -2577,6 +2589,21 @@ final readonly class FunctionRegistry
             0,
             \PHP_ROUND_HALF_UP,
         );
+    }
+
+    /** @param list<int|float> $arguments */
+    private static function modulo(array $arguments): int
+    {
+        $dividend = self::requireInteger($arguments[0], 'mod');
+        $divisor = self::requireInteger($arguments[1], 'mod');
+        if ($divisor === 0) {
+            throw new \DomainException('mod() divisor must not be zero.');
+        }
+        if ($dividend === \PHP_INT_MIN && $divisor === -1) {
+            return 0;
+        }
+
+        return $dividend % $divisor;
     }
 
     /** @param list<int|float> $arguments */

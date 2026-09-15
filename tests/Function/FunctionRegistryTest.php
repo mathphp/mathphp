@@ -183,6 +183,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'ceiling' => ['ceil', [-1.2], -1.0, 'float'];
         yield 'round positive halfway' => ['round', [2.5], 3.0, 'float'];
         yield 'round negative halfway' => ['round', [-2.5], -3.0, 'float'];
+        yield 'mod function' => ['mod', [-7, 3], -1, 'int'];
+        yield 'modulo alias' => ['modulo', [-7, 3], -1, 'int'];
         yield 'greatest common divisor' => ['gcd', [84, 30], 6, 'int'];
         yield 'least common multiple' => ['lcm', [12, 18], 36, 'int'];
         yield 'factorial function' => ['factorial', [5], 120, 'int'];
@@ -271,6 +273,8 @@ final class FunctionRegistryTest extends TestCase
         yield 'floor' => ['floor', 1, 1];
         yield 'ceil' => ['ceil', 1, 1];
         yield 'round' => ['round', 1, 1];
+        yield 'mod' => ['mod', 2, 2];
+        yield 'modulo' => ['modulo', 2, 2];
         yield 'gcd' => ['gcd', 2, 2];
         yield 'lcm' => ['lcm', 2, 2];
         yield 'factorial' => ['factorial', 1, 1];
@@ -317,6 +321,18 @@ final class FunctionRegistryTest extends TestCase
             [\PHP_INT_MIN],
             \OverflowException::class,
             'absolute value of PHP_INT_MIN',
+        ];
+        yield 'mod non-integer dividend' => [
+            'mod',
+            [1.5, 2],
+            \DomainException::class,
+            'mod() requires finite integer arguments.',
+        ];
+        yield 'modulo zero divisor' => [
+            'modulo',
+            [1, 0],
+            \DomainException::class,
+            'mod() divisor must not be zero.',
         ];
         yield 'negative square root' => [
             'sqrt',
