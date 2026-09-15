@@ -130,6 +130,26 @@ final class LexerTest extends TestCase
         self::assertToken($tokens[11], TokenType::EndOfInput, '', 11, 11);
     }
 
+    public function testFloorAndCeilingBracketsHaveDedicatedUnicodeTokens(): void
+    {
+        $source = '⌊x⌋⌈x⌉';
+        $tokens = (new Lexer($source))->tokenize();
+
+        self::assertSame(
+            [
+                TokenType::FloorLeft,
+                TokenType::Identifier,
+                TokenType::FloorRight,
+                TokenType::CeilingLeft,
+                TokenType::Identifier,
+                TokenType::CeilingRight,
+                TokenType::EndOfInput,
+            ],
+            array_map(static fn (Token $token): TokenType => $token->type, $tokens),
+        );
+        self::assertSame(['⌊', 'x', '⌋', '⌈', 'x', '⌉', ''], array_map(static fn (Token $token): string => $token->lexeme, $tokens));
+    }
+
     public function testAlphabeticTextAfterANumberStartsASeparateToken(): void
     {
         $tokens = (new Lexer('2pi 1foo'))->tokenize();

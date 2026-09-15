@@ -141,7 +141,9 @@ final class Parser
             || $this->check(TokenType::LeftParenthesis)
             || $this->check(TokenType::Identifier)
             || $this->check(TokenType::SquareRoot)
-            || ($this->check(TokenType::AbsoluteValueBar) && $this->absoluteValueDepth === 0);
+            || ($this->check(TokenType::AbsoluteValueBar) && $this->absoluteValueDepth === 0)
+            || $this->check(TokenType::FloorLeft)
+            || $this->check(TokenType::CeilingLeft);
     }
 
     private function parsePrefix(int $reservedDepth = 0): Node
@@ -285,6 +287,35 @@ final class Parser
 
             $node = new FunctionCallNode(
                 'abs',
+                [$expression],
+                $opening->span,
+                new SourceSpan($opening->span->start, $closing->span->end),
+            );
+            $this->guardDepth($node, $opening->span);
+
+            return $node;
+        }
+
+        if ($this->check(TokenType::FloorLeft) || $this->check(TokenType::CeilingLeft)) {
+            $opening = $this->advance();
+            $closingType = $opening->type === TokenType::FloorLeft
+                ? TokenType::FloorRight
+                : TokenType::CeilingRight;
+            $function = $opening->type === TokenType::FloorLeft ? 'floor' : 'ceil';
+            $this->enterNesting($opening->span);
+
+            try {
+                $expression = $this->parseAdditive();
+                $closing = $this->consume(
+                    $closingType,
+                    sprintf('Expected "%s" after %s expression', $closingType->value, $function),
+                );
+            } finally {
+                --$this->nesting;
+            }
+
+            $node = new FunctionCallNode(
+                $function,
                 [$expression],
                 $opening->span,
                 new SourceSpan($opening->span->start, $closing->span->end),

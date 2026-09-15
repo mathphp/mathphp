@@ -286,6 +286,10 @@ final class Lexer
             '⁸' => [TokenType::Superscript, '8'],
             '⁹' => [TokenType::Superscript, '9'],
             '√' => [TokenType::SquareRoot, 'sqrt'],
+            '⌊' => [TokenType::FloorLeft, '⌊'],
+            '⌋' => [TokenType::FloorRight, '⌋'],
+            '⌈' => [TokenType::CeilingLeft, '⌈'],
+            '⌉' => [TokenType::CeilingRight, '⌉'],
         ];
 
         foreach ($symbols as $symbol => [$type, $lexeme]) {

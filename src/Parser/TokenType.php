@@ -21,5 +21,9 @@ enum TokenType: string
     case RightParenthesis = ')';
     case Comma = ',';
     case AbsoluteValueBar = '|';
+    case FloorLeft = '⌊';
+    case FloorRight = '⌋';
+    case CeilingLeft = '⌈';
+    case CeilingRight = '⌉';
     case EndOfInput = 'eof';
 }

@@ -45,6 +45,10 @@ final class TokenTest extends TestCase
                 ')',
                 ',',
                 '|',
+                '⌊',
+                '⌋',
+                '⌈',
+                '⌉',
                 'eof',
             ],
             \array_map(

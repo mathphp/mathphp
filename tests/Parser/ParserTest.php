@@ -385,6 +385,8 @@ final class ParserTest extends TestCase
         yield 'grouped expression' => ['|x - 2|', ['call', 'abs', [['binary', '-', ['variable', 'x'], ['number', '2', 2]]]]];
         yield 'nested absolute value' => ['||x| - 1|', ['call', 'abs', [['binary', '-', ['call', 'abs', [['variable', 'x']]], ['number', '1', 1]]]]];
         yield 'implicit multiplication' => ['2|x|', ['binary', '*', ['number', '2', 2], ['call', 'abs', [['variable', 'x']]]]];
+        yield 'floor brackets' => ['2⌊x⌋', ['binary', '*', ['number', '2', 2], ['call', 'floor', [['variable', 'x']]]]];
+        yield 'ceiling brackets' => ['⌈x - 1⌉', ['call', 'ceil', [['binary', '-', ['variable', 'x'], ['number', '1', 1]]]]];
     }
 
     #[DataProvider('parseFailureProvider')]

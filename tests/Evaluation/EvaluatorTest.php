@@ -92,6 +92,12 @@ final class EvaluatorTest extends TestCase
         self::assertSame(10, \MathPHP\Math::evaluate('2|x - 1|', ['x' => 6]));
     }
 
+    public function testFloorAndCeilingBracketsEvaluateLikeTheirFunctions(): void
+    {
+        self::assertSame(-2.0, \MathPHP\Math::evaluate('⌊-1.2⌋'));
+        self::assertSame(2.0, \MathPHP\Math::evaluate('⌈1.2⌉'));
+    }
+
     public function testFinalResultNormalizationRemovesVariableSignedZero(): void
     {
         $evaluator = self::evaluator(['negative_zero' => -0.0]);
