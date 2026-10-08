@@ -132,10 +132,12 @@ final class Lexer
         $literal = \substr($this->expression, $start, $this->position - $start);
         $span = new SourceSpan($start, $this->position);
 
+        $type = TokenType::Number;
         if (\strpbrk($literal, '.eE') === false) {
             $normalized = \ltrim($literal, '0');
             $normalized = $normalized === '' ? '0' : $normalized;
             $maximum = (string) \PHP_INT_MAX;
+            $minimumMagnitude = \substr((string) \PHP_INT_MIN, 1);
 
             if (
                 \strlen($normalized) > \strlen($maximum)
@@ -144,11 +146,15 @@ final class Lexer
                     && \strcmp($normalized, $maximum) > 0
                 )
             ) {
-                throw new LexicalException(
-                    'Integer literal is outside the host integer range',
-                    'lex.number_out_of_range',
-                    $span,
-                );
+                if ($normalized !== $minimumMagnitude) {
+                    throw new LexicalException(
+                        'Integer literal is outside the host integer range',
+                        'lex.number_out_of_range',
+                        $span,
+                    );
+                }
+
+                $type = TokenType::MinimumIntegerMagnitude;
             }
         } elseif (!\is_finite((float) $literal)) {
             throw new LexicalException(
@@ -158,26 +164,67 @@ final class Lexer
             );
         }
 
-        return new Token(TokenType::Number, $literal, $span);
+        return new Token($type, $literal, $span);
     }
 
     private function readIdentifier(): Token
     {
         $start = $this->position;
+        $identifier = $this->expression[$this->position];
         ++$this->position;
 
-        while (
-            ($character = $this->currentCharacter()) !== null
-            && $this->isIdentifierPart($character)
-        ) {
-            ++$this->position;
+        while ($this->position < $this->length) {
+            $character = $this->currentCharacter();
+            if ($character !== null && $this->isIdentifierPart($character)) {
+                $identifier .= $character;
+                ++$this->position;
+                continue;
+            }
+
+            $subscript = $this->currentSubscriptDigit();
+            if ($subscript === null) {
+                break;
+            }
+
+            [$character, $digit] = $subscript;
+            $identifier .= $digit;
+            $this->position += \strlen($character);
         }
 
         return new Token(
             TokenType::Identifier,
-            \substr($this->expression, $start, $this->position - $start),
+            $identifier,
             new SourceSpan($start, $this->position),
         );
+    }
+
+    /** @return array{string, string}|null */
+    private function currentSubscriptDigit(): ?array
+    {
+        $remaining = \substr($this->expression, $this->position);
+        $subscriptDigits = [
+            '₀' => '0', '₁' => '1', '₂' => '2', '₃' => '3', '₄' => '4',
+            '₅' => '5', '₆' => '6', '₇' => '7', '₈' => '8', '₉' => '9',
+        ];
+        foreach ($subscriptDigits as $character => $digit) {
+            if (\str_starts_with($remaining, $character)) {
+                return [$character, $digit];
+            }
+        }
+
+        return null;
+    }
+
+    private function consumeSubscriptDigits(): string
+    {
+        $digits = '';
+        while (($subscript = $this->currentSubscriptDigit()) !== null) {
+            [$character, $digit] = $subscript;
+            $digits .= $digit;
+            $this->position += \strlen($character);
+        }
+
+        return $digits;
     }
 
     private function readOperator(): Token
@@ -216,6 +263,56 @@ final class Lexer
     {
         $start = $this->position;
         $remaining = \substr($this->expression, $start);
+
+        // Superscript digits form one exponent (`x¹²` means `x^12`). A
+        // superscript sign is only part of an exponent when followed by a
+        // superscript digit (`x⁻²` means `x^-2`).
+        $superscriptDigits = [
+            '⁰' => '0', '¹' => '1', '²' => '2', '³' => '3', '⁴' => '4',
+            '⁵' => '5', '⁶' => '6', '⁷' => '7', '⁸' => '8', '⁹' => '9',
+        ];
+        $superscriptSigns = ['⁺' => '+', '⁻' => '-'];
+        $firstCharacter = null;
+        foreach ([...\array_keys($superscriptDigits), ...\array_keys($superscriptSigns)] as $symbol) {
+            if (\str_starts_with($remaining, $symbol)) {
+                $firstCharacter = $symbol;
+                break;
+            }
+        }
+
+        if ($firstCharacter !== null) {
+            $lexeme = '';
+            if (isset($superscriptSigns[$firstCharacter])) {
+                $afterSign = \substr($remaining, \strlen($firstCharacter));
+                $nextDigit = null;
+                foreach ($superscriptDigits as $symbol => $digit) {
+                    if (\str_starts_with($afterSign, $symbol)) {
+                        $nextDigit = [$symbol, $digit];
+                        break;
+                    }
+                }
+                if ($nextDigit === null) {
+                    return null;
+                }
+                $lexeme = $superscriptSigns[$firstCharacter];
+                $this->position += \strlen($firstCharacter);
+            }
+
+            while (
+                ($character = $this->currentUnicodeCharacter()) !== null
+                && isset($superscriptDigits[$character])
+            ) {
+                $lexeme .= $superscriptDigits[$character];
+                $this->position += \strlen($character);
+            }
+
+            return new Token(
+                TokenType::Superscript,
+                $lexeme,
+                new SourceSpan($start, $this->position),
+            );
+        }
+
         $symbols = [
             '×' => [TokenType::Multiply, '*'],
             '·' => [TokenType::Multiply, '*'],
@@ -275,16 +372,6 @@ final class Lexer
             'Χ' => [TokenType::Identifier, 'Chi'],
             'Ψ' => [TokenType::Identifier, 'Psi'],
             'Ω' => [TokenType::Identifier, 'Omega'],
-            '⁰' => [TokenType::Superscript, '0'],
-            '¹' => [TokenType::Superscript, '1'],
-            '²' => [TokenType::Superscript, '2'],
-            '³' => [TokenType::Superscript, '3'],
-            '⁴' => [TokenType::Superscript, '4'],
-            '⁵' => [TokenType::Superscript, '5'],
-            '⁶' => [TokenType::Superscript, '6'],
-            '⁷' => [TokenType::Superscript, '7'],
-            '⁸' => [TokenType::Superscript, '8'],
-            '⁹' => [TokenType::Superscript, '9'],
             '√' => [TokenType::SquareRoot, 'sqrt'],
             '⌊' => [TokenType::FloorLeft, '⌊'],
             '⌋' => [TokenType::FloorRight, '⌋'],
@@ -298,7 +385,27 @@ final class Lexer
             }
 
             $this->position += \strlen($symbol);
+            if ($type === TokenType::Identifier) {
+                $lexeme .= $this->consumeSubscriptDigits();
+            }
+
             return new Token($type, $lexeme, new SourceSpan($start, $this->position));
+        }
+
+        return null;
+    }
+
+    private function currentUnicodeCharacter(): ?string
+    {
+        if ($this->position >= $this->length) {
+            return null;
+        }
+
+        $remaining = \substr($this->expression, $this->position);
+        foreach (['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'] as $character) {
+            if (\str_starts_with($remaining, $character)) {
+                return $character;
+            }
         }
 
         return null;

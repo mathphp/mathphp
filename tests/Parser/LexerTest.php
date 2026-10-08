@@ -147,7 +147,10 @@ final class LexerTest extends TestCase
             ],
             array_map(static fn (Token $token): TokenType => $token->type, $tokens),
         );
-        self::assertSame(['⌊', 'x', '⌋', '⌈', 'x', '⌉', ''], array_map(static fn (Token $token): string => $token->lexeme, $tokens));
+        self::assertSame(
+            ['⌊', 'x', '⌋', '⌈', 'x', '⌉', ''],
+            array_map(static fn (Token $token): string => $token->lexeme, $tokens),
+        );
     }
 
     public function testAlphabeticTextAfterANumberStartsASeparateToken(): void
@@ -199,6 +202,29 @@ final class LexerTest extends TestCase
         self::assertSame('sqrt', $tokens[3]->lexeme);
     }
 
+    public function testSignedMultiDigitSuperscriptIsOneExponentToken(): void
+    {
+        $tokens = (new Lexer('x¹² + y⁻²'))->tokenize();
+
+        self::assertSame(
+            [
+                TokenType::Identifier,
+                TokenType::Superscript,
+                TokenType::Plus,
+                TokenType::Identifier,
+                TokenType::Superscript,
+                TokenType::EndOfInput,
+            ],
+            array_map(static fn (Token $token): TokenType => $token->type, $tokens),
+        );
+        self::assertSame('12', $tokens[1]->lexeme);
+        self::assertSame('-2', $tokens[4]->lexeme);
+        self::assertSame(1, $tokens[1]->span->start);
+        self::assertSame(5, $tokens[1]->span->end);
+        self::assertSame(9, $tokens[4]->span->start);
+        self::assertSame(14, $tokens[4]->span->end);
+    }
+
     public function testCommonGreekVariablesNormalizeToPortableIdentifiers(): void
     {
         $tokens = (new Lexer('α + λ + Δ'))->tokenize();
@@ -213,6 +239,20 @@ final class LexerTest extends TestCase
         self::assertSame(7, $tokens[2]->span->end);
     }
 
+    public function testSubscriptDigitsNormalizeAsPartOfIdentifiers(): void
+    {
+        $tokens = (new Lexer('x₁₀ + α₂'))->tokenize();
+
+        self::assertSame(['x10', '+', 'alpha2', ''], array_map(
+            static fn (Token $token): string => $token->lexeme,
+            $tokens,
+        ));
+        self::assertSame(0, $tokens[0]->span->start);
+        self::assertSame(7, $tokens[0]->span->end);
+        self::assertSame(10, $tokens[2]->span->start);
+        self::assertSame(15, $tokens[2]->span->end);
+    }
+
     public function testHostIntegerMaximumIsAcceptedWithLeadingZeroes(): void
     {
         $literal = '000' . (string) \PHP_INT_MAX;
@@ -224,6 +264,20 @@ final class LexerTest extends TestCase
             $literal,
             0,
             \strlen($literal),
+        );
+    }
+
+    public function testMagnitudeOfHostIntegerMinimumIsPreservedForParserContext(): void
+    {
+        $magnitude = \substr((string) \PHP_INT_MIN, 1);
+        $tokens = (new Lexer($magnitude))->tokenize();
+
+        self::assertToken(
+            $tokens[0],
+            TokenType::MinimumIntegerMagnitude,
+            $magnitude,
+            0,
+            \strlen($magnitude),
         );
     }
 

@@ -5,4 +5,5 @@ parameters:
         - src
         - tests
         - tools
+        - website/ResultFormatter.php
     reportUnmatchedIgnoredErrors: true

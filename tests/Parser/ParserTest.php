@@ -44,6 +44,14 @@ final class ParserTest extends TestCase
         self::assertSame(\strlen($source), $node->span()->end);
     }
 
+    public function testSuperscriptExponentOutsideHostIntegerRangeIsRejected(): void
+    {
+        $this->expectException(LexicalException::class);
+        $this->expectExceptionMessage('Superscript exponent is outside the host integer range');
+
+        self::parseExpression('2⁹²²³³⁷²⁰³⁶⁸⁵⁴⁷⁷⁵⁸⁰⁸');
+    }
+
     /**
      * @return iterable<string, array{string, int|float, 'int'|'float'}>
      */
@@ -382,11 +390,23 @@ final class ParserTest extends TestCase
     public static function absoluteValueProvider(): iterable
     {
         yield 'single variable' => ['|x|', ['call', 'abs', [['variable', 'x']]]];
-        yield 'grouped expression' => ['|x - 2|', ['call', 'abs', [['binary', '-', ['variable', 'x'], ['number', '2', 2]]]]];
-        yield 'nested absolute value' => ['||x| - 1|', ['call', 'abs', [['binary', '-', ['call', 'abs', [['variable', 'x']]], ['number', '1', 1]]]]];
-        yield 'implicit multiplication' => ['2|x|', ['binary', '*', ['number', '2', 2], ['call', 'abs', [['variable', 'x']]]]];
+        yield 'grouped expression' => [
+            '|x - 2|',
+            ['call', 'abs', [['binary', '-', ['variable', 'x'], ['number', '2', 2]]]],
+        ];
+        yield 'nested absolute value' => [
+            '||x| - 1|',
+            ['call', 'abs', [['binary', '-', ['call', 'abs', [['variable', 'x']]], ['number', '1', 1]]]],
+        ];
+        yield 'implicit multiplication' => [
+            '2|x|',
+            ['binary', '*', ['number', '2', 2], ['call', 'abs', [['variable', 'x']]]],
+        ];
         yield 'floor brackets' => ['2⌊x⌋', ['binary', '*', ['number', '2', 2], ['call', 'floor', [['variable', 'x']]]]];
-        yield 'ceiling brackets' => ['⌈x - 1⌉', ['call', 'ceil', [['binary', '-', ['variable', 'x'], ['number', '1', 1]]]]];
+        yield 'ceiling brackets' => [
+            '⌈x - 1⌉',
+            ['call', 'ceil', [['binary', '-', ['variable', 'x'], ['number', '1', 1]]]],
+        ];
     }
 
     #[DataProvider('parseFailureProvider')]

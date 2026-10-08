@@ -1,0 +1,28 @@
+{
+  "project": "MathPHP",
+  "status": "reviewed",
+  "maturity": "implemented-unverified",
+  "summary": "MathPHP implements a bounded PHP evaluator and bundled demo, with a scientific-notation display defect and unresolved contract and local add-on consistency.",
+  "findings": 3,
+  "tasks": 3,
+  "top_priority": "P1",
+  "next_action": "Execute T-001: first add a regression assertion that the website formatter preserves the exponent in 1.23e+20.",
+  "report_dir": "/Users/mark/Projects/MathPHP/plans/portfolio-review-2026-09-19",
+  "excluded_components": [
+    "Dependency/vendor contents and generated caches",
+    "Agent runtime data",
+    "Deep private add-on source review",
+    "External specs, Units, and separate website repositories"
+  ],
+  "checks_run": [
+    "Read-only core and nested Git root/status/recent-commit inspection",
+    "Static source, tests, manifest, CI and documentation sampling",
+    "Report existence, JSON/count, relative-link and F-001 source-anchor verification"
+  ],
+  "limitations": [
+    "No application tests, syntax lint, static analysis or Composer checks executed",
+    "No remote CI, release, registry, deployment or browser verification",
+    "Short sampled review; numerical algorithms and security not exhaustively audited",
+    "Local upstream refs not refreshed; Units checkout absent"
+  ]
+}

@@ -31,6 +31,7 @@ final class TokenTest extends TestCase
         self::assertSame(
             [
                 'number',
+                'minimum_integer_magnitude',
                 'identifier',
                 '+',
                 '-',

@@ -1,0 +1,18 @@
+# Lightweight operational and product brief
+
+MathPHP gives PHP developers finite scalar results, explicit source-aware errors and bounded evaluation without arbitrary PHP execution. Educational and visual integrations use separately distributed private add-ons. Desired outcome for this work: users see the correct result magnitude, maintainers have an unambiguous language contract, and local package revisions are not mistaken for a verified release set.
+
+Documented decisions: retain MathPHP identity and namespace (`docs/V0.1-CONTRACT.md:5`); PHP `^8.2` and no runtime dependency beyond PHP (`composer.json:13`); per-call evaluation and observer extension point (`src/Math.php:19`, `src/Math.php:44`); separate private add-ons (`website/README.md:18`); manual release and private-access boundary (`private/mathphp-docs/RELEASING.md:3`, `:74`). README line references should be rechecked on source drift.
+
+MVP in scope: formatter regression protection, current-vs-historical contract clarification, and a release compatibility inventory. Out of scope: new mathematical functions, broad analyzer refactors, renaming, billing/access automation, deployment, publication, dependency upgrades, or work in other projects.
+
+| ID | Requirement and basis | Observable acceptance |
+|---|---|---|
+| R-001 | **Inferred:** website formatting must retain the magnitude returned by evaluation. Source: `website/public/index.php:22`; finite scalar contract `docs/V0.1-CONTRACT.md:16`. | Tests exercise the production formatter with positive/negative scientific exponents ending in zero, ordinary decimals, integers and zero. Exponents remain intact and finite values agree to the documented display precision. |
+| R-002 | **Documented:** supported language syntax and byte spans must have one clear current contract. Sources: `docs/V0.1-CONTRACT.md:32`, `:139`; `src/Parser/Lexer.php:215`; `tests/Facade/MathTest.php:46`. | Maintainer records authoritative local contract/version; supported Unicode and implicit multiplication examples agree with tests; dated historical traceability is explicitly distinguished. Existing traceability IDs are preserved or mapped. |
+| R-003 | **Documented:** package release evidence must name compatible dependency refs. Source: `private/mathphp-docs/RELEASING.md:18`–36. | Inventory names core/Visuals/Explaining commits and declared constraints, explains the current mismatch, and records missing Units as a blocked full-ecosystem check. No claim of compatibility based solely on vendor presence. |
+| R-004 | **Documented:** preserve finite results, source spans, bounded resources and per-call isolation while fixing presentation. Sources: `CLAUDE.md:42`, `src/Math.php:24`, `src/Evaluator/Evaluator.php:79`. | Core behavior and API signatures stay unchanged; focused regression tests and the documented core quality gate pass on the execution baseline, with runtime and limits recorded. |
+
+Dependencies and decisions: T-001 needs no product decision. T-002 requires a maintainer choice of current local specification versus a labeled historical snapshot; do not edit an external specs repository under this assignment. T-003 needs intended release refs and the disposition of the older Visuals checkout; implementation remains outside this investigation. Full ecosystem verification requires the missing Units checkout and separately authorized scope.
+
+Proposed success measures (no measured baseline): zero exponent-corruption cases in the formatter regression table; zero conflicting supported-syntax assertions in the chosen current contract; every package in the compatibility record has a commit and explicit verification status. Runtime test passes, if obtained later, establish local evidence only, not production readiness.

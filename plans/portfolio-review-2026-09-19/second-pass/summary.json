@@ -1,0 +1,53 @@
+{
+  "project": "/Users/mark/Projects/MathPHP",
+  "status": "needs_human_decision",
+  "report_dir": "/Users/mark/Projects/MathPHP/plans/portfolio-review-2026-09-19/second-pass",
+  "confirmed_findings": 2,
+  "corrected_findings": 1,
+  "rejected_findings": 0,
+  "unverified_findings": 0,
+  "tasks": 3,
+  "maturity": "implemented-partially-locally-verified; release readiness unverified",
+  "top_priority": "T-001: preserve scientific-notation exponents in the bundled website formatter",
+  "next_action": "Execute T-001 in an authorized implementation task; choose release surface and local contract disposition before dependent work.",
+  "human_decisions": [
+    {
+      "id": "D-001",
+      "decision": "Choose core-only, core+bundled-demo, or optional ecosystem release scope",
+      "recommendation": "Validate core+demo first; do not gate core on missing Units"
+    },
+    {
+      "id": "D-002",
+      "decision": "Label local contract legacy or maintain a versioned mirror of designated external specs",
+      "recommendation": "Label legacy copy and preserve history; keep existing specs authority"
+    },
+    {
+      "id": "D-003",
+      "decision": "Specify optional package refs and resolve ownership of dirty Explaining source",
+      "recommendation": "Inventory first; no blind version bumps"
+    }
+  ],
+  "release_blockers": [
+    "Demo: confirmed scientific-notation display corruption",
+    "Current full quality, supported PHP matrix and distribution verification not established",
+    "Documentation: local contract disposition pending",
+    "Optional ecosystem only: incompatible declared local versions, concurrent unreviewed Explaining source revision and absent Units input for full checker"
+  ],
+  "checks_run": [
+    "Read-only core/nested Git HEAD and status; scoped contract history",
+    "Exact source formatter executed via PHP stdin: four exponent-corruption reproductions, controls checked",
+    "PHP 8.5.5 runtime identification",
+    "Website PHP syntax: exit 0, 1 file",
+    "PHPUnit 11.5.56 selected Facade and Documentation suites with result cache disabled: 83 tests, 227 assertions, exit 0",
+    "Manifest fields and Units path existence inspected",
+    "Output inventory, JSON schema/counts, source anchors and original-report hashes verified",
+    "Closing drift check: Explaining clean at new commit 97256333733c6230ac565f93ccdf5825fd74b75c; reports explicitly mark the earlier snapshot stale"
+  ],
+  "limitations": [
+    "No full test suite, PHPStan, Composer quality, dependency resolution or lock checker executed",
+    "No external specs, remote CI, registry, deployment or browser/HTTP verification",
+    "No deep private analyzer, exhaustive mathematical accuracy or security audit",
+    "Explaining changed concurrently: initially dirty at 85567da, finally clean at 97256333733c6230ac565f93ccdf5825fd74b75c; new commit not reviewed",
+    "No disposable runtime resources created; uncertain-ownership existing resources preserved"
+  ]
+}

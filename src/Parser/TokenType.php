@@ -7,6 +7,7 @@ namespace MathPHP\Parser;
 enum TokenType: string
 {
     case Number = 'number';
+    case MinimumIntegerMagnitude = 'minimum_integer_magnitude';
     case Identifier = 'identifier';
     case Plus = '+';
     case Minus = '-';

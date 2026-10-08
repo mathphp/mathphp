@@ -16,6 +16,7 @@ use MathPHP\Ast\UnaryOperationNode;
 use MathPHP\Ast\UnaryOperator;
 use MathPHP\Ast\VariableNode;
 use MathPHP\Configuration\ResourceLimits;
+use MathPHP\Exception\LexicalException;
 use MathPHP\Exception\ParseException;
 use MathPHP\Source\SourceSpan;
 
@@ -152,6 +153,22 @@ final class Parser
             $operator = $this->current();
             $this->guardProspectiveDepth($reservedDepth, $operator->span);
             $this->advance();
+
+            if (
+                $operator->type === TokenType::Minus
+                && $this->check(TokenType::MinimumIntegerMagnitude)
+            ) {
+                $magnitude = $this->advance();
+                $node = new NumberNode(
+                    \PHP_INT_MIN,
+                    '-' . $magnitude->lexeme,
+                    new SourceSpan($operator->span->start, $magnitude->span->end),
+                );
+                $this->guardDepth($node, $operator->span);
+
+                return $node;
+            }
+
             $operand = $this->parsePrefix($reservedDepth + 1);
             $node = new UnaryOperationNode(
                 $operator->type === TokenType::Plus
@@ -195,7 +212,7 @@ final class Parser
         $this->guardProspectiveDepth($reservedDepth, $operator->span);
         $this->advance();
         $exponent = $operator->type === TokenType::Superscript
-            ? new NumberNode((int) $operator->lexeme, $operator->lexeme, $operator->span)
+            ? $this->parseSuperscriptExponent($operator)
             : $this->parsePrefix($reservedDepth + 1);
         $node = new BinaryOperationNode(
             BinaryOperator::Power,
@@ -206,6 +223,41 @@ final class Parser
         $this->guardDepth($node, $operator->span);
 
         return $node;
+    }
+
+    private function parseSuperscriptExponent(Token $token): NumberNode
+    {
+        $literal = $token->lexeme;
+        $negative = \str_starts_with($literal, '-');
+        $unsignedLiteral = $negative || \str_starts_with($literal, '+')
+            ? \substr($literal, 1)
+            : $literal;
+        $digits = \ltrim($unsignedLiteral, '0');
+        if ($digits === '') {
+            return new NumberNode(0, $literal, $token->span);
+        }
+
+        $minimumMagnitude = \substr((string) \PHP_INT_MIN, 1);
+        $maximumMagnitude = $negative ? $minimumMagnitude : (string) \PHP_INT_MAX;
+        if (
+            \strlen($digits) > \strlen($maximumMagnitude)
+            || (
+                \strlen($digits) === \strlen($maximumMagnitude)
+                && \strcmp($digits, $maximumMagnitude) > 0
+            )
+        ) {
+            throw new LexicalException(
+                'Superscript exponent is outside the host integer range',
+                'lex.number_out_of_range',
+                $token->span,
+            );
+        }
+
+        $value = $negative && $digits === $minimumMagnitude
+            ? \PHP_INT_MIN
+            : (int) $digits * ($negative ? -1 : 1);
+
+        return new NumberNode($value, $literal, $token->span);
     }
 
     private function parsePostfix(): Node
@@ -223,6 +275,14 @@ final class Parser
 
     private function parsePrimary(): Node
     {
+        if ($this->check(TokenType::MinimumIntegerMagnitude)) {
+            throw new LexicalException(
+                'Integer literal is outside the host integer range without a leading minus',
+                'lex.number_out_of_range',
+                $this->current()->span,
+            );
+        }
+
         if ($this->check(TokenType::Number)) {
             $token = $this->advance();
             $value = \strpbrk($token->lexeme, '.eE') === false

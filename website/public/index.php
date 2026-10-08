@@ -5,6 +5,7 @@ declare(strict_types=1);
 // Deployment marker: private visuals package integration (2026-08-27).
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/ResultFormatter.php';
 
 $explainingAutoload = dirname(__DIR__, 2) . '/private/mathphp-explaining/vendor/autoload.php';
 if (is_file($explainingAutoload)) {
@@ -13,23 +14,11 @@ if (is_file($explainingAutoload)) {
 
 use MathPHP\Math;
 use MathPHP\Exception\MathException;
+use MathPHP\Website\ResultFormatter;
 
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-}
-
-function formatResult(int|float $result): string
-{
-    if (is_int($result)) {
-        return (string) $result;
-    }
-
-    $formatted = sprintf('%.14g', $result);
-
-    return str_contains($formatted, '.')
-        ? rtrim(rtrim($formatted, '0'), '.')
-        : $formatted;
 }
 
 function renderLayout(string $title, string $content, string $active): string
@@ -166,7 +155,7 @@ function handleEvaluationRequest(): never
 
     try {
         $result = Math::evaluate($expression, $variables);
-        echo json_encode(['ok' => true, 'result' => $result, 'type' => get_debug_type($result), 'display' => formatResult($result)], JSON_THROW_ON_ERROR);
+        echo json_encode(['ok' => true, 'result' => $result, 'type' => get_debug_type($result), 'display' => ResultFormatter::format($result)], JSON_THROW_ON_ERROR);
     } catch (MathException $error) {
         $span = $error->span();
         echo json_encode(['ok' => false, 'code' => $error->errorCode(), 'message' => $error->getMessage(), 'span' => [$span->start, $span->end]], JSON_THROW_ON_ERROR);
