@@ -4271,7 +4271,7 @@ final class EquationSolver
         $rightEarlyInverseLevel = $this->unwrapGrouping($right);
         $earlyInverseFunctions = [
             'ln', 'log10', 'log2', 'log', 'acosh', 'asech', 'asec', 'acos', 'sqrt', 'asin', 'acsc', 'acoth',
-            'atanh', 'arctanh',
+            'atanh', 'arctanh', 'erf', 'erfc', 'atan', 'log1p', 'tanh', 'asinh',
         ];
         $leftInverseTarget = $extractor->extract($right);
         $rightInverseTarget = $extractor->extract($left);
@@ -4299,6 +4299,14 @@ final class EquationSolver
                     $extractor,
                     $variable,
                 )
+                || ($leftEarlyInverseLevel->name === 'erf' && \abs($leftInverseTarget[0]) < 1.0)
+                || ($leftEarlyInverseLevel->name === 'erfc'
+                    && $leftInverseTarget[0] > 0.0
+                    && $leftInverseTarget[0] < 2.0)
+                || ($leftEarlyInverseLevel->name === 'atan' && \is_finite($leftInverseTarget[0]))
+                || ($leftEarlyInverseLevel->name === 'log1p' && $leftInverseTarget[0] > -1.0)
+                || ($leftEarlyInverseLevel->name === 'tanh' && \abs($leftInverseTarget[0]) < 1.0)
+                || ($leftEarlyInverseLevel->name === 'asinh' && \is_finite($leftInverseTarget[0]))
                 || ($leftEarlyInverseLevel->name === 'sqrt' && $leftInverseTarget[0] === 1.0)
                 || (\in_array($leftEarlyInverseLevel->name, ['atanh', 'arctanh'], true)
                     && \abs($leftInverseTarget[0]) >= 8.0
@@ -4333,6 +4341,14 @@ final class EquationSolver
                     $extractor,
                     $variable,
                 )
+                || ($rightEarlyInverseLevel->name === 'erf' && \abs($rightInverseTarget[0]) < 1.0)
+                || ($rightEarlyInverseLevel->name === 'erfc'
+                    && $rightInverseTarget[0] > 0.0
+                    && $rightInverseTarget[0] < 2.0)
+                || ($rightEarlyInverseLevel->name === 'atan' && \is_finite($rightInverseTarget[0]))
+                || ($rightEarlyInverseLevel->name === 'log1p' && $rightInverseTarget[0] > -1.0)
+                || ($rightEarlyInverseLevel->name === 'tanh' && \abs($rightInverseTarget[0]) < 1.0)
+                || ($rightEarlyInverseLevel->name === 'asinh' && \is_finite($rightInverseTarget[0]))
                 || ($rightEarlyInverseLevel->name === 'sqrt' && $rightInverseTarget[0] === 1.0)
                 || (\in_array($rightEarlyInverseLevel->name, ['atanh', 'arctanh'], true)
                     && \abs($rightInverseTarget[0]) >= 8.0
@@ -6649,7 +6665,11 @@ final class EquationSolver
                 !$exactRootAtPartition
                 && (!$criticalSeparatesTwoRoots || $criticalReplacesRoundoffPair)
                 && $criticalResidual !== null
-                && ($criticalIsRoundoffZero || $criticalReplacesRoundoffPair || $criticalIsAcceptable)
+                && (
+                    $criticalIsRoundoffZero
+                    || $criticalReplacesRoundoffPair
+                    || (!$criticalSeparatesTwoRoots && $criticalIsAcceptable)
+                )
             ) {
                 $this->addSolution(
                     $solutions,
