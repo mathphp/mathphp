@@ -147,10 +147,15 @@ final class PolynomialSolver
                 && $vertexScale !== null
                 && \is_finite($vertexScale)
                 && $vertexScale >= 0.0
+                && $this->exactQuadraticDiscriminantSign(
+                    $coefficients[0],
+                    $coefficients[1],
+                    $coefficients[2],
+                ) !== 1
                 && $this->residualIsWithinTolerance(
                     $vertexResidual,
                     \max(1.0, $vertexScale),
-                    \min($options->residualTolerance, 64.0 * \PHP_FLOAT_EPSILON),
+                    \min($options->residualTolerance, \PHP_FLOAT_EPSILON),
                 )
             ) {
                 return [new EquationSolution($vertex == 0.0 ? 0.0 : $vertex, \abs($vertexResidual), 0)];
@@ -489,6 +494,26 @@ final class PolynomialSolver
         }
         if (!\is_finite($discriminant)) {
             return null;
+        }
+        if ($discriminant > 0.0) {
+            $discriminantScale = \max(
+                \abs($linearSquare),
+                \abs($fourQuadraticConstant),
+            );
+            if (
+                $discriminantScale > 0.0
+                && $discriminant <= 8.0 * \PHP_FLOAT_EPSILON * $discriminantScale
+            ) {
+                $exactSign = $this->exactQuadraticDiscriminantSign($constant, $linear, $quadratic);
+                if ($exactSign === -1) {
+                    return [];
+                }
+                if ($exactSign === 0) {
+                    $discriminant = 0.0;
+                } elseif ($exactSign === null) {
+                    return null;
+                }
+            }
         }
         if ($discriminant < 0.0) {
             $discriminantScale = \max(

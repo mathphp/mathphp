@@ -61,4 +61,20 @@ final class PolynomialSolverTest extends TestCase
             ),
         );
     }
+
+    public function testNearTangentPositiveMinimumAtMachinePrecisionIsNotAcceptedAsARoot(): void
+    {
+        $coefficients = [1.0, -1.999999999999999, 1.0];
+        $solver = new PolynomialSolver();
+        $residual = static fn (float $value): ?float =>
+            (($coefficients[2] * $value) + $coefficients[1]) * $value + $coefficients[0];
+        $scale = static fn (float $value): ?float =>
+            (($coefficients[2] * \abs($value)) + \abs($coefficients[1])) * \abs($value)
+            + \abs($coefficients[0]);
+
+        self::assertSame(
+            [],
+            $solver->solve($coefficients, -1.0, 1.0, $residual, new SolverOptions(), $scale),
+        );
+    }
 }
