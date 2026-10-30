@@ -99,13 +99,11 @@ final class ComplexRationalEquationSolver
             );
         }
         foreach ([$left, $right] as $candidate) {
-            while ($candidate instanceof GroupingNode) {
-                $candidate = $candidate->expression;
-            }
-            if (!$this->isLogarithmCall($candidate)) {
+            $logarithm = $this->logarithmCall($candidate);
+            if ($logarithm === null) {
                 continue;
             }
-            foreach ($candidate->arguments as $argument) {
+            foreach ($logarithm->arguments as $argument) {
                 while ($argument instanceof GroupingNode) {
                     $argument = $argument->expression;
                 }
@@ -3692,23 +3690,19 @@ final class ComplexRationalEquationSolver
         EvaluationOptions $evaluationOptions,
         SolverOptions $solverOptions,
     ): ?ComplexRationalSolution {
-        $wrapper = null;
-        $constantSide = null;
-        $wrapperSource = '';
-        if ($this->isLogarithmCall($left)) {
-            $wrapper = $left;
+        $leftLogarithm = $this->logarithmCall($left);
+        if ($leftLogarithm !== null) {
+            $wrapper = $leftLogarithm;
             $constantSide = $right;
             $wrapperSource = $leftText;
-        } elseif ($this->isLogarithmCall($right)) {
-            $wrapper = $right;
+        } else {
+            $rightLogarithm = $this->logarithmCall($right);
+            if ($rightLogarithm === null) {
+                return null;
+            }
+            $wrapper = $rightLogarithm;
             $constantSide = $left;
             $wrapperSource = $rightText;
-        }
-        while ($wrapper instanceof GroupingNode) {
-            $wrapper = $wrapper->expression;
-        }
-        if (!$wrapper instanceof FunctionCallNode || $constantSide === null) {
-            return null;
         }
 
         $extractor = new PolynomialExtractor(
@@ -4069,18 +4063,20 @@ final class ComplexRationalEquationSolver
         return $source;
     }
 
-    private function isLogarithmCall(Node $node): bool
+    private function logarithmCall(Node $node): ?FunctionCallNode
     {
         while ($node instanceof GroupingNode) {
             $node = $node->expression;
         }
         if (!$node instanceof FunctionCallNode) {
-            return false;
+            return null;
         }
 
         return (\in_array($node->name, ['ln', 'log10', 'log2', 'log1p'], true)
                 && \count($node->arguments) === 1)
-            || ($node->name === 'log' && \count($node->arguments) === 2);
+            || ($node->name === 'log' && \count($node->arguments) === 2)
+            ? $node
+            : null;
     }
 
     /** @param array<string, int|float> $parameters */

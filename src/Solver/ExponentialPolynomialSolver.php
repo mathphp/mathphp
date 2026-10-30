@@ -304,7 +304,7 @@ final class ExponentialPolynomialSolver
 
         if ($degree >= 3 && $degree <= 8) {
             $exactRoots = $this->exactPolynomialRootsInRange(
-                $polynomial,
+                \array_values($polynomial),
                 $transformedLower,
                 $transformedUpper,
             );
