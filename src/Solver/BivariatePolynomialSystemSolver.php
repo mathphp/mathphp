@@ -46,14 +46,10 @@ final class BivariatePolynomialSystemSolver
         if (
             \count($names) !== 2
             || \count($initialValues) !== 2
-            || !\array_is_list($names)
-            || !\array_is_list($initialValues)
             || $names[0] === $names[1]
-            || !\array_is_list($equations)
-            || !\array_is_list($equationSources)
             || \count($equations) < 2
-            || \array_key_exists($names[0] ?? '', $parameters)
-            || \array_key_exists($names[1] ?? '', $parameters)
+            || \array_key_exists($names[0], $parameters)
+            || \array_key_exists($names[1], $parameters)
         ) {
             return null;
         }
@@ -67,23 +63,6 @@ final class BivariatePolynomialSystemSolver
                 return null;
             }
         }
-        foreach ($equations as $equation) {
-            if (
-                !\array_is_list($equation)
-                || \count($equation) !== 3
-                || !$equation[0] instanceof Node
-                || !$equation[1] instanceof Node
-                || !\is_int($equation[2])
-            ) {
-                return null;
-            }
-        }
-        foreach ($equationSources as $equationSource) {
-            if (!\is_string($equationSource)) {
-                return null;
-            }
-        }
-
         $extractor = new BivariatePolynomialExtractor(
             $names[0],
             $names[1],

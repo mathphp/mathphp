@@ -1321,6 +1321,7 @@ final class InequalitySolver
         return [new InequalityInterval($intervalLower, $intervalUpper, $includesLower, true)];
     }
 
+    /** @return array{string, string, string, int} */
     private function splitInequality(string $inequality): array
     {
         \preg_match_all('/<=|>=|!=|≤|≥|≠|<|>/', $inequality, $matches, PREG_OFFSET_CAPTURE);
