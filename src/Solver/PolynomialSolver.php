@@ -134,13 +134,26 @@ final class PolynomialSolver
 
         if (\count($coefficients) === 3 && $coefficients[2] !== 0.0) {
             $vertex = -($coefficients[1] / (2.0 * $coefficients[2]));
+            $vertexResidual = \is_finite($vertex) && $vertex >= $lowerBound && $vertex <= $upperBound
+                ? $residualAt($vertex)
+                : null;
+            $vertexScale = $vertexResidual === null
+                ? null
+                : ($residualScaleAt === null
+                    ? $this->evaluationMagnitude($coefficients, $vertex)
+                    : $residualScaleAt($vertex));
             if (
-                \is_finite($vertex)
-                && $vertex >= $lowerBound
-                && $vertex <= $upperBound
-                && $residualAt($vertex) === 0.0
+                $vertexResidual !== null
+                && $vertexScale !== null
+                && \is_finite($vertexScale)
+                && $vertexScale >= 0.0
+                && $this->residualIsWithinTolerance(
+                    $vertexResidual,
+                    \max(1.0, $vertexScale),
+                    \min($options->residualTolerance, 64.0 * \PHP_FLOAT_EPSILON),
+                )
             ) {
-                return [new EquationSolution($vertex == 0.0 ? 0.0 : $vertex, 0.0, 0)];
+                return [new EquationSolution($vertex == 0.0 ? 0.0 : $vertex, \abs($vertexResidual), 0)];
             }
         }
 

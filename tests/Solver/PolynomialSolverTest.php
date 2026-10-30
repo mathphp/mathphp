@@ -28,4 +28,37 @@ final class PolynomialSolverTest extends TestCase
         self::assertSame(1.0, $roots[0]->value);
         self::assertSame(0.0, $roots[0]->residual);
     }
+
+    public function testNearZeroPositiveMinimumIsNotAcceptedAsARepeatedRoot(): void
+    {
+        $coefficients = [1.0E-12, 0.0, 1.0];
+        $residual = static function (float $value) use ($coefficients): ?float {
+            $result = 0.0;
+            for ($power = \count($coefficients) - 1; $power >= 0; --$power) {
+                $result = ($result * $value) + $coefficients[$power];
+            }
+
+            return $result;
+        };
+        $scale = static function (float $value) use ($coefficients): ?float {
+            $result = 0.0;
+            for ($power = \count($coefficients) - 1; $power >= 0; --$power) {
+                $result = ($result * \abs($value)) + \abs($coefficients[$power]);
+            }
+
+            return $result;
+        };
+
+        self::assertSame(
+            [],
+            (new PolynomialSolver())->solve(
+                $coefficients,
+                -1.0,
+                1.0,
+                $residual,
+                new SolverOptions(),
+                $scale,
+            ),
+        );
+    }
 }
