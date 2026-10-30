@@ -10193,12 +10193,13 @@ final class ExactPolynomialRootCounterTest extends TestCase
             '4',
             evaluationOptions: $options,
         ));
-        self::assertNotSame(2, Math::countPolynomialRootsInRationalInterval(
+        $this->expectException(InfiniteSolutionSetException::class);
+        Math::countPolynomialRootsInRationalInterval(
             'atan(0*x)=abs(0*sin(x))',
             'x',
             '-1',
             '4',
-        ));
+        );
     }
 
     public function testNestedZeroReductionSupportsZeroFreeRationalScaling(): void

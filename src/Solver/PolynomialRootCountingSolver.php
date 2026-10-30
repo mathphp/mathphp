@@ -15539,7 +15539,19 @@ final class PolynomialRootCountingSolver
         $integerArithmetic = new IntegerPolynomialExtractor('', [], 1);
         $exactDegree = $integerArithmetic->divideIntegerValueExactly($degree[0], $degree[1]);
         if ($exactDegree === null) {
-            return null;
+            $approximateDegree = (float) $degree[0] / (float) $degree[1];
+            if (!\is_finite($approximateDegree) || \abs($approximateDegree) > 9_007_199_254_740_991.0) {
+                return null;
+            }
+            $nearestDegree = \round($approximateDegree);
+            $degreeTolerance = \min(
+                1.0E-9,
+                16.0 * \PHP_FLOAT_EPSILON * \max(1.0, \abs($approximateDegree)),
+            );
+            if (\abs($approximateDegree - $nearestDegree) > $degreeTolerance) {
+                return null;
+            }
+            $exactDegree = (string) (int) $nearestDegree;
         }
         $integerDegree = \filter_var($exactDegree, FILTER_VALIDATE_INT);
 
