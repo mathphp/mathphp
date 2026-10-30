@@ -6342,7 +6342,10 @@ final class PolynomialRootCountingSolver
             );
         }
 
-        $compareAt = static function (string $numerator, string $denominator) use (
+        $compareAt = static function (
+            string $numerator,
+            string $denominator,
+        ) use (
             $targetInterval,
             $function,
         ): ?int {
@@ -6350,22 +6353,74 @@ final class PolynomialRootCountingSolver
                 [$numerator, $denominator],
                 [$numerator, $denominator],
             );
-            $value = $function === 'erf' ? $point->erf(30) : $point->erfc(30);
-            if ($value->compareUpperToRational($targetInterval->lower[0], $targetInterval->lower[1]) < 0) {
-                return -1;
-            }
-            if ($value->compareLowerToRational($targetInterval->lower[0], $targetInterval->lower[1]) > 0) {
-                return 1;
+            foreach ([14, 20, 30] as $precision) {
+                $value = $function === 'erf'
+                    ? $point->erf($precision)
+                    : $point->erfc($precision);
+                if ($value->compareUpperToRational($targetInterval->lower[0], $targetInterval->lower[1]) < 0) {
+                    return -1;
+                }
+                if ($value->compareLowerToRational($targetInterval->lower[0], $targetInterval->lower[1]) > 0) {
+                    return 1;
+                }
             }
 
             return null;
         };
-        $lower = $this->rationalTuple('-64', '1');
-        $upper = $this->rationalTuple('64', '1');
         $increasing = $function === 'erf';
         try {
-            $lowerSide = $compareAt($lower[0], $lower[1]);
-            $upperSide = $compareAt($upper[0], $upper[1]);
+            $targetFloat = (float) $target[0] / (float) $target[1];
+            $validFloatTarget = \is_finite($targetFloat)
+                && ($function === 'erf'
+                    ? $targetFloat > -1.0 && $targetFloat < 1.0
+                    : $targetFloat > 0.0 && $targetFloat < 2.0);
+            $estimate = $validFloatTarget
+                ? ($function === 'erf'
+                    ? SpecialFunctions::inverseErf($targetFloat)
+                    : SpecialFunctions::inverseErfc($targetFloat))
+                : null;
+            $center = $estimate === null ? null : RationalLiteral::fromFloatAsStrings($estimate);
+            if ($center !== null && (!\is_finite($estimate) || \abs($estimate) >= 64.0)) {
+                $center = null;
+            }
+
+            $radius = ['1', '200000000'];
+            $radiusInterval = new ExactRationalInterval($radius, $radius);
+            $centerInterval = $center === null
+                ? null
+                : new ExactRationalInterval($center, $center);
+            $lower = $centerInterval === null
+                ? $this->rationalTuple('-64', '1')
+                : $centerInterval->subtract($radiusInterval)->lower;
+            $upper = $centerInterval === null
+                ? $this->rationalTuple('64', '1')
+                : $centerInterval->add($radiusInterval)->upper;
+            $lowerSide = null;
+            $upperSide = null;
+            for ($expansion = 0; $expansion < 32; ++$expansion) {
+                $lowerSide = $compareAt($lower[0], $lower[1]);
+                $upperSide = $compareAt($upper[0], $upper[1]);
+                if (
+                    $lowerSide === ($increasing ? -1 : 1)
+                    && $upperSide === ($increasing ? 1 : -1)
+                ) {
+                    break;
+                }
+                if ($centerInterval === null) {
+                    return $this->cacheInverseErrorFunctionLevel($cacheKey, null);
+                }
+                $radiusInterval = $radiusInterval->multiply(
+                    new ExactRationalInterval(['2', '1'], ['2', '1']),
+                );
+                $lower = $centerInterval->subtract($radiusInterval)->lower;
+                $upper = $centerInterval->add($radiusInterval)->upper;
+                if (
+                    (new ExactRationalInterval($lower, $lower))->compareLowerToRational('-64', '1') <= 0
+                    || (new ExactRationalInterval($upper, $upper))->compareUpperToRational('64', '1') >= 0
+                ) {
+                    return $this->cacheInverseErrorFunctionLevel($cacheKey, null);
+                }
+            }
             if (
                 $lowerSide !== ($increasing ? -1 : 1)
                 || $upperSide !== ($increasing ? 1 : -1)
