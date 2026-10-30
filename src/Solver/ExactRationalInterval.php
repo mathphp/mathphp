@@ -468,8 +468,10 @@ final readonly class ExactRationalInterval
         $sum = new self(['0', '1'], ['0', '1']);
         $remainder = null;
         $toleranceDenominator = '1' . \str_repeat('0', $precision);
+        $roundingScale = '1' . \str_repeat('0', $precision + 8);
         for ($termIndex = 0; $termIndex < self::ERF_TAYLOR_TERMS; ++$termIndex) {
-            $sum = $sum->add(($termIndex % 2) === 0 ? $magnitude : $magnitude->negateInterval());
+            $sum = $sum->add(($termIndex % 2) === 0 ? $magnitude : $magnitude->negateInterval())
+                ->roundOutwardToDecimalGrid($roundingScale);
             $nextMagnitude = $magnitude
                 ->multiply($xSquared)
                 ->multiply(new self([(string) (2 * $termIndex + 1), '1'], [(string) (2 * $termIndex + 1), '1']))
@@ -477,10 +479,11 @@ final readonly class ExactRationalInterval
                     [(string) (($termIndex + 1) * (2 * $termIndex + 3)), '1'],
                     [(string) (($termIndex + 1) * (2 * $termIndex + 3)), '1'],
                 ));
-            $isDecreasing = $nextMagnitude->compareUpperToRational(
-                $magnitude->lower[0],
-                $magnitude->lower[1],
-            ) <= 0;
+            $nextMagnitude = $nextMagnitude->roundOutwardToDecimalGrid($roundingScale);
+            $isDecreasing = $xSquared->compareUpperToRational(
+                (string) (($termIndex + 1) * (2 * $termIndex + 3)),
+                (string) (2 * $termIndex + 1),
+            ) < 0;
             if (
                 $isDecreasing
                 && $nextMagnitude->compareUpperToRational('1', $toleranceDenominator) <= 0
@@ -540,6 +543,39 @@ final readonly class ExactRationalInterval
         }
 
         return $prefactor->multiply($tail);
+    }
+
+    private function roundOutwardToDecimalGrid(string $scale): self
+    {
+        return new self(
+            $this->roundFractionToDecimalGrid($this->lower, $scale, false),
+            $this->roundFractionToDecimalGrid($this->upper, $scale, true),
+        );
+    }
+
+    /**
+     * @param array{string, string} $fraction
+     * @return array{string, string}
+     */
+    private function roundFractionToDecimalGrid(array $fraction, string $scale, bool $roundUp): array
+    {
+        $negative = $this->arithmetic->sign($fraction[0]) < 0;
+        $numerator = \ltrim($fraction[0], '-');
+        $scaledNumerator = $this->arithmetic->multiplyIntegerValues($numerator, $scale);
+        $quotient = $this->arithmetic->divideNonnegativeIntegerValuesFloor($scaledNumerator, $fraction[1]);
+        $remainder = $this->arithmetic->subtract(
+            $scaledNumerator,
+            $this->arithmetic->multiplyIntegerValues($quotient, $fraction[1]),
+        );
+        $increment = $remainder !== '0' && ($roundUp !== $negative);
+        if ($increment) {
+            $quotient = $this->arithmetic->addIntegerValues($quotient, '1');
+        }
+        if ($negative && $quotient !== '0') {
+            $quotient = $this->arithmetic->negateIntegerValue($quotient);
+        }
+
+        return [$quotient, $scale];
     }
 
     /** @param array{string, string} $value */
