@@ -55,6 +55,11 @@ final class PolynomialRootCountingSolver
     /** @var array{key: string, options: EvaluationOptions, roots: list<RationalRootInterval>, width: array{string, string}, maxDepth: int}|null */
     private ?array $countedIsolationCache = null;
 
+    /** @var array<string, list<array{string, string, string, string}>|null> */
+    private static array $polynomialCriticalPointCache = [];
+
+    private static ?ExactRationalInterval $polynomialTrigPiEnclosure = null;
+
     /** @var array<int, ExactRationalInterval> */
     private static array $piEnclosures = [];
 
@@ -9247,20 +9252,11 @@ final class PolynomialRootCountingSolver
             while (\count($derivative) > 1 && $derivative[\array_key_last($derivative)] === '0') {
                 \array_pop($derivative);
             }
-            $criticalPoints = (new ExactPolynomialRootCounter())->isolateAllRealRoots(
-                $derivative,
-                maxDepth: $maxDepth,
-                maximumWidth: ['1', '1000000000000'],
-            );
+            $criticalPoints = self::polynomialCriticalPoints($derivative, $maxDepth);
             if ($criticalPoints === null) {
                 return null;
             }
-            $pi = (new ExactRationalInterval(['1', '5'], ['1', '5']))->atan()
-                ->multiply(new ExactRationalInterval(['16', '1'], ['16', '1']))
-                ->subtract(
-                    (new ExactRationalInterval(['1', '239'], ['1', '239']))->atan()
-                        ->multiply(new ExactRationalInterval(['4', '1'], ['4', '1'])),
-                );
+            $pi = self::polynomialTrigPiEnclosure();
             $zero = new ExactRationalInterval(['0', '1'], ['0', '1']);
             $halfPi = $pi->multiply(new ExactRationalInterval(['1', '2'], ['1', '2']));
             $inverseTrigPrecision = $this->compareRationalFractions(
@@ -12880,6 +12876,44 @@ final class PolynomialRootCountingSolver
         }
 
         return $value;
+    }
+
+    /**
+     * @param list<string> $derivative
+     * @return list<array{string, string, string, string}>|null
+     */
+    private static function polynomialCriticalPoints(array $derivative, int $maxDepth): ?array
+    {
+        $key = \hash('sha256', \serialize([$derivative, $maxDepth]));
+        if (\array_key_exists($key, self::$polynomialCriticalPointCache)) {
+            return self::$polynomialCriticalPointCache[$key];
+        }
+
+        $roots = (new ExactPolynomialRootCounter())->isolateAllRealRoots(
+            $derivative,
+            maxDepth: $maxDepth,
+            maximumWidth: ['1', '1000000000000'],
+        );
+        if (\count(self::$polynomialCriticalPointCache) >= 64) {
+            \array_shift(self::$polynomialCriticalPointCache);
+        }
+        self::$polynomialCriticalPointCache[$key] = $roots;
+
+        return $roots;
+    }
+
+    private static function polynomialTrigPiEnclosure(): ExactRationalInterval
+    {
+        if (self::$polynomialTrigPiEnclosure === null) {
+            self::$polynomialTrigPiEnclosure = (new ExactRationalInterval(['1', '5'], ['1', '5']))->atan()
+                ->multiply(new ExactRationalInterval(['16', '1'], ['16', '1']))
+                ->subtract(
+                    (new ExactRationalInterval(['1', '239'], ['1', '239']))->atan()
+                        ->multiply(new ExactRationalInterval(['4', '1'], ['4', '1'])),
+                );
+        }
+
+        return self::$polynomialTrigPiEnclosure;
     }
 
     private static function certifiedPiEnclosure(int $terms = 40): ExactRationalInterval
