@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MathPHP\Tests\Facade;
+namespace MathPHP\Tests\Solver;
 
 use MathPHP\Configuration\EvaluationOptions;
 use MathPHP\Configuration\ResourceLimits;
