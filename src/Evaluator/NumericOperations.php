@@ -12,6 +12,8 @@ final readonly class NumericOperations
 {
     public function __construct(
         private ResourceLimits $limits,
+        private float $factorialRoundingUlps = 4.0,
+        private float $moduloRoundingUlps = 0.0,
     ) {
     }
 
@@ -108,8 +110,20 @@ final readonly class NumericOperations
         int|float $right,
         SourceSpan $operatorSpan,
     ): int {
-        $dividend = $this->toHostInteger($left, $operatorSpan, 'Modulo dividend');
-        $divisor = $this->toHostInteger($right, $operatorSpan, 'Modulo divisor');
+        $dividend = $this->toHostInteger(
+            $left,
+            $operatorSpan,
+            'Modulo dividend',
+            $this->moduloRoundingUlps > 0.0,
+            $this->moduloRoundingUlps,
+        );
+        $divisor = $this->toHostInteger(
+            $right,
+            $operatorSpan,
+            'Modulo divisor',
+            $this->moduloRoundingUlps > 0.0,
+            $this->moduloRoundingUlps,
+        );
 
         if ($divisor === 0) {
             throw new EvaluationException(
@@ -126,10 +140,12 @@ final readonly class NumericOperations
         return $dividend % $divisor;
     }
 
+    /** @param array{bool, bool}|null $rationalExponent Reduced numerator/denominator oddness. */
     public function power(
         int|float $base,
         int|float $exponent,
         SourceSpan $operatorSpan,
+        ?array $rationalExponent = null,
     ): int|float {
         if (\abs((float) $exponent) > $this->limits->maxExponentMagnitude) {
             throw new EvaluationException(
@@ -147,12 +163,44 @@ final readonly class NumericOperations
             );
         }
 
-        if ($base < 0 && !$this->isMathematicalInteger($exponent)) {
-            throw new EvaluationException(
-                'A negative base requires an integer exponent',
-                'eval.domain',
-                $operatorSpan,
-            );
+        if ($base < 0) {
+            if ($rationalExponent !== null) {
+                if (!$rationalExponent[1]) {
+                    throw new EvaluationException(
+                        'A negative base requires an integer exponent',
+                        'eval.domain',
+                        $operatorSpan,
+                    );
+                }
+
+                if (!\is_int($exponent)) {
+                    $result = \abs($base) ** $exponent;
+                    if ($rationalExponent[0]) {
+                        $result = -$result;
+                    }
+
+                    return $this->normalizeFloat((float) $result, $operatorSpan);
+                }
+            }
+            if (!$this->isMathematicalInteger($exponent)) {
+                throw new EvaluationException(
+                    'A negative base requires an integer exponent',
+                    'eval.domain',
+                    $operatorSpan,
+                );
+            }
+            if (\is_float($exponent) && \floor($exponent) !== $exponent) {
+                $exponent = \round($exponent);
+            }
+        }
+
+        if ($base < 0 && \is_float($base) && \is_int($exponent)) {
+            $result = (-$base) ** $exponent;
+            if ($exponent % 2 !== 0) {
+                $result = -$result;
+            }
+
+            return $this->normalizeFloat((float) $result, $operatorSpan);
         }
 
         $result = $base ** $exponent;
@@ -176,6 +224,7 @@ final readonly class NumericOperations
             $operand,
             $operatorSpan,
             'Factorial operand',
+            true,
         );
 
         if ($integer < 0) {
@@ -197,6 +246,45 @@ final readonly class NumericOperations
         $result = 1;
 
         for ($factor = 2; $factor <= $integer; ++$factor) {
+            $result *= $factor;
+        }
+
+        return $result;
+    }
+
+    public function doubleFactorial(
+        int|float $operand,
+        SourceSpan $operatorSpan,
+    ): int {
+        $integer = $this->toHostInteger(
+            $operand,
+            $operatorSpan,
+            'Double factorial operand',
+            true,
+        );
+        if ($integer === -1 || $integer === 0) {
+            return 1;
+        }
+        if ($integer < -1) {
+            throw new EvaluationException(
+                'Double factorial requires an integer greater than or equal to -1',
+                'eval.domain',
+                $operatorSpan,
+            );
+        }
+        if ($integer > $this->limits->maxFactorial) {
+            throw new EvaluationException(
+                'Double factorial operand exceeds the configured limit',
+                'limit.factorial',
+                $operatorSpan,
+            );
+        }
+
+        $result = 1;
+        for ($factor = $integer; $factor > 1; $factor -= 2) {
+            if ($result > intdiv(\PHP_INT_MAX, $factor)) {
+                $this->throwIntegerOverflow('Double factorial', $operatorSpan);
+            }
             $result *= $factor;
         }
 
@@ -231,9 +319,21 @@ final readonly class NumericOperations
         int|float $value,
         SourceSpan $sourceSpan,
         string $subject,
+        bool $allowRoundingError = false,
+        ?float $roundingUlps = null,
     ): int {
         if (\is_int($value)) {
             return $value;
+        }
+
+        if ($allowRoundingError) {
+            $nearestInteger = \round((float) $value);
+            $roundingTolerance = ($roundingUlps ?? $this->factorialRoundingUlps)
+                * \PHP_FLOAT_EPSILON
+                * \max(1.0, \abs($nearestInteger));
+            if (\abs((float) $value - $nearestInteger) <= $roundingTolerance) {
+                $value = $nearestInteger;
+            }
         }
 
         $magnitudeBits = \PHP_INT_SIZE * 8 - 1;
@@ -257,7 +357,12 @@ final readonly class NumericOperations
 
     private function isMathematicalInteger(int|float $value): bool
     {
-        return \is_int($value) || \floor($value) === $value;
+        if (\is_int($value) || \floor($value) === $value) {
+            return true;
+        }
+
+        return \abs($value - \round($value))
+            <= 4.0 * \PHP_FLOAT_EPSILON * \max(1.0, \abs($value));
     }
 
     private function throwIntegerOverflow(string $operation, SourceSpan $span): never

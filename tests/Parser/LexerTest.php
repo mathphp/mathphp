@@ -99,7 +99,7 @@ final class LexerTest extends TestCase
 
     public function testEveryOperatorAndDelimiterHasItsOwnToken(): void
     {
-        $source = '+-*/%^!(),';
+        $source = '+-*/%^!(),|';
         $expectedTypes = [
             TokenType::Plus,
             TokenType::Minus,
@@ -111,10 +111,11 @@ final class LexerTest extends TestCase
             TokenType::LeftParenthesis,
             TokenType::RightParenthesis,
             TokenType::Comma,
+            TokenType::AbsoluteValueBar,
         ];
         $tokens = (new Lexer($source))->tokenize();
 
-        self::assertCount(11, $tokens);
+        self::assertCount(12, $tokens);
 
         foreach ($expectedTypes as $position => $expectedType) {
             self::assertToken(
@@ -126,7 +127,7 @@ final class LexerTest extends TestCase
             );
         }
 
-        self::assertToken($tokens[10], TokenType::EndOfInput, '', 10, 10);
+        self::assertToken($tokens[11], TokenType::EndOfInput, '', 11, 11);
     }
 
     public function testAlphabeticTextAfterANumberStartsASeparateToken(): void
@@ -161,7 +162,7 @@ final class LexerTest extends TestCase
 
     public function testSuperscriptAndRadicalNotationHaveDedicatedTokens(): void
     {
-        $tokens = (new Lexer('x² + √9'))->tokenize();
+        $tokens = (new Lexer('x² + √9 + ∛(-8)'))->tokenize();
 
         self::assertSame(
             [
@@ -170,12 +171,50 @@ final class LexerTest extends TestCase
                 TokenType::Plus,
                 TokenType::SquareRoot,
                 TokenType::Number,
+                TokenType::Plus,
+                TokenType::CubeRoot,
+                TokenType::LeftParenthesis,
+                TokenType::Minus,
+                TokenType::Number,
+                TokenType::RightParenthesis,
                 TokenType::EndOfInput,
             ],
             array_map(static fn (Token $token): TokenType => $token->type, $tokens),
         );
         self::assertSame('2', $tokens[1]->lexeme);
         self::assertSame('sqrt', $tokens[3]->lexeme);
+        self::assertSame('cbrt', $tokens[6]->lexeme);
+    }
+
+    public function testSignedAndMultiDigitSuperscriptExponentIsOneToken(): void
+    {
+        $source = 'x⁻¹² + y⁺³';
+        $tokens = (new Lexer($source))->tokenize();
+
+        self::assertSame('-12', $tokens[1]->lexeme);
+        self::assertSame('3', $tokens[4]->lexeme);
+        self::assertSame(1, $tokens[1]->span->start);
+        self::assertSame(8, $tokens[1]->span->end);
+    }
+
+    public function testSuperscriptSignRequiresAtLeastOneDigit(): void
+    {
+        try {
+            (new Lexer('x⁻'))->tokenize();
+            self::fail('Expected a malformed superscript lexical error.');
+        } catch (LexicalException $error) {
+            self::assertSame('lex.malformed_superscript', $error->errorCode());
+        }
+    }
+
+    public function testSuperscriptExponentRejectsValuesOutsideHostIntegerRange(): void
+    {
+        try {
+            (new Lexer('x' . \str_repeat('⁹', 20)))->tokenize();
+            self::fail('Expected an out-of-range superscript lexical error.');
+        } catch (LexicalException $error) {
+            self::assertSame('lex.number_out_of_range', $error->errorCode());
+        }
     }
 
     public function testCommonGreekVariablesNormalizeToPortableIdentifiers(): void
@@ -192,6 +231,21 @@ final class LexerTest extends TestCase
         self::assertSame(7, $tokens[2]->span->end);
     }
 
+    public function testSubscriptedVariablesNormalizeToPortableIdentifiers(): void
+    {
+        $source = 'x₁₂ + α₃';
+        $tokens = (new Lexer($source))->tokenize();
+
+        self::assertSame(
+            ['x_12', '+', 'alpha_3', ''],
+            array_map(static fn (Token $token): string => $token->lexeme, $tokens),
+        );
+        self::assertSame(0, $tokens[0]->span->start);
+        self::assertSame(strlen('x₁₂'), $tokens[0]->span->end);
+        self::assertSame(strlen('x₁₂ + '), $tokens[2]->span->start);
+        self::assertSame(strlen('x₁₂ + α₃'), $tokens[2]->span->end);
+    }
+
     public function testHostIntegerMaximumIsAcceptedWithLeadingZeroes(): void
     {
         $literal = '000' . (string) \PHP_INT_MAX;
@@ -206,16 +260,20 @@ final class LexerTest extends TestCase
         );
     }
 
-    public function testIntegerAboveHostRangeIsRejected(): void
+    public function testFiniteIntegerAboveHostRangeIsAccepted(): void
     {
         $source = (string) \PHP_INT_MAX . '0';
+        $tokens = (new Lexer($source))->tokenize();
 
-        self::assertLexicalError(
-            $source,
-            'lex.number_out_of_range',
-            0,
-            \strlen($source),
-        );
+        self::assertSame($source, $tokens[0]->lexeme);
+        self::assertSame(TokenType::Number, $tokens[0]->type);
+    }
+
+    public function testIntegerOutsideFiniteFloatRangeIsRejected(): void
+    {
+        $source = \str_repeat('9', 400);
+
+        self::assertLexicalError($source, 'lex.number_out_of_range', 0, \strlen($source));
     }
 
     public function testNonFiniteFloatLiteralIsRejected(): void
