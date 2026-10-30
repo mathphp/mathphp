@@ -29,6 +29,107 @@ final class EvaluatorTest extends TestCase
 {
     private const FLOAT_TOLERANCE = 1.0E-12;
 
+    public function testVariableBaseLogEvaluatesUnitOffsetsWithoutLosingPrecision(): void
+    {
+        $x = 1.0E-8;
+        $expected = \log1p($x) / \log1p(2.0 * $x);
+
+        self::assertEqualsWithDelta(
+            $expected,
+            \MathPHP\Math::evaluate('log(1+x,1+2*x)', ['x' => $x]),
+            1.0E-15,
+        );
+        self::assertEqualsWithDelta(
+            $expected,
+            \MathPHP\Math::evaluate('log(x+1,2*x+1)', ['x' => $x]),
+            1.0E-15,
+        );
+    }
+
+    public function testAcothEvaluatesUnitOffsetsWithoutRoundingThemAway(): void
+    {
+        foreach ([16.0, 18.0, 19.0, 20.0, 24.0] as $target) {
+            $offset = 2.0 / \expm1(2.0 * $target);
+            $positiveRoot = 0.123456789 + \sqrt($offset);
+            $negativeRoot = 0.123456789 + \sqrt($offset);
+
+            self::assertEqualsWithDelta(
+                $target,
+                \MathPHP\Math::evaluate(
+                    'acoth(1 + (x - 0.123456789)^2)',
+                    ['x' => $positiveRoot],
+                ),
+                1.0E-7,
+                'positive target=' . $target,
+            );
+            self::assertEqualsWithDelta(
+                -$target,
+                \MathPHP\Math::evaluate(
+                    'acoth(-1 - (x - 0.123456789)^2)',
+                    ['x' => $negativeRoot],
+                ),
+                1.0E-7,
+                'negative target=' . $target,
+            );
+            self::assertEqualsWithDelta(
+                $target,
+                \MathPHP\Math::evaluate(
+                    'acoth((x - 0.123456789)^2 + 1)',
+                    ['x' => $positiveRoot],
+                ),
+                1.0E-7,
+                'reordered positive target=' . $target,
+            );
+        }
+    }
+
+    public function testInverseFunctionsEvaluateUnitOffsetsWithoutRoundingThemAway(): void
+    {
+        $center = 0.123456789;
+        $x = $center + 1.0E-9;
+        $offset = ($x - $center) ** 2;
+        $smallAngle = 2.0 * \asin(\sqrt($offset / 2.0));
+        $smallReciprocalAngle = 2.0 * \atan(\sqrt($offset / (2.0 + $offset)));
+        $cases = [
+            ['acos(1-(x-0.123456789)^2)', $smallAngle],
+            ['acos(-1+(x-0.123456789)^2)', \M_PI - $smallAngle],
+            ['acosh(1+(x-0.123456789)^2)', 2.0 * \asinh(\sqrt($offset / 2.0))],
+            [
+                'asech(1-(x-0.123456789)^2)',
+                2.0 * \asinh(\sqrt($offset / (2.0 * (1.0 - $offset)))),
+            ],
+            ['asin(1-(x-0.123456789)^2)', (\M_PI / 2.0) - $smallAngle],
+            ['asin(-1+(x-0.123456789)^2)', (-\M_PI / 2.0) + $smallAngle],
+            ['asec(1+(x-0.123456789)^2)', $smallReciprocalAngle],
+            ['asec(-1-(x-0.123456789)^2)', \M_PI - $smallReciprocalAngle],
+            ['acsc(1+(x-0.123456789)^2)', (\M_PI / 2.0) - $smallReciprocalAngle],
+            ['acsc(-1-(x-0.123456789)^2)', (-\M_PI / 2.0) + $smallReciprocalAngle],
+            ['acoth((x-0.123456789)^2+1)', 0.5 * \log1p(2.0 / $offset)],
+        ];
+
+        foreach ($cases as [$expression, $expected]) {
+            self::assertEqualsWithDelta(
+                $expected,
+                \MathPHP\Math::evaluate($expression, ['x' => $x]),
+                1.0E-14,
+                $expression,
+            );
+        }
+    }
+
+    public function testAcothUnitOffsetRemainsFiniteForSubnormalSquares(): void
+    {
+        $x = 1.0E-160;
+        $offset = $x * $x;
+        $expected = 0.5 * (\log(2.0 + $offset) - \log($offset));
+
+        self::assertEqualsWithDelta(
+            $expected,
+            \MathPHP\Math::evaluate('acoth(1+x^2)', ['x' => $x]),
+            1.0E-13,
+        );
+    }
+
     public function testLeafAndGroupingNodesPreserveTheirSpecifiedTypes(): void
     {
         $evaluator = self::evaluator(
@@ -66,6 +167,15 @@ final class EvaluatorTest extends TestCase
                     new SourceSpan(4, 7),
                 ),
             ),
+        );
+    }
+
+    public function testAdditiveCancellationPreservesIntegerZeroIdentity(): void
+    {
+        self::assertSame(-3, \MathPHP\Math::evaluate('-3+(-3- -3)'));
+        self::assertSame(
+            -3,
+            \MathPHP\Math::evaluate("-3 +(0\r+\n(\r-3\n-\v-3 )\f)"),
         );
     }
 
@@ -225,6 +335,314 @@ final class EvaluatorTest extends TestCase
             1024,
             'int',
         ];
+    }
+
+    public function testNegativeBaseAcceptsExactlyRationalArithmeticExponent(): void
+    {
+        self::assertSame(-2.0, \MathPHP\Math::evaluate('(-8)^((1 + 1) / 6)'));
+        self::assertSame(-0.5, \MathPHP\Math::evaluate('(-8)^(1 / (1 - 4))'));
+        self::assertEqualsWithDelta(4.0, \MathPHP\Math::evaluate('(-8)^((2 + 2) / 6)'), 1.0E-14);
+        self::assertSame(-2.0, \MathPHP\Math::evaluate('(-8)^(1 / (3^1))'));
+        self::assertSame(-2.0, \MathPHP\Math::evaluate('(-8)^(3^(-1))'));
+        self::assertSame(-2.0, \MathPHP\Math::evaluate('(-8)^(2/6)'));
+        self::assertEqualsWithDelta(8.0 ** (4.0 / 9.0), \MathPHP\Math::evaluate('(-8)^((2/3)^2)'), 1.0E-14);
+    }
+
+    public function testRationalExponentArithmeticCrossCancelsBeforeOverflow(): void
+    {
+        $sum = \MathPHP\Math::evaluate('(-8)^((1 / 5000000001) + (1 / 5000000001))');
+        $product = \MathPHP\Math::evaluate('(-8)^((5000000001 / 1) * (1 / 5000000001))');
+
+        self::assertGreaterThan(1.0, $sum);
+        self::assertEqualsWithDelta(-8.0, $product, 1.0E-14);
+    }
+
+    public function testRationalExponentArithmeticHandlesMinimumSignedNumerator(): void
+    {
+        $value = \MathPHP\Math::evaluate(
+            '(-8)^((-9223372036854775807 - 1) / 9223372036854775807)',
+        );
+
+        self::assertSame(0.125, $value);
+    }
+
+    public function testLargeRationalExponentDoesNotUseItsRoundedIntegerApproximation(): void
+    {
+        try {
+            \MathPHP\Math::evaluate(
+                '(-8)^(100000000000000000001 / 100000000000000000000)',
+            );
+            self::fail('An exact rational exponent with an even denominator must not be real for a negative base.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.domain', $error->errorCode());
+        }
+
+        self::assertSame(
+            8.0,
+            \MathPHP\Math::evaluate(
+                '(-8)^(100000000000000000002 / 100000000000000000001)',
+            ),
+        );
+
+        self::assertSame(
+            64.0,
+            \MathPHP\Math::evaluate(
+                '(-8)^(200000000000000000000 / 100000000000000000000)',
+            ),
+        );
+        self::assertSame(
+            -8.0,
+            \MathPHP\Math::evaluate(
+                '(-8)^(200000000000000000000 / 200000000000000000000)',
+            ),
+        );
+        self::assertSame(
+            64.0,
+            \MathPHP\Math::evaluate(
+                '(-8)^(2535301200456458802993406410752 / 1267650600228229401496703205376)',
+            ),
+        );
+        self::assertEqualsWithDelta(
+            4.0,
+            \MathPHP\Math::evaluate(
+                '(-8)^(2535301200456458802993406410752 / 3802951800684688204490109616128)',
+            ),
+            1.0E-14,
+        );
+        try {
+            \MathPHP\Math::evaluate(
+                '(-8)^(1267650600228229401496703205376 / 7605903601369376408980219232256)',
+            );
+            self::fail('A reduced exponent with an even denominator must not be real for a negative base.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.domain', $error->errorCode());
+        }
+    }
+
+    public function testLargeIntegerExponentParityComesFromItsExactLiteral(): void
+    {
+        $options = new \MathPHP\Configuration\EvaluationOptions(
+            limits: new ResourceLimits(maxExponentMagnitude: 1.0E21),
+        );
+
+        self::assertSame(
+            -1.0,
+            \MathPHP\Math::evaluate(
+                '(-1)^100000000000000000001',
+                options: $options,
+            ),
+        );
+        self::assertSame(
+            1.0,
+            \MathPHP\Math::evaluate(
+                '(-1)^100000000000000000002',
+                options: $options,
+            ),
+        );
+    }
+
+    public function testZeroBaseRejectsNegativeExponentThatUnderflowsToZero(): void
+    {
+        self::assertSame(1, \MathPHP\Math::evaluate('0^0'));
+        self::assertSame(0.0, \MathPHP\Math::evaluate('0^(1e-200^2)'));
+        self::assertSame(0.0, \MathPHP\Math::evaluate('0^1e-400'));
+
+        foreach (['0^(-(1e-200)^2)', '0^(-1e-400)'] as $expression) {
+            try {
+                \MathPHP\Math::evaluate($expression);
+                self::fail('A negative nonzero exponent must not become zero through underflow.');
+            } catch (EvaluationException $error) {
+                self::assertSame('eval.division_by_zero', $error->errorCode());
+            }
+        }
+    }
+
+    public function testDivisionRecoversFromUnderflowedNonzeroDenominator(): void
+    {
+        self::assertEqualsWithDelta(
+            1.0E200,
+            \MathPHP\Math::evaluate('1e-200/(1e-200)^2'),
+            1.0E187,
+        );
+        self::assertSame(1.0, \MathPHP\Math::evaluate('1e-400/1e-400'));
+
+        try {
+            \MathPHP\Math::evaluate('1/(1e-200)^2');
+            self::fail('A quotient outside the floating-point range must be rejected as non-finite.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.non_finite', $error->errorCode());
+        }
+    }
+
+    public function testDivisionCancelsOverflowingOperandsInScaledSpace(): void
+    {
+        self::assertEqualsWithDelta(
+            1.0,
+            \MathPHP\Math::evaluate('(1e200*1e200)/(1e200*1e200)'),
+            1.0E-14,
+        );
+        self::assertEqualsWithDelta(
+            1.0E200,
+            \MathPHP\Math::evaluate('(1e200*1e200)/1e200'),
+            1.0E187,
+        );
+
+        try {
+            \MathPHP\Math::evaluate('(1e200*1e200)/1');
+            self::fail('A quotient outside the floating-point range must remain non-finite.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.non_finite', $error->errorCode());
+        }
+    }
+
+    public function testBinaryArithmeticRecoversFiniteResultsFromOverflowingIntermediates(): void
+    {
+        self::assertSame(
+            0.0,
+            \MathPHP\Math::evaluate('(1e308+1e308)-(1e308+1e308)'),
+        );
+        self::assertSame(0.0, \MathPHP\Math::evaluate('exp(1000)-exp(1000)'));
+        self::assertEqualsWithDelta(
+            1.0E200,
+            \MathPHP\Math::evaluate('(1e200*1e200)^0.5'),
+            1.0E187,
+        );
+        self::assertEqualsWithDelta(
+            1.0E292,
+            \MathPHP\Math::evaluate('(1e308+1e308)-(1e308+1e308-1e292)'),
+            1.0E278,
+        );
+        self::assertEqualsWithDelta(
+            -1.0E292,
+            \MathPHP\Math::evaluate('(1e308+1e308)-(1e308+1e308+1e292)'),
+            1.0E278,
+        );
+        self::assertEqualsWithDelta(
+            1.0E292,
+            \MathPHP\Math::evaluate('(1e308+1e308+1e292)-(1e308+1e308)'),
+            1.0E278,
+        );
+        self::assertEqualsWithDelta(
+            1.0E308 - 1.0000000000000001E308,
+            \MathPHP\Math::evaluate(
+                '(1e308+1e308)-(1.0000000000000001e308+1e308)',
+            ),
+            1.0E278,
+        );
+        self::assertSame(
+            1.0E308,
+            \MathPHP\Math::evaluate(
+                '(1e308+1e308+1e308)-(1e308+1e308)',
+            ),
+        );
+        self::assertSame(
+            0.0,
+            \MathPHP\Math::evaluate('(1e200*1e200)-(1e200*1e200)'),
+        );
+        self::assertSame(
+            0.0,
+            \MathPHP\Math::evaluate('(1e200^2)-(1e200^2)'),
+        );
+        self::assertSame(
+            0.0,
+            \MathPHP\Math::evaluate(
+                '(1e308+1e308+1e292)-(1e308+1e292+1e308)',
+            ),
+        );
+        self::assertEqualsWithDelta(
+            -1.0E292,
+            \MathPHP\Math::evaluate(
+                '(1e308+1e308)-(1e308+1e292+1e308)',
+            ),
+            1.0E278,
+        );
+    }
+
+    public function testAdditiveCancellationPreservesDomainErrorsAndFunctionCalls(): void
+    {
+        try {
+            \MathPHP\Math::evaluate('(1/0)-(1/0)');
+            self::fail('Cancellation must not erase an undefined subexpression.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.division_by_zero', $error->errorCode());
+        }
+
+        $calls = 0;
+        $definition = new FunctionDefinition(
+            'counted',
+            0,
+            0,
+            static function (array $arguments) use (&$calls): int {
+                ++$calls;
+
+                return $calls;
+            },
+        );
+        $options = new \MathPHP\Configuration\EvaluationOptions(
+            functions: FunctionRegistry::defaults()->with($definition),
+        );
+
+        self::assertSame(
+            0,
+            \MathPHP\Math::evaluate('counted()-(counted()-1)', options: $options),
+        );
+        self::assertSame(2, $calls);
+    }
+
+    public function testAdditiveCancellationDoesNotHideExactIntegerOverflow(): void
+    {
+        if (\PHP_INT_SIZE !== 8) {
+            self::markTestSkipped('This regression requires a 64-bit host integer.');
+        }
+
+        try {
+            \MathPHP\Math::evaluate('(' . \PHP_INT_MAX . '+1)-1');
+            self::fail('Cancellation must not bypass the left-associative integer overflow.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.integer_overflow', $error->errorCode());
+            self::assertStringStartsWith(
+                'Integer addition exceeds the host integer range',
+                $error->getMessage(),
+            );
+        }
+
+        try {
+            \MathPHP\Math::evaluate('(2^63)-(2^63)');
+            self::fail('Cancellation must not bypass the exact integer power overflow.');
+        } catch (EvaluationException $error) {
+            self::assertSame('eval.integer_overflow', $error->errorCode());
+            self::assertStringStartsWith(
+                'Integer exponentiation exceeds the host integer range',
+                $error->getMessage(),
+            );
+        }
+    }
+
+    public function testRationalExponentExtractionDoesNotGuessFromRoundedDecimals(): void
+    {
+        foreach (['(-8)^0.3333333333333333', '(-8)^(2^(1/2))'] as $expression) {
+            try {
+                \MathPHP\Math::evaluate($expression);
+                self::fail('An inexact or irrational exponent must not be inferred as rational.');
+            } catch (\MathPHP\Exception\EvaluationException $error) {
+                self::assertSame('eval.domain', $error->errorCode());
+            }
+        }
+    }
+
+    public function testSmallFunctionDifferencesRetainTheirSignificantResiduals(): void
+    {
+        self::assertEqualsWithDelta(
+            -3.3333333333333335E-25,
+            \MathPHP\Math::evaluate('atan(1e-8) - 1e-8'),
+            1.0E-39,
+        );
+        self::assertEqualsWithDelta(5.0E-17, \MathPHP\Math::evaluate('cosh(1e-8) - 1'), 1.0E-31);
+        self::assertEqualsWithDelta(
+            -3.761263890318375E-25,
+            \MathPHP\Math::evaluate('erf(1e-8) - 1.1283791670955126*1e-8'),
+            1.0E-39,
+        );
     }
 
     public function testFactorialNodeDispatchesToExactFactorial(): void
@@ -448,6 +866,8 @@ final class EvaluatorTest extends TestCase
         yield 'logarithm' => ['log', [100, 10], 2.0, 'float'];
         yield 'floor' => ['floor', [-1.2], -2.0, 'float'];
         yield 'ceiling' => ['ceil', [-1.2], -1.0, 'float'];
+        yield 'truncate negative' => ['trunc', [-1.2], -1.0, 'float'];
+        yield 'truncate positive' => ['trunc', [1.2], 1.0, 'float'];
         yield 'round positive halfway' => [
             'round',
             [2.5],
@@ -645,6 +1065,7 @@ final class EvaluatorTest extends TestCase
             'floor',
             'ceil',
             'round',
+            'trunc',
         ];
 
         foreach ($unaryFunctions as $name) {

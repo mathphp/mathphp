@@ -10,6 +10,18 @@ use MathPHP\Source\SourceSpan;
 
 final class Lexer
 {
+    /** @var array<string, string> */
+    private const SUPERSCRIPT_DIGITS = [
+        '⁰' => '0', '¹' => '1', '²' => '2', '³' => '3', '⁴' => '4',
+        '⁵' => '5', '⁶' => '6', '⁷' => '7', '⁸' => '8', '⁹' => '9',
+    ];
+
+    /** @var array<string, string> */
+    private const SUBSCRIPT_DIGITS = [
+        '₀' => '0', '₁' => '1', '₂' => '2', '₃' => '3', '₄' => '4',
+        '₅' => '5', '₆' => '6', '₇' => '7', '₈' => '8', '₉' => '9',
+    ];
+
     private readonly int $length;
 
     private int $position = 0;
@@ -19,6 +31,7 @@ final class Lexer
     public function __construct(
         private readonly string $expression,
         ?ResourceLimits $limits = null,
+        private readonly bool $allowUnrepresentableNumericLiterals = false,
     ) {
         $this->length = \strlen($expression);
         $this->limits = $limits ?? new ResourceLimits();
@@ -67,6 +80,15 @@ final class Lexer
                 continue;
             }
 
+            if ($character === '|' && $this->startsLogicalOr($tokens)) {
+                $operator = $tokens[\count($tokens) - 1];
+                throw new LexicalException(
+                    'Unknown character |',
+                    'lex.unknown_character',
+                    new SourceSpan($operator->span->start, $operator->span->start + 1),
+                );
+            }
+
             $unicodeToken = $this->readUnicodeToken();
             if ($unicodeToken !== null) {
                 $this->appendToken($tokens, $unicodeToken);
@@ -83,6 +105,47 @@ final class Lexer
         );
 
         return $tokens;
+    }
+
+    /** @param list<Token> $tokens */
+    private function startsLogicalOr(array $tokens): bool
+    {
+        $barIndex = \count($tokens) - 1;
+        if (
+            $barIndex < 1
+            || $tokens[$barIndex]->type !== TokenType::AbsoluteValueBar
+        ) {
+            return false;
+        }
+
+        $leftOperandType = $tokens[$barIndex - 1]->type;
+        if (
+            !\in_array(
+                $leftOperandType,
+                [
+                    TokenType::Number,
+                    TokenType::Identifier,
+                    TokenType::RightParenthesis,
+                    TokenType::Factorial,
+                    TokenType::Superscript,
+                    TokenType::AbsoluteValueBar,
+                ],
+                true,
+            )
+        ) {
+            return false;
+        }
+
+        $nextPosition = $this->position;
+        while (
+            $nextPosition < $this->length
+            && $this->isWhitespace($this->expression[$nextPosition])
+        ) {
+            ++$nextPosition;
+        }
+
+        return $nextPosition < $this->length
+            && $this->expression[$nextPosition] === '|';
     }
 
     private function readNumber(): Token
@@ -144,13 +207,21 @@ final class Lexer
                     && \strcmp($normalized, $maximum) > 0
                 )
             ) {
-                throw new LexicalException(
-                    'Integer literal is outside the host integer range',
-                    'lex.number_out_of_range',
-                    $span,
-                );
+                if (
+                    !\is_finite((float) $literal)
+                    && !$this->allowUnrepresentableNumericLiterals
+                ) {
+                    throw new LexicalException(
+                        'Integer literal is outside the finite numeric range',
+                        'lex.number_out_of_range',
+                        $span,
+                    );
+                }
             }
-        } elseif (!\is_finite((float) $literal)) {
+        } elseif (
+            !\is_finite((float) $literal)
+            && !$this->allowUnrepresentableNumericLiterals
+        ) {
             throw new LexicalException(
                 'Float literal is outside the finite range',
                 'lex.number_out_of_range',
@@ -173,9 +244,12 @@ final class Lexer
             ++$this->position;
         }
 
+        $lexeme = \substr($this->expression, $start, $this->position - $start);
+        $lexeme .= $this->readSubscriptSuffix();
+
         return new Token(
             TokenType::Identifier,
-            \substr($this->expression, $start, $this->position - $start),
+            $lexeme,
             new SourceSpan($start, $this->position),
         );
     }
@@ -196,6 +270,7 @@ final class Lexer
             '!' => TokenType::Factorial,
             '(' => TokenType::LeftParenthesis,
             ')' => TokenType::RightParenthesis,
+            '|' => TokenType::AbsoluteValueBar,
             ',' => TokenType::Comma,
             default => throw new LexicalException(
                 \sprintf('Unknown character %s', $this->describeByte($character)),
@@ -215,6 +290,55 @@ final class Lexer
     {
         $start = $this->position;
         $remaining = \substr($this->expression, $start);
+        if (\str_starts_with($remaining, '⁺') || \str_starts_with($remaining, '⁻')) {
+            $negative = \str_starts_with($remaining, '⁻');
+            $this->position += \strlen($negative ? '⁻' : '⁺');
+            $digits = '';
+            while ($this->position < $this->length) {
+                $digit = $this->readSuperscriptDigit();
+                if ($digit === null) {
+                    break;
+                }
+                $digits .= $digit;
+            }
+            if ($digits === '') {
+                throw new LexicalException(
+                    'A superscript sign must be followed by a digit',
+                    'lex.malformed_superscript',
+                    new SourceSpan($start, $this->position),
+                );
+            }
+
+            $lexeme = ($negative ? '-' : '') . $this->validatedSuperscriptInteger(
+                $digits,
+                $negative,
+                new SourceSpan($start, $this->position),
+            );
+
+            return new Token(
+                TokenType::Superscript,
+                $lexeme,
+                new SourceSpan($start, $this->position),
+            );
+        }
+        if ($this->isSuperscriptDigitAt($this->position)) {
+            $digits = '';
+            while (($digit = $this->readSuperscriptDigit()) !== null) {
+                $digits .= $digit;
+            }
+            $digits = $this->validatedSuperscriptInteger(
+                $digits,
+                false,
+                new SourceSpan($start, $this->position),
+            );
+
+            return new Token(
+                TokenType::Superscript,
+                $digits,
+                new SourceSpan($start, $this->position),
+            );
+        }
+
         $symbols = [
             '×' => [TokenType::Multiply, '*'],
             '·' => [TokenType::Multiply, '*'],
@@ -274,17 +398,8 @@ final class Lexer
             'Χ' => [TokenType::Identifier, 'Chi'],
             'Ψ' => [TokenType::Identifier, 'Psi'],
             'Ω' => [TokenType::Identifier, 'Omega'],
-            '⁰' => [TokenType::Superscript, '0'],
-            '¹' => [TokenType::Superscript, '1'],
-            '²' => [TokenType::Superscript, '2'],
-            '³' => [TokenType::Superscript, '3'],
-            '⁴' => [TokenType::Superscript, '4'],
-            '⁵' => [TokenType::Superscript, '5'],
-            '⁶' => [TokenType::Superscript, '6'],
-            '⁷' => [TokenType::Superscript, '7'],
-            '⁸' => [TokenType::Superscript, '8'],
-            '⁹' => [TokenType::Superscript, '9'],
             '√' => [TokenType::SquareRoot, 'sqrt'],
+            '∛' => [TokenType::CubeRoot, 'cbrt'],
         ];
 
         foreach ($symbols as $symbol => [$type, $lexeme]) {
@@ -293,10 +408,87 @@ final class Lexer
             }
 
             $this->position += \strlen($symbol);
+            if ($type === TokenType::Identifier) {
+                $lexeme .= $this->readSubscriptSuffix();
+            }
+
             return new Token($type, $lexeme, new SourceSpan($start, $this->position));
         }
 
         return null;
+    }
+
+    private function readSubscriptSuffix(): string
+    {
+        $digits = '';
+        while ($this->position < $this->length) {
+            $matched = false;
+            foreach (self::SUBSCRIPT_DIGITS as $symbol => $digit) {
+                if (\substr($this->expression, $this->position, \strlen($symbol)) !== $symbol) {
+                    continue;
+                }
+                $this->position += \strlen($symbol);
+                $digits .= $digit;
+                $matched = true;
+                break;
+            }
+            if (!$matched) {
+                break;
+            }
+        }
+
+        return $digits === '' ? '' : '_' . $digits;
+    }
+
+    private function readSuperscriptDigit(): ?string
+    {
+        foreach (self::SUPERSCRIPT_DIGITS as $symbol => $digit) {
+            if (\substr($this->expression, $this->position, \strlen($symbol)) !== $symbol) {
+                continue;
+            }
+            $this->position += \strlen($symbol);
+
+            return $digit;
+        }
+
+        return null;
+    }
+
+    private function validatedSuperscriptInteger(
+        string $digits,
+        bool $negative,
+        SourceSpan $span,
+    ): string {
+        $normalized = \ltrim($digits, '0');
+        $normalized = $normalized === '' ? '0' : $normalized;
+        $maximum = $negative ? \substr((string) \PHP_INT_MIN, 1) : (string) \PHP_INT_MAX;
+        if (
+            \strlen($normalized) > \strlen($maximum)
+            || (
+                \strlen($normalized) === \strlen($maximum)
+                && \strcmp($normalized, $maximum) > 0
+            )
+        ) {
+            throw new LexicalException(
+                'Superscript exponent is outside the host integer range',
+                'lex.number_out_of_range',
+                $span,
+            );
+        }
+
+        return $normalized;
+    }
+
+    private function isSuperscriptDigitAt(int $position): bool
+    {
+        $remaining = \substr($this->expression, $position);
+        foreach (self::SUPERSCRIPT_DIGITS as $symbol => $_digit) {
+            if (\str_starts_with($remaining, $symbol)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

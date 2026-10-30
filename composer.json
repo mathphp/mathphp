@@ -30,7 +30,7 @@
     "scripts": {
         "test": "@php vendor/bin/phpunit --configuration phpunit.xml.dist",
         "syntax": "@php tools/lint.php",
-        "analyse": "@php vendor/bin/phpstan analyse --configuration phpstan.neon.dist --no-progress",
+        "analyse": "@php vendor/bin/phpstan analyse --configuration phpstan.neon.dist --no-progress --memory-limit=1G",
         "style": "@php vendor/bin/phpcs --standard=phpcs.xml.dist",
         "autoload:check": "@composer dump-autoload --optimize --strict-psr --strict-ambiguous",
         "quality": [
@@ -41,5 +41,8 @@
             "@analyse",
             "@style"
         ]
+    },
+    "config": {
+        "process-timeout": 2400
     }
 }

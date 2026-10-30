@@ -24,7 +24,7 @@ final class Math
         $resolvedOptions = $options ?? new EvaluationOptions();
         $environment = new Environment($variables, $resolvedOptions->functions);
         $tokens = (new Lexer($expression, $resolvedOptions->limits))->tokenize();
-        $ast = (new Parser($tokens, $resolvedOptions->limits))->parse();
+        $ast = (new Parser($tokens, $resolvedOptions->limits, $resolvedOptions->functions))->parse();
 
         return (new Evaluator(
             $environment,
@@ -63,7 +63,7 @@ final class Math
         $resolvedOptions = $options ?? new EvaluationOptions();
         $environment = new Environment($variables, $resolvedOptions->functions);
         $tokens = (new Lexer($expression, $resolvedOptions->limits))->tokenize();
-        $ast = (new Parser($tokens, $resolvedOptions->limits))->parse();
+        $ast = (new Parser($tokens, $resolvedOptions->limits, $resolvedOptions->functions))->parse();
 
         return (new Evaluator(
             $environment,

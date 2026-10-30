@@ -12,6 +12,7 @@ final readonly class NumberNode implements Node
         public int|float $value,
         public string $literal,
         public SourceSpan $span,
+        public bool $hasFiniteApproximation = true,
     ) {
         if (\is_float($value) && !\is_finite($value)) {
             throw new \InvalidArgumentException(

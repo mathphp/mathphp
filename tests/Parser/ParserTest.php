@@ -57,6 +57,11 @@ final class ParserTest extends TestCase
             \PHP_INT_MAX,
             'int',
         ];
+        yield 'finite integer above host range' => [
+            (string) \PHP_INT_MAX . '0',
+            (float) ((string) \PHP_INT_MAX . '0'),
+            'float',
+        ];
         yield 'trailing decimal point' => ['1.', 1.0, 'float'];
         yield 'leading decimal point' => ['.5', 0.5, 'float'];
         yield 'fraction' => ['0.125', 0.125, 'float'];
@@ -65,12 +70,27 @@ final class ParserTest extends TestCase
         yield 'signed exponent' => ['.5e+2', 50.0, 'float'];
     }
 
+    public function testExactLiteralModePreservesIntegersWithoutFiniteFloatApproximations(): void
+    {
+        $literal = '1' . \str_repeat('0', 400);
+        $tokens = (new Lexer($literal, null, true))->tokenize();
+        $node = (new Parser($tokens))->parse();
+
+        self::assertInstanceOf(NumberNode::class, $node);
+        self::assertSame($literal, $node->literal);
+        self::assertSame(0.0, $node->value);
+        self::assertFalse($node->hasFiniteApproximation);
+    }
+
     public function testConstantsAndVariablesAreDistinguishedCaseSensitively(): void
     {
         $pi = self::parseExpression('pi');
         $e = self::parseExpression('e');
         $tau = self::parseExpression('tau');
         $phi = self::parseExpression('phi');
+        $eulerGamma = self::parseExpression('eulerGamma');
+        $catalan = self::parseExpression('catalan');
+        $apery = self::parseExpression('apery');
         $capitalPi = self::parseExpression('Pi');
         $capitalE = self::parseExpression('E');
         $variable = self::parseExpression('_value2');
@@ -83,6 +103,12 @@ final class ParserTest extends TestCase
         self::assertSame('tau', $tau->name);
         self::assertInstanceOf(ConstantNode::class, $phi);
         self::assertSame('phi', $phi->name);
+        self::assertInstanceOf(ConstantNode::class, $eulerGamma);
+        self::assertSame('eulerGamma', $eulerGamma->name);
+        self::assertInstanceOf(ConstantNode::class, $catalan);
+        self::assertSame('catalan', $catalan->name);
+        self::assertInstanceOf(ConstantNode::class, $apery);
+        self::assertSame('apery', $apery->name);
 
         self::assertInstanceOf(VariableNode::class, $capitalPi);
         self::assertSame('Pi', $capitalPi->name);
@@ -117,6 +143,66 @@ final class ParserTest extends TestCase
         self::assertSame(1, $node->nameSpan->end);
         self::assertSame(0, $node->span()->start);
         self::assertSame(13, $node->span()->end);
+    }
+
+    public function testInverseFunctionAliasesNormalizeToCanonicalAstFunctions(): void
+    {
+        foreach (
+            [
+                'arcsin' => 'asin',
+                'arccos' => 'acos',
+                'arctan' => 'atan',
+                'arcsinh' => 'asinh',
+                'arccosh' => 'acosh',
+                'arctanh' => 'atanh',
+            ] as $alias => $canonical
+        ) {
+            $node = self::parseExpression($alias . '(x)');
+
+            self::assertInstanceOf(FunctionCallNode::class, $node);
+            self::assertSame($canonical, $node->name);
+            self::assertSame(0, $node->span->start);
+            self::assertSame(\strlen($alias . '(x)'), $node->span->end);
+        }
+    }
+
+    public function testAbsoluteValueBarsBuildAbsCallsAndRespectNestingAndMultiplication(): void
+    {
+        foreach (
+            [
+                '|x|' => ['call', 'abs', [['variable', 'x']]],
+                '2|x + 1|' => [
+                    'binary',
+                    '*',
+                    ['number', '2', 2],
+                    ['call', 'abs', [[
+                        'binary',
+                        '+',
+                        ['variable', 'x'],
+                        ['number', '1', 1],
+                    ]]],
+                ],
+                '||x| - 1|' => [
+                    'call',
+                    'abs',
+                    [[
+                        'binary',
+                        '-',
+                        ['call', 'abs', [['variable', 'x']]],
+                        ['number', '1', 1],
+                    ]],
+                ],
+            ] as $source => $expected
+        ) {
+            self::assertSame($expected, self::shape(self::parseExpression($source)), $source);
+        }
+    }
+
+    public function testAbsoluteValueCanBeFollowedByOperatorsAndExponentiation(): void
+    {
+        foreach (['|x|^sqrt(2)', '|x| + 1', '|x| * 2'] as $source) {
+            self::assertInstanceOf(BinaryOperationNode::class, self::parseExpression($source), $source);
+        }
     }
 
     public function testZeroArgumentCallAndNestedCallsAreRepresentedExplicitly(): void
@@ -272,6 +358,16 @@ final class ParserTest extends TestCase
         self::assertInstanceOf(UnaryOperationNode::class, $node);
         self::assertInstanceOf(FactorialNode::class, $node->operand);
         self::assertSame(2, $node->operand->operatorSpan->start);
+    }
+
+    public function testDoubleFactorialHasItsOwnFunctionNode(): void
+    {
+        $node = self::parseExpression('3!!');
+
+        self::assertSame(['call', 'doublefactorial', [['number', '3', 3]]], self::shape($node));
+        self::assertInstanceOf(FunctionCallNode::class, $node);
+        self::assertSame(0, $node->span->start);
+        self::assertSame(3, $node->span->end);
     }
 
     public function testGroupedNegativeFactorialKeepsTheGroupingAsOperand(): void
@@ -484,12 +580,6 @@ final class ParserTest extends TestCase
             'parse.expected_expression',
             0,
             1,
-        ];
-        yield 'repeated postfix factorial' => [
-            '3!!',
-            'parse.trailing_input',
-            2,
-            3,
         ];
         yield 'prefix factorial' => [
             '!3',

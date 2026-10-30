@@ -16,9 +16,11 @@ enum TokenType: string
     case Power = '^';
     case Superscript = 'superscript';
     case SquareRoot = 'square_root';
+    case CubeRoot = 'cube_root';
     case Factorial = '!';
     case LeftParenthesis = '(';
     case RightParenthesis = ')';
+    case AbsoluteValueBar = '|';
     case Comma = ',';
     case EndOfInput = 'eof';
 }

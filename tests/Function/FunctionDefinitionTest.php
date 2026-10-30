@@ -94,6 +94,82 @@ final class FunctionDefinitionTest extends TestCase
         );
     }
 
+    public function testExactIdentityArgumentIsExposedForSymbolicSolving(): void
+    {
+        $definition = new FunctionDefinition(
+            'identity',
+            1,
+            1,
+            static fn (array $arguments): int|float => $arguments[0],
+            exactIdentityArgument: 0,
+        );
+
+        self::assertSame(0, $definition->exactIdentityArgument);
+    }
+
+    public function testExactIdentityArgumentMustExistForEveryAllowedArity(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'An exact identity argument must be present for every allowed function call.',
+        );
+
+        new FunctionDefinition(
+            'identity',
+            0,
+            1,
+            static fn (array $arguments): int|float => $arguments[0] ?? 0,
+            exactIdentityArgument: 0,
+        );
+    }
+
+    public function testExactIdentityArgumentCannotClaimAPartialDomain(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'An exact identity rewrite requires a total function without a domain extension.',
+        );
+
+        new FunctionDefinition(
+            'partialIdentity',
+            1,
+            1,
+            static fn (array $arguments): int|float => $arguments[0],
+            domain: static fn (array $_): bool => true,
+            exactIdentityArgument: 0,
+        );
+    }
+
+    public function testIntervalExtensionReceivesArgumentBoundsAndValidatesItsResult(): void
+    {
+        $received = null;
+        $definition = new FunctionDefinition(
+            'bounded',
+            1,
+            1,
+            static fn (array $arguments): float => $arguments[0],
+            range: static function (array $intervals) use (&$received): array {
+                $received = $intervals;
+
+                return [$intervals[0][0] - 1.0, $intervals[0][1] + 1.0];
+            },
+        );
+
+        self::assertTrue($definition->hasIntervalExtension());
+        self::assertSame([-2.0, 3.0], $definition->intervalExtension([[-1.0, 2.0]]));
+        self::assertSame([[-1.0, 2.0]], $received);
+
+        $invalid = new FunctionDefinition(
+            'invalidRange',
+            1,
+            1,
+            static fn (array $arguments): float => $arguments[0],
+            range: static fn (array $_): array => [2.0, -2.0],
+        );
+        $this->expectException(\UnexpectedValueException::class);
+        $invalid->intervalExtension([[0.0, 1.0]]);
+    }
+
     public function testInvokePassesAnOrderedNumericListAndPreservesResultType(): void
     {
         $received = null;
@@ -125,6 +201,82 @@ final class FunctionDefinitionTest extends TestCase
         );
 
         self::assertSame(42, $definition->invoke([]));
+    }
+
+    public function testGradientReturnsPartialsInArgumentOrder(): void
+    {
+        $definition = new FunctionDefinition(
+            'product',
+            2,
+            2,
+            static fn (array $arguments): float => $arguments[0] * $arguments[1],
+            static fn (array $arguments): array => [$arguments[1], $arguments[0]],
+        );
+
+        self::assertSame([3.0, 2.0], $definition->gradient([2.0, 3.0]));
+    }
+
+    public function testGradientIsUnavailableWhenNoCallbackWasProvided(): void
+    {
+        $definition = new FunctionDefinition(
+            'square',
+            1,
+            1,
+            static fn (array $arguments): float => $arguments[0] ** 2,
+        );
+
+        self::assertNull($definition->gradient([2.0]));
+    }
+
+    public function testGradientDomainFailureMeansUnavailable(): void
+    {
+        $definition = new FunctionDefinition(
+            'partial',
+            1,
+            1,
+            static fn (array $arguments): float => $arguments[0] ** 2,
+            static function (array $arguments): array {
+                throw new \DomainException('Derivative is unavailable at this point.');
+            },
+        );
+
+        self::assertNull($definition->gradient([2.0]));
+    }
+
+    public function testGradientRequiresOneNumericPartialPerArgument(): void
+    {
+        $definition = new FunctionDefinition(
+            'invalid_gradient',
+            2,
+            2,
+            static fn (array $arguments): float => $arguments[0] + $arguments[1],
+            static fn (array $arguments): array => [1.0],
+        );
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage(
+            'Function "invalid_gradient" gradient must return one partial derivative per argument.',
+        );
+
+        $definition->gradient([1.0, 2.0]);
+    }
+
+    public function testGradientRejectsNonNumericPartialValues(): void
+    {
+        $definition = new FunctionDefinition(
+            'invalid_gradient',
+            1,
+            1,
+            static fn (array $arguments): float => $arguments[0],
+            static fn (array $arguments): array => [true],
+        );
+
+        $this->expectException(\UnexpectedValueException::class);
+        $this->expectExceptionMessage(
+            'Function "invalid_gradient" gradient values must be numeric.',
+        );
+
+        $definition->gradient([1.0]);
     }
 
     public function testInvokeRejectsAnAssociativeArgumentArray(): void
@@ -294,7 +446,16 @@ final class FunctionDefinitionTest extends TestCase
 
         self::assertNotNull($constructor);
         self::assertSame(
-            ['name', 'minArguments', 'maxArguments', 'callback'],
+            [
+                'name',
+                'minArguments',
+                'maxArguments',
+                'callback',
+                'gradient',
+                'range',
+                'domain',
+                'exactIdentityArgument',
+            ],
             \array_map(
                 static fn (
                     \ReflectionParameter $parameter,

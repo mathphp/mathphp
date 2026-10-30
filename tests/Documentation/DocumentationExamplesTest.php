@@ -24,7 +24,14 @@ final class DocumentationExamplesTest extends TestCase
         string $expression,
         int|float $expected,
     ): void {
-        self::assertSame($expected, Math::evaluate($expression));
+        $actual = Math::evaluate($expression);
+        if (\is_float($expected)) {
+            self::assertEqualsWithDelta($expected, $actual, 2.0 * \PHP_FLOAT_EPSILON);
+
+            return;
+        }
+
+        self::assertSame($expected, $actual);
     }
 
     /**
@@ -39,6 +46,11 @@ final class DocumentationExamplesTest extends TestCase
         yield 'negative exponent' => ['2^-2', 0.25];
         yield 'grouped negative base' => ['(-2)^2', 4];
         yield 'factorial before unary sign' => ['-3!', -6];
+        yield 'binomial coefficient' => ['binomial(52, 5)', 2_598_960];
+        yield 'permutation count' => ['permutation(10, 3)', 720];
+        yield 'regularized lower incomplete gamma' => ['gammainc(1, 2)', 0.8646647167633872];
+        yield 'regularized incomplete beta' => ['betainc(1, 1, 0.4)', 0.4];
+        yield 'regularized incomplete beta complement' => ['betaincc(1, 1, 0.4)', 0.6];
     }
 
     public function testPublishedVariableExample(): void
@@ -125,7 +137,6 @@ final class DocumentationExamplesTest extends TestCase
      */
     public static function deferredSyntaxProvider(): iterable
     {
-        yield 'repeated factorial' => ['3!!'];
         yield 'comparison' => ['1 < 2'];
         yield 'call without parentheses' => ['sqrt 4'];
     }

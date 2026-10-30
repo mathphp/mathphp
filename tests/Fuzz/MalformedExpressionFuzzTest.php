@@ -124,8 +124,8 @@ final class MalformedExpressionFuzzTest extends TestCase
                 'code' => 'lex.malformed_number',
             ],
             [
-                'label' => 'integer outside host range',
-                'expression' => (string) \PHP_INT_MAX . '0',
+                'label' => 'integer outside finite numeric range',
+                'expression' => \str_repeat('9', 400),
                 'options' => null,
                 'code' => 'lex.number_out_of_range',
             ],
@@ -176,12 +176,6 @@ final class MalformedExpressionFuzzTest extends TestCase
                 'expression' => '1**2',
                 'options' => null,
                 'code' => 'parse.expected_expression',
-            ],
-            [
-                'label' => 'repeated factorial',
-                'expression' => '1!!',
-                'options' => null,
-                'code' => 'parse.trailing_input',
             ],
             [
                 'label' => 'leading comma',

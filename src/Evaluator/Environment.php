@@ -37,7 +37,7 @@ final readonly class Environment
                 );
             }
 
-            if (in_array($name, ['pi', 'e', 'tau', 'phi'], true)) {
+            if (in_array($name, ['pi', 'e', 'tau', 'phi', 'eulerGamma', 'catalan', 'apery'], true)) {
                 throw new \InvalidArgumentException(
                     \sprintf(
                         'The constant name "%s" is reserved and cannot be overridden.',
@@ -77,6 +77,11 @@ final readonly class Environment
         return $this->variables[$name];
     }
 
+    public function hasVariable(string $name): bool
+    {
+        return \array_key_exists($name, $this->variables);
+    }
+
     public function constant(string $name): float
     {
         return match ($name) {
@@ -84,6 +89,9 @@ final readonly class Environment
             'e' => \M_E,
             'tau' => 2 * \M_PI,
             'phi' => (1 + \sqrt(5)) / 2,
+            'eulerGamma' => 0.5772156649015328606,
+            'catalan' => 0.91596559417721901505,
+            'apery' => 1.2020569031595942854,
             default => throw new \LogicException(
                 \sprintf('Unknown parser-produced constant "%s".', $name),
             ),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MathPHP\Tests\Evaluation;
 
 use MathPHP\Configuration\ResourceLimits;
+use MathPHP\Configuration\EvaluationOptions;
 use MathPHP\Evaluator\NumericOperations;
 use MathPHP\Exception\EvaluationException;
 use MathPHP\Source\SourceSpan;
@@ -468,6 +469,31 @@ final class NumericOperationsTest extends TestCase
         );
     }
 
+    public function testLargeIntegerExponentPreservesParityForNegativeFloatBase(): void
+    {
+        $numbers = new NumericOperations(
+            new ResourceLimits(maxExponentMagnitude: 1.0E16),
+        );
+        self::assertSame(
+            -1.0,
+            $numbers->power(-1.0, 9_007_199_254_740_993, $this->operatorSpan),
+        );
+        self::assertSame(
+            1.0,
+            $numbers->power(-1.0, 9_007_199_254_740_992, $this->operatorSpan),
+        );
+    }
+
+    public function testRoundoffSizedIntegerExponentIsNormalizedForNegativeBase(): void
+    {
+        $exponent = \sqrt(2.0) ** 2;
+        self::assertNotSame(\round($exponent), $exponent);
+        self::assertSame(
+            4.0,
+            $this->numbers->power(-2.0, $exponent, $this->operatorSpan),
+        );
+    }
+
     public function testTwoToSixtyThreeIsNeverSilentlyPromotedOn64Bit(): void
     {
         $this->assertEvaluationError(
@@ -508,6 +534,16 @@ final class NumericOperationsTest extends TestCase
 
     public function testPowerDomainErrorsPointAtTheOperator(): void
     {
+        $this->assertEvaluationError(
+            fn (): int|float => $this->numbers->power(
+                -2,
+                1.000000000001,
+                $this->operatorSpan,
+            ),
+            'eval.domain',
+            $this->operatorSpan,
+            'A negative base requires an integer exponent',
+        );
         $this->assertEvaluationError(
             fn (): int|float => $this->numbers->power(
                 -2,
@@ -565,6 +601,21 @@ final class NumericOperationsTest extends TestCase
         self::assertSame(
             self::factorial($maximum),
             $this->numbers->factorial($maximum, $this->operatorSpan),
+        );
+    }
+
+    public function testFactorialSnapsOnlyMachinePrecisionIntegerRounding(): void
+    {
+        self::assertSame(
+            2,
+            $this->numbers->factorial(2.0000000000000004, $this->operatorSpan),
+        );
+
+        $this->assertEvaluationError(
+            fn (): int => $this->numbers->factorial(2.5, $this->operatorSpan),
+            'eval.domain',
+            $this->operatorSpan,
+            'Factorial operand must be an integer within the host range',
         );
     }
 
