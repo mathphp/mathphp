@@ -2512,7 +2512,7 @@ final class PolynomialRootCountingSolver
         ) {
             return null;
         }
-        $rootWidth = new ExactRationalInterval($root->upper, $root->upper)
+        $rootWidth = (new ExactRationalInterval($root->upper, $root->upper))
             ->subtract(new ExactRationalInterval($root->lower, $root->lower));
         $requestedWidth = new ExactRationalInterval($maximumWidth, $maximumWidth);
         if (
@@ -2691,7 +2691,7 @@ final class PolynomialRootCountingSolver
             ) {
                 continue;
             }
-            $rootWidth = new ExactRationalInterval($root->upper, $root->upper)
+            $rootWidth = (new ExactRationalInterval($root->upper, $root->upper))
                 ->subtract(new ExactRationalInterval($root->lower, $root->lower));
             if (
                 $rootWidth->compareUpperToRational(
@@ -2957,7 +2957,7 @@ final class PolynomialRootCountingSolver
             if ($expectedCount === 1) {
                 $vertex = (new ExactRationalInterval($phase[1], $phase[1]))
                     ->negateInterval()
-                    ->divide(new ExactRationalInterval($phase[2], $phase[2])->multiply(
+                    ->divide((new ExactRationalInterval($phase[2], $phase[2]))->multiply(
                         new ExactRationalInterval(['2', '1'], ['2', '1']),
                     ));
 
@@ -8251,7 +8251,7 @@ final class PolynomialRootCountingSolver
                     ? $x->power($degree)
                     : $previousPower->multiply($x);
             }
-            $term = new ExactRationalInterval($coefficient, $coefficient)->multiply($power);
+            $term = (new ExactRationalInterval($coefficient, $coefficient))->multiply($power);
             $value = $value->add($term);
             $previousPower = $power;
         }
@@ -23714,7 +23714,7 @@ final class PolynomialRootCountingSolver
                         $factor = $factor->multiply($factor);
                     }
                 }
-                $minimum = new ExactRationalInterval($polynomial[0], $polynomial[0])->add(
+                $minimum = (new ExactRationalInterval($polynomial[0], $polynomial[0]))->add(
                     $linearCoefficient
                         ->divide(new ExactRationalInterval([(string) $degree, '1'], [(string) $degree, '1']))
                         ->multiply($criticalPower),
@@ -29286,10 +29286,10 @@ final class PolynomialRootCountingSolver
                 $rootValue = (new ExactRationalInterval($scaledRadicand, $scaledRadicand))->sqrt();
                 if ($rootValue->lower === $rootValue->upper) {
                     $signedRoot = $sign > 0 ? $rootValue : $rootValue->negateInterval();
-                    $offset = new ExactRationalInterval(
+                    $offset = (new ExactRationalInterval(
                         $affineVariable['intercept'],
                         $affineVariable['intercept'],
-                    )->subtract($signedRoot);
+                    ))->subtract($signedRoot);
                     $affineVariable['intercept'] = $offset->lower;
                     continue;
                 }

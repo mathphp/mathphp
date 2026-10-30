@@ -261,7 +261,7 @@ final readonly class ExactRationalInterval
             $twoHundredThirtyNine = new self(['1', '239'], ['1', '239']);
             $pi = $five->atan()->multiply(new self(['16', '1'], ['16', '1']))
                 ->subtract($twoHundredThirtyNine->atan()->multiply(new self(['4', '1'], ['4', '1'])));
-            $scale = new self(['2', '1'], ['2', '1'])->divide($pi->sqrt());
+            $scale = (new self(['2', '1'], ['2', '1']))->divide($pi->sqrt());
         }
         if ($this->lower === $this->upper) {
             return $this->erfPoint($this->lower, $scale, $precision);
@@ -386,7 +386,7 @@ final readonly class ExactRationalInterval
             $twoHundredThirtyNine = new self(['1', '239'], ['1', '239']);
             $pi = $five->atan()->multiply(new self(['16', '1'], ['16', '1']))
                 ->subtract($twoHundredThirtyNine->atan()->multiply(new self(['4', '1'], ['4', '1'])));
-            $scale = new self(['2', '1'], ['2', '1'])->divide($pi->sqrt());
+            $scale = (new self(['2', '1'], ['2', '1']))->divide($pi->sqrt());
         }
         if ($this->lower === $this->upper) {
             return $this->erfiPoint($this->lower, $scale, $precision);
@@ -638,7 +638,7 @@ final readonly class ExactRationalInterval
                         [(string) (2 * $index + 3), '1'],
                         [(string) (2 * $index + 3), '1'],
                     ))
-                    ->divide(new self(['1', '1'], ['1', '1'])->subtract($zSquared));
+                    ->divide((new self(['1', '1'], ['1', '1']))->subtract($zSquared));
                 if ($tailBound->compareUpperToRational('1', $toleranceDenominator) <= 0) {
                     $lower = $sum->multiply(new self(['2', '1'], ['2', '1']));
                     $upper = $lower->add($tailBound->multiply(new self(['2', '1'], ['2', '1'])));

@@ -109,7 +109,7 @@ final class ExactRationalIntervalTest extends TestCase
         );
         self::assertTrue($lnQuarter->add($lnFour)->containsRational('0', '1'));
 
-        $crossingPower = new ExactRationalInterval(['3', '2'], ['3', '1'])->ln();
+        $crossingPower = (new ExactRationalInterval(['3', '2'], ['3', '1']))->ln();
         self::assertGreaterThan(
             0,
             $crossingPower->compareLowerToRational('405465108108164381978013', '1000000000000000000000000'),
@@ -126,9 +126,9 @@ final class ExactRationalIntervalTest extends TestCase
     public function testHyperbolicSineEnclosuresAreMonotoneAndOdd(): void
     {
         $zero = new ExactRationalInterval(['0', '1'], ['0', '1']);
-        $positive = new ExactRationalInterval(['1', '1'], ['1', '1'])->sinh();
-        $negative = new ExactRationalInterval(['-1', '1'], ['-1', '1'])->sinh();
-        $range = new ExactRationalInterval(['-1', '1'], ['1', '1'])->sinh();
+        $positive = (new ExactRationalInterval(['1', '1'], ['1', '1']))->sinh();
+        $negative = (new ExactRationalInterval(['-1', '1'], ['-1', '1']))->sinh();
+        $range = (new ExactRationalInterval(['-1', '1'], ['1', '1']))->sinh();
         $positiveNegated = $positive->negateInterval();
 
         self::assertSame(['0', '1'], $zero->sinh()->lower);
@@ -142,10 +142,10 @@ final class ExactRationalIntervalTest extends TestCase
 
     public function testHyperbolicCosineEnclosuresRespectEvennessAndTheMinimum(): void
     {
-        $zero = new ExactRationalInterval(['0', '1'], ['0', '1'])->cosh();
-        $positive = new ExactRationalInterval(['1', '1'], ['1', '1'])->cosh();
-        $negative = new ExactRationalInterval(['-1', '1'], ['-1', '1'])->cosh();
-        $crossing = new ExactRationalInterval(['-1', '1'], ['1', '1'])->cosh();
+        $zero = (new ExactRationalInterval(['0', '1'], ['0', '1']))->cosh();
+        $positive = (new ExactRationalInterval(['1', '1'], ['1', '1']))->cosh();
+        $negative = (new ExactRationalInterval(['-1', '1'], ['-1', '1']))->cosh();
+        $crossing = (new ExactRationalInterval(['-1', '1'], ['1', '1']))->cosh();
 
         self::assertSame(['1', '1'], $zero->lower);
         self::assertSame(['1', '1'], $zero->upper);
@@ -157,10 +157,10 @@ final class ExactRationalIntervalTest extends TestCase
 
     public function testHyperbolicTangentEnclosuresAreMonotoneAndOdd(): void
     {
-        $zero = new ExactRationalInterval(['0', '1'], ['0', '1'])->tanh();
-        $positive = new ExactRationalInterval(['1', '1'], ['1', '1'])->tanh();
-        $negative = new ExactRationalInterval(['-1', '1'], ['-1', '1'])->tanh();
-        $range = new ExactRationalInterval(['-1', '1'], ['1', '1'])->tanh();
+        $zero = (new ExactRationalInterval(['0', '1'], ['0', '1']))->tanh();
+        $positive = (new ExactRationalInterval(['1', '1'], ['1', '1']))->tanh();
+        $negative = (new ExactRationalInterval(['-1', '1'], ['-1', '1']))->tanh();
+        $range = (new ExactRationalInterval(['-1', '1'], ['1', '1']))->tanh();
 
         self::assertSame(['0', '1'], $zero->lower);
         self::assertSame(['0', '1'], $zero->upper);
@@ -234,11 +234,11 @@ final class ExactRationalIntervalTest extends TestCase
 
     public function testArctangentEnclosuresUseRangeReductionAndDirectedRounding(): void
     {
-        $one = new ExactRationalInterval(['1', '1'], ['1', '1'])->atan();
-        $half = new ExactRationalInterval(['1', '2'], ['1', '2'])->atan();
-        $negativeHalf = new ExactRationalInterval(['-1', '2'], ['-1', '2'])->atan();
-        $range = new ExactRationalInterval(['-1', '2'], ['1', '2'])->atan();
-        $large = new ExactRationalInterval(['10', '1'], ['10', '1'])->atan();
+        $one = (new ExactRationalInterval(['1', '1'], ['1', '1']))->atan();
+        $half = (new ExactRationalInterval(['1', '2'], ['1', '2']))->atan();
+        $negativeHalf = (new ExactRationalInterval(['-1', '2'], ['-1', '2']))->atan();
+        $range = (new ExactRationalInterval(['-1', '2'], ['1', '2']))->atan();
+        $large = (new ExactRationalInterval(['10', '1'], ['10', '1']))->atan();
 
         self::assertGreaterThan(0, $one->compareLowerToRational('785398', '1000000'));
         self::assertLessThan(0, $one->compareUpperToRational('785399', '1000000'));
@@ -328,9 +328,9 @@ final class ExactRationalIntervalTest extends TestCase
     {
         $larger = new ExactRationalInterval(['17', '1'], ['17', '1']);
         $negative = new ExactRationalInterval(['-17', '1'], ['-17', '1']);
-        $farPositive = new ExactRationalInterval(['256', '1'], ['256', '1'])->exp();
-        $farNegative = new ExactRationalInterval(['-256', '1'], ['-256', '1'])->exp();
-        $rangeBoundary = new ExactRationalInterval(['4096', '1'], ['4096', '1'])->exp();
+        $farPositive = (new ExactRationalInterval(['256', '1'], ['256', '1']))->exp();
+        $farNegative = (new ExactRationalInterval(['-256', '1'], ['-256', '1']))->exp();
+        $rangeBoundary = (new ExactRationalInterval(['4096', '1'], ['4096', '1']))->exp();
         $outsideRange = new ExactRationalInterval(['4097', '1'], ['4097', '1']);
         $positiveExponential = $larger->exp();
         $negativeExponential = $negative->exp();
