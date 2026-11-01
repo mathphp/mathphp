@@ -9400,7 +9400,11 @@ final class EquationSolver
             );
     }
 
-    /** @param array<string, int|float> $parameters */
+    /**
+     * @param array<string, int|float> $parameters
+     * @param callable(float): ?float $residualAt
+     * @param callable(float): float $residualScaleAt
+     */
     private function solvePrincipalLambertWSelfEquation(
         Node $left,
         Node $right,
@@ -18839,7 +18843,11 @@ final class EquationSolver
         return $levels;
     }
 
-    /** @return list<EquationSolution>|null */
+    /**
+     * @param callable(float): ?float $residualAt
+     * @param callable(float): ?float $candidateScaleAt
+     * @return list<EquationSolution>|null
+     */
     private function solveIntegerShapeBetaEquation(
         Node $left,
         Node $right,
@@ -19012,7 +19020,6 @@ final class EquationSolver
                         \abs($residual),
                         $candidate->iterations,
                     ),
-                    $options,
                 );
             }
             \usort(
