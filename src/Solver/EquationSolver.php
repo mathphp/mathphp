@@ -9467,7 +9467,6 @@ final class EquationSolver
     /**
      * Solve exp(g(x)) - g(x) = c by isolating its two monotone branches.
      *
-     * @param array<string, int|float> $parameters
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $candidateScaleAt
      * @return list<EquationSolution>|null
@@ -9713,7 +9712,6 @@ final class EquationSolver
     /**
      * Solve exp(z) - k*z = level on a monotone branch for k <= 0.
      *
-     * @param array<string, int|float> $parameters
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $candidateScaleAt
      * @return list<EquationSolution>|null
@@ -26075,7 +26073,6 @@ final class EquationSolver
     }
 
     /**
-     * @param array<string, int|float> $parameters
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $candidateScaleAt
      * @return list<EquationSolution>|null
