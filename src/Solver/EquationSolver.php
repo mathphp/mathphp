@@ -8343,7 +8343,12 @@ final class EquationSolver
                 }
             }
         }
-        if ($shift === null || $shiftedArgumentIndex === null || $fixedArgumentValue === null) {
+        if (
+            $shift === null
+            || $shiftedArgumentIndex === null
+            || $fixedArgument === null
+            || $fixedArgumentValue === null
+        ) {
             return false;
         }
 
@@ -38977,6 +38982,10 @@ final class EquationSolver
         ) {
             $replacement = 'atan(' . $variable . ')=' . $variable;
         } else {
+            return null;
+        }
+
+        if (!$onlyZeroRoot && $replacement === null) {
             return null;
         }
 
