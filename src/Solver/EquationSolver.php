@@ -26563,6 +26563,8 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @param callable(float): ?float $residualAt
+     * @param callable(float): ?float $candidateScaleAt
      * @return list<EquationSolution>|null
      */
     private function solveUnboundedLogarithmicEquation(
@@ -46991,6 +46993,7 @@ final class EquationSolver
         $matches = [[$left, $right], [$right, $left]];
         $degree = null;
         $logarithmOffset = 0.0;
+        $logarithmCoefficient = null;
         $zeroExponent = false;
         foreach ($matches as [$logarithm, $power]) {
             if (
@@ -47059,7 +47062,7 @@ final class EquationSolver
             $degree = $denominator / $numerator;
             break;
         }
-        if ($degree === null && !$zeroExponent) {
+        if (($degree === null && !$zeroExponent) || $logarithmCoefficient === null) {
             return null;
         }
         if ($zeroExponent) {
