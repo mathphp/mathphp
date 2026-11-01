@@ -72754,11 +72754,16 @@ final class EquationSolver
             \max(32, $solverOptions->scanSteps),
         );
         if ($argumentRange === null) {
-            if ($node->name === 'sin' || $node->name === 'cos') {
-                return [-1.0, 1.0];
+            $argumentNode = $this->unwrapGrouping($combination['argument']);
+            if (
+                $argumentNode instanceof FunctionCallNode
+                && \count($argumentNode->arguments) === 1
+                && \in_array($argumentNode->name, ['sin', 'cos'], true)
+            ) {
+                $argumentRange = [-1.0, 1.0];
+            } else {
+                return null;
             }
-
-            return null;
         }
         $scale = \max(1.0, \abs($argumentRange[0]), \abs($argumentRange[1]));
         $tolerance = 8.0 * \PHP_FLOAT_EPSILON * $scale;

@@ -20392,6 +20392,21 @@ final class EquationSolverTest extends TestCase
         );
     }
 
+    public function testRoundingTrigonometricExponentFindsBoundedRoot(): void
+    {
+        $solutions = Math::solve(
+            'x^(round(sin(x)) + sin(x)) = 1',
+            'x',
+            0.5,
+            1.5,
+        );
+
+        self::assertSame(
+            [1.0],
+            \array_map(static fn (EquationSolution $solution): float => $solution->value, $solutions),
+        );
+    }
+
     public function testSignEquationsAgainstPolynomialsEnumerateFiniteLevels(): void
     {
         $options = new SolverOptions(scanSteps: 1);
