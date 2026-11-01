@@ -40,6 +40,8 @@ final class SystemSolver
 
     private const MAX_AFFINE_SUBSTITUTION_ATTEMPTS = 128;
 
+    private const MAX_INITIAL_VALUE_REASSIGNMENT_DIMENSION = 8;
+
     /**
      * Retry failed local system solves from deterministic unit-cube patterns
      * and one-coordinate perturbations. Each attempt remains bounded by SolverOptions.
@@ -64,7 +66,14 @@ final class SystemSolver
             $solverOptions,
         );
         if ($solution !== null) {
-            return $solution;
+            return $this->preferCloserValidVariableAssignment(
+                $equations,
+                $solution,
+                $initialValues,
+                $parameters,
+                $evaluationOptions,
+                $solverOptions,
+            );
         }
 
         if (\count($initialValues) === 2 && \count($equations) >= 2) {
@@ -84,6 +93,7 @@ final class SystemSolver
                 }
             }
         }
+
         if (\count($initialValues) < 2) {
             return null;
         }
@@ -120,7 +130,14 @@ final class SystemSolver
                 $solverOptions,
             );
             if ($solution !== null) {
-                return $solution;
+                return $this->preferCloserValidVariableAssignment(
+                    $equations,
+                    $solution,
+                    $initialValues,
+                    $parameters,
+                    $evaluationOptions,
+                    $solverOptions,
+                );
             }
 
             foreach ($names as $index => $name) {
@@ -142,7 +159,14 @@ final class SystemSolver
                         $solverOptions,
                     );
                     if ($solution !== null) {
-                        return $solution;
+                        return $this->preferCloserValidVariableAssignment(
+                            $equations,
+                            $solution,
+                            $initialValues,
+                            $parameters,
+                            $evaluationOptions,
+                            $solverOptions,
+                        );
                     }
                 }
             }
@@ -171,12 +195,180 @@ final class SystemSolver
                     $solverOptions,
                 );
                 if ($solution !== null) {
-                    return $solution;
+                    return $this->preferCloserValidVariableAssignment(
+                        $equations,
+                        $solution,
+                        $initialValues,
+                        $parameters,
+                        $evaluationOptions,
+                        $solverOptions,
+                    );
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Reassign interchangeable roots only when the original system confirms the result.
+     *
+     * @param list<string> $equations
+     * @param array<string, int|float> $initialValues
+     * @param array<string, int|float> $parameters
+     */
+    private function preferCloserValidVariableAssignment(
+        array $equations,
+        SystemSolution $solution,
+        array $initialValues,
+        array $parameters,
+        EvaluationOptions $evaluationOptions,
+        SolverOptions $solverOptions,
+    ): SystemSolution {
+        $names = \array_keys($initialValues);
+        if (
+            \count($names) < 2
+            || \count($names) > self::MAX_INITIAL_VALUE_REASSIGNMENT_DIMENSION
+        ) {
+            return $solution;
+        }
+
+        $parsedEquations = $this->parseSystemEquations($equations, $evaluationOptions);
+        if ($parsedEquations === null) {
+            return $solution;
+        }
+
+        $values = [];
+        foreach ($names as $name) {
+            if (!\array_key_exists($name, $solution->values)) {
+                return $solution;
+            }
+            $values[] = $solution->values[$name];
+        }
+        $bestDistance = $this->systemInitialValueDistance($names, $values, $initialValues);
+        $changed = false;
+
+        do {
+            $bestSwap = null;
+            $bestSwapDistance = $bestDistance;
+            for ($left = 0; $left < \count($values); ++$left) {
+                for ($right = $left + 1; $right < \count($values); ++$right) {
+                    $candidate = $values;
+                    [$candidate[$left], $candidate[$right]] = [$candidate[$right], $candidate[$left]];
+                    $candidate = \array_values($candidate);
+                    $candidateDistance = $this->systemInitialValueDistance(
+                        $names,
+                        $candidate,
+                        $initialValues,
+                    );
+                    if ($candidateDistance >= $bestSwapDistance) {
+                        continue;
+                    }
+
+                    $residualData = $this->residualsWithLocalZeroSideScales(
+                        $parsedEquations,
+                        $names,
+                        $candidate,
+                        $parameters,
+                        $evaluationOptions,
+                    );
+                    if (
+                        $residualData === null
+                        || $this->norm($residualData[1]) > $solverOptions->residualTolerance
+                    ) {
+                        continue;
+                    }
+
+                    $bestSwap = $candidate;
+                    $bestSwapDistance = $candidateDistance;
+                }
+            }
+            if ($bestSwap === null) {
+                break;
+            }
+
+            $values = $bestSwap;
+            $bestDistance = $bestSwapDistance;
+            $changed = true;
+        } while (true);
+
+        if (!$changed) {
+            return $solution;
+        }
+
+        $residualData = $this->residualsWithLocalZeroSideScales(
+            $parsedEquations,
+            $names,
+            $values,
+            $parameters,
+            $evaluationOptions,
+        );
+        if ($residualData === null) {
+            return $solution;
+        }
+
+        return new SystemSolution(
+            \array_combine($names, $values),
+            $this->norm($residualData[0]),
+            $solution->iterations,
+        );
+    }
+
+    /**
+     * @param list<string> $names
+     * @param list<float> $values
+     * @param array<string, int|float> $initialValues
+     */
+    private function systemInitialValueDistance(array $names, array $values, array $initialValues): float
+    {
+        $distance = 0.0;
+        foreach ($names as $index => $name) {
+            $coordinateDistance = $this->scalarRootDistance($values[$index], (float) $initialValues[$name]);
+            if ($distance > \PHP_FLOAT_MAX - $coordinateDistance) {
+                return \PHP_FLOAT_MAX;
+            }
+            $distance += $coordinateDistance;
+        }
+
+        return $distance;
+    }
+
+    /**
+     * Tiny nonzero sides can be accepted against the absolute residual floor by local solvers.
+     *
+     * @param list<array{Node, Node, int}> $equations
+     * @param list<string> $names
+     * @param list<float> $values
+     * @param array<string, int|float> $parameters
+     */
+    private function hasSubToleranceEquationSide(
+        array $equations,
+        array $names,
+        array $values,
+        array $parameters,
+        EvaluationOptions $evaluationOptions,
+        float $tolerance,
+    ): bool {
+        $sideValues = $this->equationSideValues(
+            $equations,
+            $names,
+            $values,
+            $parameters,
+            $evaluationOptions,
+        );
+        if ($sideValues === null) {
+            return false;
+        }
+
+        foreach ($sideValues as [$left, $right]) {
+            foreach ([$left, $right] as $value) {
+                if ($value !== 0.0 && \abs($value) <= $tolerance) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -665,6 +857,44 @@ final class SystemSolver
             return $exactAffineSolution;
         }
 
+        $linearizedExponentialSolution = $this->solveLinearizedExponentialVariables(
+            $parsedEquations,
+            $names,
+            $values,
+            $parameters,
+            $evaluationOptions,
+            $solverOptions,
+        );
+        if ($linearizedExponentialSolution !== null) {
+            return $linearizedExponentialSolution;
+        }
+
+        if (
+            \count($names) === 2
+            && \count($parsedEquations) >= 2
+            && $this->hasSubToleranceEquationSide(
+                $parsedEquations,
+                $names,
+                $values,
+                $parameters,
+                $evaluationOptions,
+                $solverOptions->residualTolerance,
+            )
+        ) {
+            $bivariatePolynomialSolution = (new BivariatePolynomialSystemSolver())->solve(
+                $parsedEquations,
+                $equationSources,
+                $names,
+                $values,
+                $parameters,
+                $evaluationOptions,
+                $solverOptions,
+            );
+            if ($bivariatePolynomialSolution !== null) {
+                return $bivariatePolynomialSolution;
+            }
+        }
+
         $independentSolution = $this->solveIndependentScalarEquations(
             $parsedEquations,
             $equationSources,
@@ -790,17 +1020,6 @@ final class SystemSolver
         );
         if ($powerLinearSolution !== null) {
             return $powerLinearSolution;
-        }
-        $linearizedExponentialSolution = $this->solveLinearizedExponentialVariables(
-            $parsedEquations,
-            $names,
-            $values,
-            $parameters,
-            $evaluationOptions,
-            $solverOptions,
-        );
-        if ($linearizedExponentialSolution !== null) {
-            return $linearizedExponentialSolution;
         }
         $eliminationEquations = $this->withZeroEvenPowerConsequences(
             $parsedEquations,

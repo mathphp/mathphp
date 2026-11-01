@@ -101,6 +101,7 @@ final class BivariatePolynomialSystemSolver
                 $equations,
                 $names,
                 $initialValues,
+                $polynomials,
                 $parameters,
                 $evaluationOptions,
                 $solverOptions->residualTolerance,
@@ -326,6 +327,7 @@ final class BivariatePolynomialSystemSolver
                                     $equations,
                                     $names,
                                     $values,
+                                    $polynomials,
                                     $parameters,
                                     $evaluationOptions,
                                     $solverOptions->residualTolerance,
@@ -414,9 +416,14 @@ final class BivariatePolynomialSystemSolver
 
         $distance = 0.0;
         foreach ($names as $index => $name) {
+            $coordinateDistance = \log(\abs($candidate->values[$name]))
+                - \log(\abs($initialValues[$index]));
+            if (($candidate->values[$name] < 0.0) !== ($initialValues[$index] < 0.0)) {
+                $coordinateDistance += 2.0;
+            }
             $distance = \hypot(
                 $distance,
-                \log(\abs($candidate->values[$name])) - \log(\abs($initialValues[$index])),
+                $coordinateDistance,
             );
         }
 
@@ -1343,6 +1350,7 @@ final class BivariatePolynomialSystemSolver
      * @param list<array{Node, Node, int}> $equations
      * @param list<string> $names
      * @param list<float> $values
+     * @param list<array<int, list<float>>> $polynomials
      * @param array<string, int|float> $parameters
      * @return list<float>|null
      */
@@ -1350,6 +1358,7 @@ final class BivariatePolynomialSystemSolver
         array $equations,
         array $names,
         array $values,
+        array $polynomials,
         array $parameters,
         EvaluationOptions $options,
         float $tolerance,
@@ -1360,7 +1369,7 @@ final class BivariatePolynomialSystemSolver
         );
         $evaluator = new Evaluator($environment, $options->limits);
         $residuals = [];
-        foreach ($equations as [$left, $right]) {
+        foreach ($equations as $index => [$left, $right]) {
             try {
                 $leftValue = (float) $evaluator->evaluate($left);
                 $rightValue = (float) $evaluator->evaluate($right);
@@ -1368,7 +1377,11 @@ final class BivariatePolynomialSystemSolver
                 return null;
             }
             $residual = $leftValue - $rightValue;
-            $scale = \max(1.0, \abs($leftValue), \abs($rightValue));
+            $scale = \max(
+                \abs($leftValue),
+                \abs($rightValue),
+                $this->polynomialMagnitude($polynomials[$index], $values[0], $values[1]),
+            );
             if (!\is_finite($residual) || \abs($residual) > $tolerance * $scale) {
                 return null;
             }
@@ -1376,6 +1389,25 @@ final class BivariatePolynomialSystemSolver
         }
 
         return $residuals;
+    }
+
+    /** @param array<int, list<float>> $polynomial */
+    private function polynomialMagnitude(array $polynomial, float $firstValue, float $secondValue): float
+    {
+        $magnitude = 0.0;
+        foreach ($polynomial as $firstPower => $coefficients) {
+            foreach ($coefficients as $secondPower => $coefficient) {
+                $termMagnitude = \abs($coefficient)
+                    * (\abs($firstValue) ** $firstPower)
+                    * (\abs($secondValue) ** $secondPower);
+                if (!\is_finite($termMagnitude) || $magnitude > \PHP_FLOAT_MAX - $termMagnitude) {
+                    return \PHP_FLOAT_MAX;
+                }
+                $magnitude += $termMagnitude;
+            }
+        }
+
+        return $magnitude;
     }
 
     /** @param list<float> $values */
