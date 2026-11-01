@@ -17729,10 +17729,7 @@ final class EquationSolver
             };
         }
         foreach ($levels as $level) {
-            if (!\is_int($level) && !\is_float($level)) {
-                return [];
-            }
-            if (!\is_finite((float) $level)) {
+            if (!\is_finite($level)) {
                 return [];
             }
         }
@@ -18277,7 +18274,10 @@ final class EquationSolver
         return [$finiteLower, $finiteLowerValue, $finiteUpper, $finiteUpperValue];
     }
 
-    /** @param callable(float): float $function */
+    /**
+     * @param callable(float): float $function
+     * @return list<float>|null
+     */
     private function invertLogGammaFunctionLevels(
         float $target,
         float $lowerBound,
