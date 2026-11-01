@@ -855,10 +855,10 @@ final class SystemSolver
                     $solverOptions,
                 );
                 if ($zeroPowerSolution instanceof SystemSolution) {
-                    $candidateValues = \array_values(\array_map(
+                    $candidateValues = \array_map(
                         static fn (string $name): float => $zeroPowerSolution->values[$name],
                         $names,
-                    ));
+                    );
                     $originalResiduals = $this->residualsWithLocalZeroSideScales(
                         $parsedEquations,
                         $names,
