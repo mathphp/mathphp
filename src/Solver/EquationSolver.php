@@ -22806,6 +22806,12 @@ final class EquationSolver
                 && $evaluationOptions->functions->isBuiltIn('exp')
             ) {
                 $exponentialNode = $leftIsExponential ? $leftNode : $rightNode;
+                if (
+                    !$exponentialNode instanceof FunctionCallNode
+                    || \count($exponentialNode->arguments) !== 1
+                ) {
+                    return null;
+                }
                 $rationalNode = $leftIsExponential ? $node->right : $node->left;
                 $exponentLimit = $this->certifiedElementaryLimitAtInfinity(
                     $exponentialNode->arguments[0],
