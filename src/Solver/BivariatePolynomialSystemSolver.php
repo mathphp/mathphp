@@ -354,14 +354,13 @@ final class BivariatePolynomialSystemSolver
         if ($candidateDistance === null) {
             \usort(
                 $candidates,
-                fn (SystemSolution $first, SystemSolution $second): int =>
-                    \hypot(
-                        $first->values[$names[0]] - $initialValues[0],
-                        $first->values[$names[1]] - $initialValues[1],
-                    ) <=> \hypot(
-                        $second->values[$names[0]] - $initialValues[0],
-                        $second->values[$names[1]] - $initialValues[1],
-                    ) ?: $first->residualNorm <=> $second->residualNorm,
+                function (SystemSolution $first, SystemSolution $second) use ($names, $initialValues): int {
+                    $firstDistance = $this->distanceFromInitialValues($first, $names, $initialValues);
+                    $secondDistance = $this->distanceFromInitialValues($second, $names, $initialValues);
+
+                    return $firstDistance <=> $secondDistance
+                        ?: $first->residualNorm <=> $second->residualNorm;
+                },
             );
         } else {
             /** @var list<array{SystemSolution, float}> $rankedCandidates */
@@ -388,6 +387,40 @@ final class BivariatePolynomialSystemSolver
         }
 
         return $candidates[0];
+    }
+
+    /** @param list<string> $names
+     *  @param list<float> $initialValues
+     */
+    private function distanceFromInitialValues(
+        SystemSolution $candidate,
+        array $names,
+        array $initialValues,
+    ): float {
+        $hasNonzeroCoordinates = true;
+        foreach ($names as $index => $name) {
+            if ($initialValues[$index] === 0.0 || $candidate->values[$name] === 0.0) {
+                $hasNonzeroCoordinates = false;
+                break;
+            }
+        }
+
+        if (!$hasNonzeroCoordinates) {
+            return \hypot(
+                $candidate->values[$names[0]] - $initialValues[0],
+                $candidate->values[$names[1]] - $initialValues[1],
+            );
+        }
+
+        $distance = 0.0;
+        foreach ($names as $index => $name) {
+            $distance = \hypot(
+                $distance,
+                \log(\abs($candidate->values[$name])) - \log(\abs($initialValues[$index])),
+            );
+        }
+
+        return $distance;
     }
 
     /**

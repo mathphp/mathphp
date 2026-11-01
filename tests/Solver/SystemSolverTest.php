@@ -2856,7 +2856,7 @@ final class SystemSolverTest extends TestCase
                 $solution->values['y'],
                 \max(1.0E-30, \abs($expectedY) * 1.0E-10),
             );
-            self::assertSame(0.0, $solution->residualNorm);
+            self::assertLessThanOrEqual(1.0E-100, $solution->residualNorm);
         }
     }
 

@@ -3653,9 +3653,9 @@ final class SystemSolver
             if ($candidates !== []) {
                 \usort(
                     $candidates,
-                    static fn (SystemSolution $first, SystemSolution $second): int =>
-                        \abs($first->values[$names[0]] - $initialValue)
-                        <=> \abs($second->values[$names[0]] - $initialValue),
+                    fn (SystemSolution $first, SystemSolution $second): int =>
+                        $this->scalarRootDistance($first->values[$names[0]], $initialValue)
+                            <=> $this->scalarRootDistance($second->values[$names[0]], $initialValue),
                 );
 
                 return $candidates[0];
@@ -3759,7 +3759,7 @@ final class SystemSolver
             return null;
         }
         if (
-            $exactPolynomialCount > 1
+            $exactPolynomialCount > 0
             && $exactCommonPolynomial !== null
             && \count($exactCommonPolynomial) > 1
         ) {
@@ -3793,8 +3793,9 @@ final class SystemSolver
                 }
                 \usort(
                     $candidates,
-                    static fn (float $first, float $second): int =>
-                        \abs($first - $values[0]) <=> \abs($second - $values[0]),
+                    fn (float $first, float $second): int =>
+                        $this->scalarRootDistance($first, $values[0])
+                            <=> $this->scalarRootDistance($second, $values[0]),
                 );
                 foreach ($candidates as $candidate) {
                     $candidateScales = [];
@@ -3872,8 +3873,9 @@ final class SystemSolver
         }
         \usort(
             $roots,
-            static fn (EquationSolution $first, EquationSolution $second): int =>
-                \abs($first->value - $values[0]) <=> \abs($second->value - $values[0]),
+            fn (EquationSolution $first, EquationSolution $second): int =>
+                $this->scalarRootDistance($first->value, $values[0])
+                    <=> $this->scalarRootDistance($second->value, $values[0]),
         );
         foreach ($roots as $root) {
             $candidateScales = [];
@@ -3915,6 +3917,20 @@ final class SystemSolver
         }
 
         return null;
+    }
+
+    private function scalarRootDistance(float $candidate, float $initial): float
+    {
+        if ($candidate === 0.0 || $initial === 0.0) {
+            return \abs($candidate - $initial);
+        }
+
+        $magnitudeDistance = \abs(\log(\abs($candidate)) - \log(\abs($initial)));
+        if (($candidate < 0.0) !== ($initial < 0.0)) {
+            return $magnitudeDistance + 2.0;
+        }
+
+        return $magnitudeDistance;
     }
 
     /**
@@ -4031,6 +4047,19 @@ final class SystemSolver
                     $definitions[] = [$definedName, $expression, $expressionSource, true];
                 }
             }
+
+            $initialValuesByName = \array_combine($names, $values);
+            \usort(
+                $definitions,
+                static function (array $first, array $second) use ($initialValuesByName, $names): int {
+                    $magnitudeOrder = \abs($initialValuesByName[$first[0]])
+                        <=> \abs($initialValuesByName[$second[0]]);
+
+                    return $magnitudeOrder !== 0
+                        ? $magnitudeOrder
+                        : \array_search($second[0], $names, true) <=> \array_search($first[0], $names, true);
+                },
+            );
 
             foreach ($definitions as [$definedName, $expression, $expressionSource, $affineDefinition]) {
                 if ($remainingAttempts <= 0) {
