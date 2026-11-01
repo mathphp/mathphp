@@ -234,6 +234,24 @@ final class SymmetricPowerSumSystemSolver
         }
         \sort($realRoots, SORT_NUMERIC);
 
+        $hasUnresolvedCluster = false;
+        for ($index = 1; $index < \count($realRoots); ++$index) {
+            if (
+                $realRoots[$index] - $realRoots[$index - 1]
+                <= \sqrt(\PHP_FLOAT_EPSILON)
+                    * \max(1.0, \abs($realRoots[$index]), \abs($realRoots[$index - 1]))
+            ) {
+                $hasUnresolvedCluster = true;
+                break;
+            }
+        }
+        if ($hasUnresolvedCluster) {
+            $isolatedRoots = $this->isolateRealRoots($coefficients, $count, $evaluationOptions, $solverOptions);
+            if ($isolatedRoots !== null && \count($isolatedRoots) === $count) {
+                $realRoots = $isolatedRoots;
+            }
+        }
+
         $variableIndexes = \range(0, $count - 1);
         $initialAliases = [];
         foreach ($names as $index => $name) {
@@ -273,6 +291,63 @@ final class SymmetricPowerSumSystemSolver
         }
 
         return \array_values($candidate);
+    }
+
+    /** @param list<float> $coefficients
+     *  @return list<float>|null
+     */
+    private function isolateRealRoots(
+        array $coefficients,
+        int $degree,
+        EvaluationOptions $evaluationOptions,
+        SolverOptions $solverOptions,
+    ): ?array {
+        $variable = 'mathphp_symmetric_root';
+        $terms = [];
+        $bound = 1.0;
+        foreach ($coefficients as $power => $coefficient) {
+            if (!\is_finite($coefficient)) {
+                return null;
+            }
+            $bound += $power === $degree ? 0.0 : \abs($coefficient);
+            if ($coefficient === 0.0) {
+                continue;
+            }
+            $monomial = $power === 0 ? '1' : $variable . '^' . $power;
+            $terms[] = '(' . \sprintf('%.17g', $coefficient) . ')*(' . $monomial . ')';
+        }
+        if (!\is_finite($bound) || $terms === []) {
+            return null;
+        }
+
+        $intervals = (new PolynomialRootCountingSolver())->isolate(
+            \implode('+', $terms) . '=0',
+            $variable,
+            -$bound,
+            $bound,
+            [],
+            $evaluationOptions,
+            $solverOptions,
+            256,
+            '1/10000000000',
+        );
+        if ($intervals === null) {
+            return null;
+        }
+
+        $roots = [];
+        foreach ($intervals as $interval) {
+            $lower = (float) $interval->lowerNumerator / (float) $interval->lowerDenominator;
+            $upper = (float) $interval->upperNumerator / (float) $interval->upperDenominator;
+            $root = $interval->isExactRoot ? $lower : $lower + (($upper - $lower) / 2.0);
+            if (!\is_finite($root)) {
+                return null;
+            }
+            $roots[] = $root;
+        }
+        \sort($roots, SORT_NUMERIC);
+
+        return $roots;
     }
 
     /** @param list<array{Node, int}> $terms */

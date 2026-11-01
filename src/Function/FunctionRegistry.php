@@ -888,8 +888,12 @@ final readonly class FunctionRegistry
         $value = (float) $arguments[0];
         $logMagnitude = self::logAbsoluteGamma($value);
         $magnitude = exp($logMagnitude);
-        $periodicFraction = $value - (2.0 * round($value / 2.0));
-        $sign = $value < 0.0 && sin(M_PI * $periodicFraction) < 0.0 ? -1.0 : 1.0;
+        $nearestInteger = (int) round($value);
+        $fraction = $value - $nearestInteger;
+        $sineSign = $fraction < 0.0 ? -1.0 : 1.0;
+        $sign = $value >= 0.0
+            ? 1.0
+            : (($nearestInteger % 2) !== 0 ? -$sineSign : $sineSign);
 
         return self::finiteSpecialResult($sign * $magnitude, 'gamma');
     }

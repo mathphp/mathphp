@@ -7,6 +7,8 @@ namespace MathPHP\Solver;
 /** Certified isolation for exp(x) = q on a finite rational interval. */
 final class ExponentialEquationSolver
 {
+    private const COMPARISON_LOG_PRECISION = 16;
+
     /**
      * @param array{string, string} $target Positive rational target.
      * @param array{string, string} $lowerBound
@@ -27,11 +29,27 @@ final class ExponentialEquationSolver
             return [];
         }
         $domain = new ExactRationalInterval($lowerBound, $upperBound);
+        if ($targetInterval->compareLowerToRational('1', '1') === 0) {
+            return $domain->containsRational('0', '1') ? [$this->exactRoot(['0', '1'])] : [];
+        }
+        if (!$this->canReachWidthWithinDepth($lowerBound, $upperBound, $maximumWidth, $maxDepth)) {
+            return null;
+        }
+        $floatingRoot = $this->floatingLogRoot(
+            $targetInterval->lower,
+            $lowerBound,
+            $upperBound,
+            $maximumWidth,
+        );
+        if ($floatingRoot !== null) {
+            return [$floatingRoot];
+        }
+        $logTarget = $this->logarithmOfTarget($target);
         $width = new ExactRationalInterval(['0', '1'], $maximumWidth);
 
         try {
-            $lowerSign = $this->compareExponentialAt($domain->lower, $target);
-            $upperSign = $this->compareExponentialAt($domain->upper, $target);
+            $lowerSign = $this->compareExponentialAt($domain->lower, $target, $logTarget);
+            $upperSign = $this->compareExponentialAt($domain->upper, $target, $logTarget);
         } catch (\LengthException) {
             return null;
         }
@@ -61,7 +79,7 @@ final class ExponentialEquationSolver
                 ->divide(new ExactRationalInterval(['2', '1'], ['2', '1']))
                 ->lower;
             try {
-                $midpointSign = $this->compareExponentialAt($midpoint, $target);
+                $midpointSign = $this->compareExponentialAt($midpoint, $target, $logTarget);
             } catch (\LengthException) {
                 return null;
             }
@@ -185,6 +203,7 @@ final class ExponentialEquationSolver
         if ($targetInterval->compareLowerToRational('0', '1') <= 0) {
             return [];
         }
+        $logTarget = $this->logarithmOfTarget($target);
         if ($quadratic->containsZero()) {
             return $this->isolateAffine(
                 $target,
@@ -223,6 +242,7 @@ final class ExponentialEquationSolver
                 $signs[] = $this->compareExponentialAt(
                     $this->quadraticValue($point, $quadratic, $linear, $constantInterval),
                     $target,
+                    $logTarget,
                 );
             }
         } catch (\LengthException) {
@@ -258,6 +278,7 @@ final class ExponentialEquationSolver
                     $linear,
                     $constantInterval,
                     $width,
+                    $logTarget,
                     $maxDepth,
                 );
             } catch (\LengthException) {
@@ -303,6 +324,7 @@ final class ExponentialEquationSolver
         ExactRationalInterval $linear,
         ExactRationalInterval $constant,
         ExactRationalInterval $maximumWidth,
+        ?ExactRationalInterval $logTarget,
         int $maxDepth,
     ): ?RationalRootInterval {
         try {
@@ -327,6 +349,7 @@ final class ExponentialEquationSolver
                 $midpointSign = $this->compareExponentialAt(
                     $this->quadraticValue($midpoint, $quadratic, $linear, $constant),
                     $target,
+                    $logTarget,
                 );
                 if ($midpointSign === null) {
                     return null;
@@ -779,8 +802,22 @@ final class ExponentialEquationSolver
      * @param array{string, string} $point
      * @param array{string, string} $target
      */
-    private function compareExponentialAt(array $point, array $target): ?int
+    private function compareExponentialAt(
+        array $point,
+        array $target,
+        ?ExactRationalInterval $logTarget,
+    ): ?int
     {
+        if ($logTarget !== null) {
+            $pointInterval = new ExactRationalInterval($point, $point);
+            if ($pointInterval->compareLowerToRational($logTarget->upper[0], $logTarget->upper[1]) > 0) {
+                return 1;
+            }
+            if ($pointInterval->compareUpperToRational($logTarget->lower[0], $logTarget->lower[1]) < 0) {
+                return -1;
+            }
+        }
+
         $exponential = (new ExactRationalInterval($point, $point))->exp();
         if (
             $exponential->compareLowerToRational($target[0], $target[1]) === 0
@@ -796,6 +833,96 @@ final class ExponentialEquationSolver
         }
 
         return null;
+    }
+
+    /** @param array{string, string} $lowerBound
+     *  @param array{string, string} $upperBound
+     *  @param array{string, string} $maximumWidth
+     */
+    private function canReachWidthWithinDepth(
+        array $lowerBound,
+        array $upperBound,
+        array $maximumWidth,
+        int $maxDepth,
+    ): bool {
+        $lowerPoint = new ExactRationalInterval($lowerBound, $lowerBound);
+        $domainWidth = (new ExactRationalInterval($lowerBound, $upperBound))->subtract($lowerPoint);
+        $reachableWidth = new ExactRationalInterval(['0', '1'], $maximumWidth);
+        if ($domainWidth->compareUpperToRational($reachableWidth->upper[0], $reachableWidth->upper[1]) <= 0) {
+            return true;
+        }
+
+        $two = new ExactRationalInterval(['2', '1'], ['2', '1']);
+        for ($depth = 0; $depth < $maxDepth; ++$depth) {
+            $reachableWidth = $reachableWidth->multiply($two);
+            if ($domainWidth->compareUpperToRational($reachableWidth->upper[0], $reachableWidth->upper[1]) <= 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @param array{string, string} $target
+     *  @param array{string, string} $lowerBound
+     *  @param array{string, string} $upperBound
+     *  @param array{string, string} $maximumWidth
+     */
+    private function floatingLogRoot(
+        array $target,
+        array $lowerBound,
+        array $upperBound,
+        array $maximumWidth,
+    ): ?RationalRootInterval {
+        $targetValue = (float) $target[0] / (float) $target[1];
+        $widthValue = (float) $maximumWidth[0] / (float) $maximumWidth[1];
+        if (!\is_finite($targetValue) || $targetValue <= 0.0 || !\is_finite($widthValue) || $widthValue < 1.0e-12) {
+            return null;
+        }
+
+        $approximation = \log($targetValue);
+        if (!\is_finite($approximation)) {
+            return null;
+        }
+        $radius = \min($widthValue / 4.0, \max(1.0e-8, \abs($approximation) * 1.0e-12));
+        $scale = 1_000_000_000_000;
+        $lower = [(string) (int) \floor(($approximation - $radius) * $scale), (string) $scale];
+        $upper = [(string) (int) \ceil(($approximation + $radius) * $scale), (string) $scale];
+        $bracket = new ExactRationalInterval($lower, $upper);
+        if (
+            $bracket->compareLowerToRational($lowerBound[0], $lowerBound[1]) < 0
+            || $bracket->compareUpperToRational($upperBound[0], $upperBound[1]) > 0
+        ) {
+            return null;
+        }
+        $bracketWidth = $bracket->subtract(new ExactRationalInterval($lower, $lower));
+        if ($bracketWidth->compareUpperToRational($maximumWidth[0], $maximumWidth[1]) > 0) {
+            return null;
+        }
+
+        $lowerSign = $this->compareExponentialAt($lower, $target, null);
+        $upperSign = $this->compareExponentialAt($upper, $target, null);
+        if ($lowerSign === 0) {
+            return $this->exactRoot($lower);
+        }
+        if ($upperSign === 0) {
+            return $this->exactRoot($upper);
+        }
+        if ($lowerSign === -1 && $upperSign === 1) {
+            return $this->rootInterval($lower, $upper);
+        }
+
+        return null;
+    }
+
+    /** @param array{string, string} $target */
+    private function logarithmOfTarget(array $target): ?ExactRationalInterval
+    {
+        try {
+            return (new ExactRationalInterval($target, $target))->ln(self::COMPARISON_LOG_PRECISION);
+        } catch (\LengthException) {
+            return null;
+        }
     }
 
     /** @param array{string, string} $lowerBound

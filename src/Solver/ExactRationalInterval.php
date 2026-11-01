@@ -196,6 +196,9 @@ final readonly class ExactRationalInterval
         if ($this->arithmetic->sign($this->lower[0]) <= 0) {
             throw new \DomainException('A real logarithm interval must be strictly positive.');
         }
+        if ($this->lower === $this->upper) {
+            return $this->lnPoint($this->lower, $precision);
+        }
 
         return new self(
             $this->lnPoint($this->lower, $precision)->lower,

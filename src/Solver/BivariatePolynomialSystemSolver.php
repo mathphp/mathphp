@@ -984,6 +984,7 @@ final class BivariatePolynomialSystemSolver
         $roots = [];
         $isolationCompleted = false;
         foreach ($polynomials as $polynomialIndex => $polynomial) {
+            $polynomial = $this->trim($polynomial);
             $bound = $this->rootBound($polynomial);
             if ($bound === null) {
                 if (\count($polynomial) < 2) {

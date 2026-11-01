@@ -18503,9 +18503,38 @@ final class EquationSolver
                 return null;
             }
             $rightLower = \max($stripLower, $criticalPoint);
+            $rightUpper = $stripUpper;
+            if ($nextPole === 0.0 && $upperBound === 0.0 && $rightLower < 0.0) {
+                $rightUpper = $rightLower;
+                $targetBracketed = false;
+                for ($probe = 0; $probe < 1_075; ++$probe) {
+                    try {
+                        $rightValue = $function($rightUpper);
+                    } catch (\DomainException | \OverflowException | \InvalidArgumentException) {
+                        return null;
+                    }
+                    if (!\is_finite($rightValue)) {
+                        return null;
+                    }
+                    if (($positiveLobe && $target <= $rightValue)
+                        || (!$positiveLobe && $target >= $rightValue)
+                    ) {
+                        $targetBracketed = true;
+                        break;
+                    }
+                    $nextProbe = $rightUpper / 2.0;
+                    if ($nextProbe === 0.0 || $nextProbe === $rightUpper) {
+                        return null;
+                    }
+                    $rightUpper = $nextProbe;
+                }
+                if (!$targetBracketed) {
+                    return null;
+                }
+            }
             if (
-                $rightLower <= $stripUpper
-                && !$addMonotoneInterval($rightLower, $stripUpper, $positiveLobe)
+                $rightLower <= $rightUpper
+                && !$addMonotoneInterval($rightLower, $rightUpper, $positiveLobe)
             ) {
                 return null;
             }

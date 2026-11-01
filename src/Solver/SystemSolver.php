@@ -585,6 +585,7 @@ final class SystemSolver
         EvaluationOptions $evaluationOptions,
         SolverOptions $solverOptions,
         bool $allowComponentDecomposition = true,
+        bool $allowSymmetricPowerSum = true,
     ): ?SystemSolution {
         if (
             $equations === []
@@ -691,6 +692,48 @@ final class SystemSolver
             }
         }
 
+        $powerSumValues = $allowSymmetricPowerSum
+            ? (new SymmetricPowerSumSystemSolver())->solve(
+                $parsedEquations,
+                $names,
+                $values,
+                $parameters,
+                $evaluationOptions,
+                $solverOptions,
+            )
+            : null;
+        if ($powerSumValues !== null) {
+            $powerSumResiduals = $this->residualsWithLocalZeroSideScales(
+                $parsedEquations,
+                $names,
+                $powerSumValues,
+                $parameters,
+                $evaluationOptions,
+            );
+            if (
+                $powerSumResiduals !== null
+                && $this->norm($powerSumResiduals[1]) <= $solverOptions->residualTolerance
+            ) {
+                return new SystemSolution(
+                    \array_combine($names, $powerSumValues),
+                    $this->norm($powerSumResiduals[0]),
+                    0,
+                );
+            }
+            $refinedPowerSumSolution = $this->solveFromInitialValues(
+                $equationSources,
+                \array_combine($names, $powerSumValues),
+                $parameters,
+                $evaluationOptions,
+                $solverOptions,
+                $allowComponentDecomposition,
+                false,
+            );
+            if ($refinedPowerSumSolution !== null) {
+                return $refinedPowerSumSolution;
+            }
+        }
+
         $substitutionAttempts = self::MAX_AFFINE_SUBSTITUTION_ATTEMPTS;
         $hasTriangularDefinition = false;
         $affineSystemSolver = new ExactAffineSystemSolver();
@@ -737,33 +780,6 @@ final class SystemSolver
             }
         }
 
-        $powerSumValues = (new SymmetricPowerSumSystemSolver())->solve(
-            $parsedEquations,
-            $names,
-            $values,
-            $parameters,
-            $evaluationOptions,
-            $solverOptions,
-        );
-        if ($powerSumValues !== null) {
-            $powerSumResiduals = $this->residualsWithLocalZeroSideScales(
-                $parsedEquations,
-                $names,
-                $powerSumValues,
-                $parameters,
-                $evaluationOptions,
-            );
-            if (
-                $powerSumResiduals !== null
-                && $this->norm($powerSumResiduals[1]) <= $solverOptions->residualTolerance
-            ) {
-                return new SystemSolution(
-                    \array_combine($names, $powerSumValues),
-                    $this->norm($powerSumResiduals[0]),
-                    0,
-                );
-            }
-        }
         $powerLinearSolution = $this->solvePowerLinearSystem(
             $parsedEquations,
             $names,
@@ -824,6 +840,44 @@ final class SystemSolver
             $solverOptions,
         );
         if ($exactAffineSolution === false) {
+            if ($hasDerivedZeroPowerConstraints) {
+                $zeroPowerConsequences = \array_values(\array_filter(
+                    $eliminationEquations,
+                    fn (array $equation): bool => $this->isZeroNode($equation[0])
+                        || $this->isZeroNode($equation[1]),
+                ));
+                $zeroPowerSolution = $this->solveExactAffineEquations(
+                    $zeroPowerConsequences,
+                    $names,
+                    $values,
+                    $parameters,
+                    $evaluationOptions,
+                    $solverOptions,
+                );
+                if ($zeroPowerSolution instanceof SystemSolution) {
+                    $candidateValues = \array_values(\array_map(
+                        static fn (string $name): float => $zeroPowerSolution->values[$name],
+                        $names,
+                    ));
+                    $originalResiduals = $this->residualsWithLocalZeroSideScales(
+                        $parsedEquations,
+                        $names,
+                        $candidateValues,
+                        $parameters,
+                        $evaluationOptions,
+                    );
+                    if (
+                        $originalResiduals !== null
+                        && $this->norm($originalResiduals[1]) <= $solverOptions->residualTolerance
+                    ) {
+                        return new SystemSolution(
+                            $zeroPowerSolution->values,
+                            $this->norm($originalResiduals[0]),
+                            0,
+                        );
+                    }
+                }
+            }
             return null;
         }
         if ($exactAffineSolution !== null) {
@@ -1103,7 +1157,7 @@ final class SystemSolver
                     foreach ($values as $index => $value) {
                         if (
                             \abs($correction[$index])
-                                > $solverOptions->positionTolerance($value, $value)
+                                > 8.0 * \PHP_FLOAT_EPSILON * \max(1.0, \abs($value))
                         ) {
                             $correctionIsSmall = false;
                             break;

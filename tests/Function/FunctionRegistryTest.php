@@ -12,6 +12,25 @@ use PHPUnit\Framework\TestCase;
 
 final class FunctionRegistryTest extends TestCase
 {
+    public function testGammaSignIsStableImmediatelyBesideNegativeIntegerPoles(): void
+    {
+        $gamma = FunctionRegistry::defaults()->find('gamma');
+        self::assertInstanceOf(FunctionDefinition::class, $gamma);
+
+        foreach (
+            [
+                [-1.0 + \PHP_FLOAT_EPSILON, -1],
+                [-1.0 - \PHP_FLOAT_EPSILON, 1],
+                [-2.0 + \PHP_FLOAT_EPSILON, 1],
+                [-2.0 - (2.0 * \PHP_FLOAT_EPSILON), -1],
+            ] as [$argument, $expectedSign]
+        ) {
+            $value = $gamma->invoke([$argument]);
+            self::assertTrue(\is_finite($value));
+            self::assertSame($expectedSign, $value < 0.0 ? -1 : 1);
+        }
+    }
+
     /**
      * @param list<int|float> $arguments
      */
