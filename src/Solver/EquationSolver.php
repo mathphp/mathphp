@@ -7299,7 +7299,7 @@ final class EquationSolver
                 break;
             }
         }
-        if ($base === null || $shift === null) {
+        if ($base === null) {
             return false;
         }
 
@@ -7556,7 +7556,7 @@ final class EquationSolver
                 break;
             }
         }
-        if ($base === null || $shift === null) {
+        if ($base === null) {
             return false;
         }
 
@@ -7772,6 +7772,9 @@ final class EquationSolver
         return \count($offsets) === $shift;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isLogGammaRecurrenceIdentity(
         Node $shiftedSide,
         Node $sumSide,
@@ -7849,6 +7852,9 @@ final class EquationSolver
         return $baseLogGammaFound && \count($offsets) === $shift;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isLogGammaReverseRecurrenceIdentity(
         Node $baseSide,
         Node $differenceSide,
@@ -8634,6 +8640,9 @@ final class EquationSolver
         return \count($numeratorOffsets) === $shift && \count($denominatorOffsets) === $shift;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isKnownInfiniteIdentity(
         Node $left,
         Node $right,
@@ -9111,6 +9120,9 @@ final class EquationSolver
             );
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function evenRootPowerIdentityHasEmptyRealDomain(
         Node $left,
         Node $right,
@@ -10149,6 +10161,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function solveSelfQuotientLevelEquation(
         Node $quotientSide,
         Node $targetSide,
@@ -10652,6 +10667,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function forwardInverseCompositionHasNoVariableDomainPoint(
         Node $composition,
         Node $target,
@@ -10740,6 +10758,9 @@ final class EquationSolver
             || $overlapLower > $upperBound;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function forwardInverseCompositionDomainSingleton(
         Node $composition,
         Node $target,
@@ -10809,6 +10830,7 @@ final class EquationSolver
 
     /** @param array<string, int|float> $parameters
      *  @param list<Node> $nodes
+     * @param list<float> $additionalPositions
      */
     private function hasCommonDefinedContinuousNonzeroPoint(
         array $nodes,
@@ -10847,7 +10869,10 @@ final class EquationSolver
         return false;
     }
 
-    /** @return list<float> */
+    /**
+     * @param array<string, int|float> $parameters
+     * @return list<float>
+     */
     private function forwardInverseCompositionDomainProbePositions(
         Node $composition,
         Node $target,
@@ -13109,6 +13134,9 @@ final class EquationSolver
         }
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function solveNestedInverseLevelIdentity(
         Node $left,
         Node $right,
@@ -13321,6 +13349,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function solveNestedInverseCompositionEquation(
         Node $left,
         Node $right,
@@ -22621,6 +22652,8 @@ final class EquationSolver
 
     /**
      * Certify limits for rational functions and selected compositions of standard real functions.
+     *
+     * @param array<string, int|float> $parameters
      */
     private function certifiedElementaryLimitAtInfinity(
         Node $node,
@@ -23218,6 +23251,9 @@ final class EquationSolver
         };
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isCertifiedEventuallyPositiveAtInfinity(
         Node $node,
         string $variable,
@@ -23289,6 +23325,9 @@ final class EquationSolver
         return false;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function rationalExponentialSumLimitAtInfinity(
         Node $node,
         string $variable,
@@ -23364,6 +23403,9 @@ final class EquationSolver
         return \is_finite($sum) ? $sum : null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function reciprocalLogarithmicPhaseDivergesOnUnboundedTail(
         Node $phase,
         PolynomialExtractor $extractor,
@@ -30719,6 +30761,9 @@ final class EquationSolver
         return false;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isPositiveTrigammaExponentialReciprocalSineWithoutZero(
         Node $left,
         Node $right,
@@ -30807,6 +30852,9 @@ final class EquationSolver
         return false;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isNegativeDigammaExponentialReciprocalProductSineWithoutZero(
         Node $left,
         Node $right,
@@ -30905,7 +30953,10 @@ final class EquationSolver
         return false;
     }
 
-    /** @return list<EquationSolution>|null */
+    /**
+     * @param array<string, int|float> $parameters
+     * @return list<EquationSolution>|null
+     */
     private function solvePeriodicLogAbsoluteGammaAtRemovableHoles(
         Node $left,
         Node $right,
@@ -32750,6 +32801,10 @@ final class EquationSolver
         return true;
     }
 
+    /**
+     * @param list<float> $leftApproximation
+     * @param list<float> $rightApproximation
+     */
     private function polynomialPhasesHaveSameNonconstantPart(
         Node $left,
         Node $right,
@@ -32773,6 +32828,10 @@ final class EquationSolver
         return true;
     }
 
+    /**
+     * @param list<float> $leftApproximation
+     * @param list<float> $rightApproximation
+     */
     private function comparePolynomialPhaseGrowth(
         Node $left,
         Node $right,
@@ -32814,6 +32873,9 @@ final class EquationSolver
         return $sign;
     }
 
+    /**
+     * @param list<float> $approximation
+     */
     private function polynomialPhaseTendsToNegativeInfinity(
         Node $phase,
         int $direction,
@@ -35406,6 +35468,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function solveUnboundedAffineHyperbolicEquation(
         string $equation,
         Node $left,
@@ -36143,6 +36208,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isHyperbolicInverseCompositionIdentity(
         Node $left,
         Node $right,
@@ -36284,7 +36352,10 @@ final class EquationSolver
         return false;
     }
 
-    /** @param list<float> $coefficients */
+    /**
+     * @param list<float> $coefficients
+     * @param array<string, int|float> $parameters
+     */
     private function polynomialExpressionHasPositiveWidthSignRegion(
         array $coefficients,
         Node $expression,
@@ -37813,6 +37884,9 @@ final class EquationSolver
         }
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function hasRootInCommonAffineTrigonometricPeriod(
         string $equation,
         string $variable,
@@ -37945,6 +38019,9 @@ final class EquationSolver
         }
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function hasRationalPhaseRatio(
         float $value,
         Node $quotientPhase,
@@ -40644,6 +40721,8 @@ final class EquationSolver
     /**
      * Prove repeated crossings at an endpoint of an integer sine/cosine
      * power's range along an unbounded polynomial phase.
+     *
+     * @param array<string, int|float> $parameters
      */
     private function hasInfiniteRootsFromTrigonometricPowerAtRangeBoundary(
         Node $functionSide,
@@ -42088,6 +42167,7 @@ final class EquationSolver
      * @param list<float> $target
      * @param array<string, int|float> $parameters
      * @return list<EquationSolution>|null
+     * @param list<float>|null $excludedDenominator
      */
     private function solveUnboundedTrigonometricPolynomialTarget(
         string $equation,
@@ -68282,6 +68362,9 @@ final class EquationSolver
         return $this->mergeIntervalRegions($regions, $rootRegions);
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function solveAffineLogarithmicTrigonometricEquation(
         Node $left,
         Node $right,
@@ -68446,6 +68529,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function affineVariableBaseLogIntervalRange(
         Node $argument,
         Node $base,
@@ -70170,6 +70256,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function containsEverywhereUndefinedVariableBaseLogarithm(
         Node $node,
         string $variable,
@@ -70300,6 +70389,9 @@ final class EquationSolver
         return false;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function containsEverywhereUndefinedSquareRoot(
         Node $node,
         string $variable,
@@ -76793,6 +76885,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function solveFunctionOfRationalLevels(
         Node $left,
         Node $right,
@@ -78402,6 +78497,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function reciprocalAffinePole(
         Node $node,
         string $variable,
@@ -78518,6 +78616,9 @@ final class EquationSolver
         return false;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isPeriodicBoundaryApproachFromInside(
         Node $target,
         string $variable,
@@ -78565,6 +78666,9 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param array<string, int|float> $parameters
+     */
     private function isPositiveVanishingTermOutsidePeriodicRange(
         Node $node,
         string $variable,
@@ -80005,6 +80109,7 @@ final class EquationSolver
      *
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $candidateScaleAt
+     * @param array<string, int|float> $parameters
      * @return list<EquationSolution>|null
      */
     private function solveUnboundedDiscreteIntegerFunctionEquation(
@@ -80196,6 +80301,7 @@ final class EquationSolver
      *
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $candidateScaleAt
+     * @param array<string, int|float> $parameters
      * @return list<EquationSolution>|null
      */
     private function solveUnboundedCombinatorialIntegerFunctionEquation(
@@ -82509,6 +82615,8 @@ final class EquationSolver
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $candidateScaleAt
      * @return list<EquationSolution>|null
+     *
+     * @param array<string, int|float> $parameters
      */
     private function solvePolynomialAtan2Equation(
         Node $left,
