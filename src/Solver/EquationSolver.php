@@ -9401,7 +9401,6 @@ final class EquationSolver
     }
 
     /**
-     * @param array<string, int|float> $parameters
      * @param callable(float): ?float $residualAt
      * @param callable(float): ?float $residualScaleAt
      * @return list<EquationSolution>|null
@@ -91385,6 +91384,8 @@ final class EquationSolver
     /**
      * Recognize sin(p)/p as sinc(p) for supported polynomial or rational p,
      * retaining the original equation's domain during candidate validation.
+     *
+     * @param-out float $quotientMultiplier
      */
     private function sincQuotientFunction(
         Node $node,
