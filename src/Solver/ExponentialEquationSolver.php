@@ -806,8 +806,7 @@ final class ExponentialEquationSolver
         array $point,
         array $target,
         ?ExactRationalInterval $logTarget,
-    ): ?int
-    {
+    ): ?int {
         if ($logTarget !== null) {
             $pointInterval = new ExactRationalInterval($point, $point);
             if ($pointInterval->compareLowerToRational($logTarget->upper[0], $logTarget->upper[1]) > 0) {

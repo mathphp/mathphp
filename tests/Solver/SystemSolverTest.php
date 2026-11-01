@@ -3589,11 +3589,13 @@ final class SystemSolverTest extends TestCase
 
     public function testRedundantAffineConstraintsPreserveProjectedInitialGuess(): void
     {
-        foreach ([
-            ['x + y = 2'],
-            ['x + y = 2', '2*x + 2*y = 4'],
-            ['x + y = 2', '2*x + 2*y = 4', '3*x + 3*y = 6'],
-        ] as $equations) {
+        foreach (
+            [
+                ['x + y = 2'],
+                ['x + y = 2', '2*x + 2*y = 4'],
+                ['x + y = 2', '2*x + 2*y = 4', '3*x + 3*y = 6'],
+            ] as $equations
+        ) {
             $solution = Math::solveSystem($equations, ['x' => 0.0, 'y' => 0.0]);
 
             self::assertNotNull($solution);
