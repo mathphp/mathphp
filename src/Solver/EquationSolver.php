@@ -9403,7 +9403,8 @@ final class EquationSolver
     /**
      * @param array<string, int|float> $parameters
      * @param callable(float): ?float $residualAt
-     * @param callable(float): float $residualScaleAt
+     * @param callable(float): ?float $residualScaleAt
+     * @return list<EquationSolution>|null
      */
     private function solvePrincipalLambertWSelfEquation(
         Node $left,
@@ -18277,6 +18278,7 @@ final class EquationSolver
         return [$finiteLower, $finiteLowerValue, $finiteUpper, $finiteUpperValue];
     }
 
+    /** @param callable(float): float $function */
     private function invertLogGammaFunctionLevels(
         float $target,
         float $lowerBound,
@@ -20853,6 +20855,7 @@ final class EquationSolver
                 $cuts,
                 static fn (array $first, array $second): int => $first['value'] <=> $second['value'],
             );
+            /** @var list<array{value: float, pole: bool}> $orderedCuts */
             $orderedCuts = [];
             foreach ($cuts as $cut) {
                 $last = \array_key_last($orderedCuts);
@@ -20864,13 +20867,12 @@ final class EquationSolver
             }
 
             $solutions = [];
-            $boundarySample = function (array $cut, int $direction) use (
+            $boundarySample = function (float $position, bool $isPole, int $direction) use (
                 $residualAt,
                 $lowerBound,
                 $upperBound,
             ): ?array {
-                $position = $cut['value'];
-                if ($cut['pole']) {
+                if ($isPole) {
                     for ($step = 0; $step < 4096; ++$step) {
                         $next = $this->adjacentFloat($position, $direction);
                         if ($next === null || $next < $lowerBound || $next > $upperBound) {
@@ -20896,7 +20898,7 @@ final class EquationSolver
                 if ($cut['pole']) {
                     continue;
                 }
-                $sample = $boundarySample($cut, $index === 0 ? 1 : -1);
+                $sample = $boundarySample($cut['value'], $cut['pole'], $index === 0 ? 1 : -1);
                 if ($sample === null) {
                     continue;
                 }
@@ -20915,8 +20917,8 @@ final class EquationSolver
             for ($index = 0, $last = \count($orderedCuts) - 1; $index < $last; ++$index) {
                 $lowerCut = $orderedCuts[$index];
                 $upperCut = $orderedCuts[$index + 1];
-                $lowerSample = $boundarySample($lowerCut, 1);
-                $upperSample = $boundarySample($upperCut, -1);
+                $lowerSample = $boundarySample($lowerCut['value'], $lowerCut['pole'], 1);
+                $upperSample = $boundarySample($upperCut['value'], $upperCut['pole'], -1);
                 if ($lowerSample === null || $upperSample === null) {
                     return null;
                 }
