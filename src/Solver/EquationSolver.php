@@ -28895,6 +28895,9 @@ final class EquationSolver
         $roots = [];
         foreach ($lambertBranches as [$knownW, $lambertArgument]) {
             if ($knownW === null) {
+                if ($lambertArgument === null) {
+                    continue;
+                }
                 try {
                     $w = (float) $lambertW->invoke([$lambertArgument, 0]);
                 } catch (EvaluationException | \DomainException) {
