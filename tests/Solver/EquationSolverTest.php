@@ -584,6 +584,15 @@ final class EquationSolverTest extends TestCase
         }
     }
 
+    public function testLambertWInvertsBoundedVariableExponentialProduct(): void
+    {
+        $solutions = Math::solve('lambertw(x*exp(x)) = 0.5', 'x', -1.0, 1.0);
+
+        self::assertCount(1, $solutions);
+        self::assertEqualsWithDelta(0.5, $solutions[0]->value, 1.0E-12);
+        self::assertLessThanOrEqual(1.0E-12, $solutions[0]->residual);
+    }
+
     public function testUnboundedRationalEquationsPreserveDenominatorHoles(): void
     {
         $solutions = Math::solve(

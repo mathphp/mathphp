@@ -734,7 +734,7 @@ final class EquationSolver
                                 && ($scale === null || !$this->isResidualAcceptableAt(
                                     $value,
                                     $residual,
-                                    static fn (float $_): float => $scale ?? 1.0,
+                                    static fn (float $_): float => $scale,
                                     $solverOptions,
                                 ))
                             ) {
@@ -761,7 +761,7 @@ final class EquationSolver
                             if ($residual === null || $scale === null || !$this->isResidualAcceptableAt(
                                 $value,
                                 $residual,
-                                static fn (float $_): float => $scale ?? 1.0,
+                                static fn (float $_): float => $scale,
                                 $solverOptions,
                             )) {
                                 [$value, $residual] = $this->bestRepresentableResidualCandidate(
@@ -13708,8 +13708,8 @@ final class EquationSolver
             $variable,
             $lowerBound,
             $upperBound,
-            $parameters,
             $evaluationOptions,
+            $solverOptions,
         );
         if ($range === null || !\is_finite($range[0]) || !\is_finite($range[1])) {
             return false;
