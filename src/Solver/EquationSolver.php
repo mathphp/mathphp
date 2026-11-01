@@ -76918,6 +76918,9 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @param callable(float): ?float $residualAt
+     * @param callable(float): ?float $candidateScaleAt
+     * @return list<EquationSolution>|null
      */
     private function solveFunctionOfRationalLevels(
         Node $left,
@@ -77571,15 +77574,7 @@ final class EquationSolver
                         $candidateScaleAt,
                         $options,
                     );
-                $inverseFunctionName = match ($name) {
-                    'arctanh' => 'atanh',
-                    'arcsin' => 'asin',
-                    'arccos' => 'acos',
-                    'arctan' => 'atan',
-                    'arcsinh' => 'asinh',
-                    'arccosh' => 'acosh',
-                    default => $name,
-                };
+                $inverseFunctionName = $name;
                 if (
                     !$residualAccepted
                     && \in_array(
