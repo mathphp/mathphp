@@ -17728,8 +17728,13 @@ final class EquationSolver
                 default => throw new \LogicException('Unsupported inverse function.'),
             };
         }
-        if (\count(\array_filter($levels, static fn (float $level): bool => !\is_finite($level))) > 0) {
-            return [];
+        foreach ($levels as $level) {
+            if (!\is_int($level) && !\is_float($level)) {
+                return [];
+            }
+            if (!\is_finite((float) $level)) {
+                return [];
+            }
         }
 
         $levelSign = 1.0;
