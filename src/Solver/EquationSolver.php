@@ -13198,7 +13198,37 @@ final class EquationSolver
             $current = $this->unwrapGrouping($compositionNode);
             $commonBehavior = null;
             $depth = 0;
-            while ($current instanceof FunctionCallNode) {
+            if (
+                $current instanceof FunctionCallNode
+                && \count($current->arguments) === 1
+                && $evaluationOptions->functions->isBuiltIn($current->name)
+            ) {
+                $inner = $this->unwrapGrouping($current->arguments[0]);
+                if (
+                    $inner instanceof FunctionCallNode
+                    && \count($inner->arguments) === 1
+                    && $evaluationOptions->functions->isBuiltIn($inner->name)
+                ) {
+                    $outerFunction = $aliases[$current->name] ?? $current->name;
+                    $innerFunction = $aliases[$inner->name] ?? $inner->name;
+                    $argument = $this->unwrapGrouping($inner->arguments[0]);
+                    $isStrictlyContractingPair = (
+                        $outerFunction === 'asin' && $innerFunction === 'tanh'
+                    ) || (
+                        $outerFunction === 'tanh' && $innerFunction === 'asin'
+                    );
+                    if (
+                        $isStrictlyContractingPair
+                        && $argument instanceof VariableNode
+                        && $argument->name === $variable
+                    ) {
+                        $commonBehavior = 'contract';
+                        $depth = 2;
+                        $current = $argument;
+                    }
+                }
+            }
+            while ($depth === 0 && $current instanceof FunctionCallNode) {
                 if (
                     \count($current->arguments) !== 1
                     || !$evaluationOptions->functions->isBuiltIn($current->name)

@@ -3691,6 +3691,25 @@ final class EquationSolverTest extends TestCase
         }
     }
 
+    public function testMixedContractingOddCompositionsHaveOnlyZeroAsFixedPoint(): void
+    {
+        foreach (
+            [
+                ['asin(tanh(x)) = x', -2.0, 2.0],
+                ['tanh(asin(x)) = x', -1.0, 1.0],
+            ] as [$equation, $lowerBound, $upperBound]
+        ) {
+            $solutions = Math::solve($equation, 'x', $lowerBound, $upperBound);
+
+            self::assertEqualsWithDelta(
+                [0.0],
+                \array_map(static fn (EquationSolution $solution): float => $solution->value, $solutions),
+                1.0E-12,
+                $equation,
+            );
+        }
+    }
+
     public function testAcoshCoshIdentitiesRespectTheirRealBranchesAndInterval(): void
     {
         foreach (
