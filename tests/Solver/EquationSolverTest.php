@@ -3656,12 +3656,18 @@ final class EquationSolverTest extends TestCase
         foreach (
             [
                 ['atanh(arctanh(x)) = x', -2.0, 2.0, [0.0]],
+                ['atanh(arctanh(arctanh(x))) = x', -2.0, 2.0, [0.0]],
                 ['x = arctanh(atanh(x))', -\INF, \INF, [0.0]],
                 ['asinh(arcsinh(x)) = x', -\INF, \INF, [0.0]],
+                ['asinh(asinh(asinh(x))) = x', -2.0, 2.0, [0.0]],
                 ['asin(arcsin(x)) = x', -2.0, 2.0, [0.0]],
+                ['asin(asin(asin(x))) = x', -2.0, 2.0, [0.0]],
                 ['atan(arctan(x)) = x', -\INF, \INF, [0.0]],
+                ['atan(atan(atan(x))) = x', -2.0, 2.0, [0.0]],
                 ['sin(sin(x)) = x', -\INF, \INF, [0.0]],
+                ['sin(sin(sin(x))) = x', -2.0, 2.0, [0.0]],
                 ['tanh(tanh(x)) = x', -\INF, \INF, [0.0]],
+                ['tanh(tanh(tanh(x))) = x', -2.0, 2.0, [0.0]],
                 ['sin(sin(x)) = x', 1.0, 2.0, []],
             ] as [$equation, $lowerBound, $upperBound, $expectedRoots]
         ) {

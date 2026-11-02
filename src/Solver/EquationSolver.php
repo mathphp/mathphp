@@ -207,7 +207,6 @@ final class EquationSolver
             $upperBound,
             $parameters,
             $evaluationOptions,
-            $solverOptions,
         );
         if ($nestedSelfCompositionSolutions !== null) {
             return $nestedSelfCompositionSolutions;
@@ -13169,7 +13168,6 @@ final class EquationSolver
         float $upperBound,
         array $parameters,
         EvaluationOptions $evaluationOptions,
-        SolverOptions $solverOptions,
     ): ?array {
         $aliases = [
             'arcsin' => 'asin',
@@ -13180,36 +13178,41 @@ final class EquationSolver
         $fixedPointFunctions = ['asin', 'asinh', 'atan', 'atanh', 'sin', 'tanh'];
 
         foreach ([[$left, $right], [$right, $left]] as [$compositionNode, $targetNode]) {
-            $outer = $this->unwrapGrouping($compositionNode);
             $target = $this->unwrapGrouping($targetNode);
             if (
-                !$outer instanceof FunctionCallNode
-                || \count($outer->arguments) !== 1
-                || !$target instanceof VariableNode
+                !$target instanceof VariableNode
                 || $target->name !== $variable
-                || !$evaluationOptions->functions->isBuiltIn($outer->name)
             ) {
                 continue;
             }
 
-            $inner = $this->unwrapGrouping($outer->arguments[0]);
-            if (
-                !$inner instanceof FunctionCallNode
-                || \count($inner->arguments) !== 1
-                || !$evaluationOptions->functions->isBuiltIn($inner->name)
-            ) {
-                continue;
+            $current = $this->unwrapGrouping($compositionNode);
+            $commonFunction = null;
+            $depth = 0;
+            while ($current instanceof FunctionCallNode) {
+                if (
+                    \count($current->arguments) !== 1
+                    || !$evaluationOptions->functions->isBuiltIn($current->name)
+                ) {
+                    $depth = 0;
+                    break;
+                }
+                $function = $aliases[$current->name] ?? $current->name;
+                if (
+                    !\in_array($function, $fixedPointFunctions, true)
+                    || ($commonFunction !== null && $commonFunction !== $function)
+                ) {
+                    $depth = 0;
+                    break;
+                }
+                $commonFunction = $function;
+                ++$depth;
+                $current = $this->unwrapGrouping($current->arguments[0]);
             }
-            $argument = $this->unwrapGrouping($inner->arguments[0]);
-            if (!$argument instanceof VariableNode || $argument->name !== $variable) {
-                continue;
-            }
-
-            $outerName = $aliases[$outer->name] ?? $outer->name;
-            $innerName = $aliases[$inner->name] ?? $inner->name;
             if (
-                $outerName !== $innerName
-                || !\in_array($outerName, $fixedPointFunctions, true)
+                $depth < 2
+                || !$current instanceof VariableNode
+                || $current->name !== $variable
             ) {
                 continue;
             }
@@ -13219,7 +13222,7 @@ final class EquationSolver
             }
 
             // These odd monotone functions strictly expand or shrink positive magnitudes,
-            // so a nonzero fixed point of the double composition is impossible.
+            // so a nonzero fixed point of any repeated composition is impossible.
             $residual = $this->residualAt(
                 $left,
                 $right,

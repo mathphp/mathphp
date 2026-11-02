@@ -645,10 +645,11 @@ Equations applying the same `exp`, `expm1`, `sinh`, `tanh`, `asinh`, `atan`,
 `erf`, `erfc`, `erfi`, `cbrt`, or `acot` function to both sides reduce to
 argument equality. Alias spellings are normalized across sides, so `atan()`
 and `arctan()` (or `asinh()` and `arcsinh()`) can be mixed in one equation.
-Nested fixed points `f(f(x)) = x` for `asin`, `asinh`, `atan`, `atanh`, `sin`,
-and `tanh` reduce to `x = 0`, including inverse-function aliases and reversed
-equation sides. Their strict magnitude expansion or contraction excludes every
-nonzero real fixed point; inverse-function domain restrictions still apply.
+Nested fixed points formed by applying `asin`, `asinh`, `atan`, `atanh`, `sin`,
+or `tanh` repeatedly at least twice reduce to `x = 0`, including aliases and
+reversed equation sides. Their strict magnitude expansion or contraction
+excludes every nonzero real fixed point; inverse-function domain restrictions
+still apply.
 Equal `lambertw()` calls also reduce to equality of their arguments when both
 use the same real branch, including the default principal branch 0.
 Equal `gammaincinv()` or `gammainccinv()` calls with equal positive shape
