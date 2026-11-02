@@ -20,7 +20,7 @@ final class PolynomialSolverTest extends TestCase
             0.0,
             2.0,
             static fn (float $value): ?float => $value === 1.0 ? 0.0 : null,
-            static fn (float $value): ?float => 1.0,
+            static fn (float $value): float => 1.0,
             new SolverOptions(),
         );
 
@@ -32,7 +32,7 @@ final class PolynomialSolverTest extends TestCase
     public function testNearZeroPositiveMinimumIsNotAcceptedAsARepeatedRoot(): void
     {
         $coefficients = [1.0E-12, 0.0, 1.0];
-        $residual = static function (float $value) use ($coefficients): ?float {
+        $residual = static function (float $value) use ($coefficients): float {
             $result = 0.0;
             for ($power = \count($coefficients) - 1; $power >= 0; --$power) {
                 $result = ($result * $value) + $coefficients[$power];
@@ -40,7 +40,7 @@ final class PolynomialSolverTest extends TestCase
 
             return $result;
         };
-        $scale = static function (float $value) use ($coefficients): ?float {
+        $scale = static function (float $value) use ($coefficients): float {
             $result = 0.0;
             for ($power = \count($coefficients) - 1; $power >= 0; --$power) {
                 $result = ($result * \abs($value)) + \abs($coefficients[$power]);
@@ -66,9 +66,9 @@ final class PolynomialSolverTest extends TestCase
     {
         $coefficients = [1.0, -1.999999999999999, 1.0];
         $solver = new PolynomialSolver();
-        $residual = static fn (float $value): ?float =>
+        $residual = static fn (float $value): float =>
             (($coefficients[2] * $value) + $coefficients[1]) * $value + $coefficients[0];
-        $scale = static fn (float $value): ?float =>
+        $scale = static fn (float $value): float =>
             (($coefficients[2] * \abs($value)) + \abs($coefficients[1])) * \abs($value)
             + \abs($coefficients[0]);
 

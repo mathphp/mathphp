@@ -29,6 +29,7 @@ final class GeneratedExactPolynomialRootPropertyTest extends TestCase
         foreach ([1, 2, 3, 5] as $scale) {
             $equation = '1^((x*x+' . ($scale * $scale) . ')/(' . $scale . '*x))=1';
             $roots = Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $limited);
+            self::assertNotNull($roots);
             self::assertCount(2, $roots);
             self::assertTrue($roots[0]->isExactRoot);
             self::assertSame((string) -$scale, $roots[0]->lowerNumerator);
@@ -50,6 +51,7 @@ final class GeneratedExactPolynomialRootPropertyTest extends TestCase
                     foreach ([1, -1] as $sign) {
                         $targetText = $sign === 1 ? (string) $target : '1/' . $target;
                         $roots = Math::isolatePolynomialRootsOnRealLine($base . '^(1/x)=' . $targetText, 'x');
+                        self::assertNotNull($roots);
                         self::assertCount(1, $roots);
                         self::assertTrue($roots[0]->isExactRoot);
                         self::assertSame((string) ($sign * intdiv($denominator, $divisor)), $roots[0]->lowerNumerator);
