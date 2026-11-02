@@ -3675,6 +3675,8 @@ final class EquationSolverTest extends TestCase
                 ['atanh(asin(x)) = x', -2.0, 2.0, [0.0]],
                 ['sinh(sinh(x)) = x', -2.0, 2.0, [0.0]],
                 ['sinh(atanh(x)) = x', -2.0, 2.0, [0.0]],
+                ['erfi(erfi(x)) = x', -2.0, 2.0, [0.0]],
+                ['erfi(atanh(x)) = x', -2.0, 2.0, [0.0]],
                 ['sin(sin(x)) = x', 1.0, 2.0, []],
             ] as [$equation, $lowerBound, $upperBound, $expectedRoots]
         ) {

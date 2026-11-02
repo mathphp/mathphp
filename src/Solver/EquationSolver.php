@@ -13179,6 +13179,7 @@ final class EquationSolver
             'asin' => 'expand',
             'atanh' => 'expand',
             'sinh' => 'expand',
+            'erfi' => 'expand',
             'asinh' => 'contract',
             'atan' => 'contract',
             'sin' => 'contract',
