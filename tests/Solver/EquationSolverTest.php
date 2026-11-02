@@ -324,8 +324,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($identityEquation, 'x', -\INF, \INF);
                 self::fail('Expected an infinite solution set for ' . $identityEquation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -373,8 +373,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected the defined constant quotient to have infinitely many solutions.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         self::assertSame(
             [],
@@ -395,8 +395,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected an infinite solution set on the nonempty log1p domain.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         self::assertSame(
             [],
@@ -466,8 +466,8 @@ final class EquationSolverTest extends TestCase
                     solverOptions: new SolverOptions(scanSteps: 1),
                 );
                 self::fail('Expected infinitely many roots on the restricted-domain overlap.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         $includedDomainEndpoint = Math::solve(
@@ -627,8 +627,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected infinitely many roots accumulating at a rational pole: ' . $equation);
-            } catch (InfiniteRootAccumulationException) {
-                self::assertTrue(true);
+            } catch (InfiniteRootAccumulationException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -721,8 +721,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('The rational phase grows without bound: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -752,8 +752,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('The exponential-polynomial phase is unbounded: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -773,8 +773,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected infinitely many roots as the logarithmic phase diverges: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -794,8 +794,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', 0.0, \INF);
                 self::fail('The positive logarithm argument approaches zero: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -814,8 +814,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('The reciprocal logarithmic phase diverges: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -1009,8 +1009,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF, solverOptions: new SolverOptions(scanSteps: 1));
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -1048,8 +1048,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('An unbounded exponential phase has infinitely many periodic roots: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -1069,8 +1069,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('An exponential phase grows without bound on this half-line: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -1156,8 +1156,8 @@ final class EquationSolverTest extends TestCase
         try {
             Math::solve('sin(exp(x^2)) = 1', 'x', -\INF, \INF);
             self::fail('A growing polynomial exponential phase has infinitely many periodic roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
     }
@@ -1643,8 +1643,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', 0.0, \INF);
                 self::fail('An attainable rational target along an unbounded phase has infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -1722,8 +1722,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('An attainable unbounded trigonometric equation has infinitely many roots: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -1737,14 +1737,14 @@ final class EquationSolverTest extends TestCase
                 parameters: ['a' => 2],
             );
             self::fail('A parameterized common period repeats any root indefinitely.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         try {
             Math::solve('sin(x) = sin(2*x) + 0.5', 'x', 0.0, \INF);
             self::fail('An unbounded half-line repeats the affine trigonometric roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         foreach (
@@ -1764,8 +1764,8 @@ final class EquationSolverTest extends TestCase
         try {
             Math::solve('sin(4*x) = 0.25', 'x', 0.0, \INF);
             self::fail('A half-line still contains infinitely many polynomial-phase roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
     }
@@ -1783,16 +1783,16 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
         try {
             Math::solve('x*cos(x) = 0', 'x', 0.0, \INF);
             self::fail('A half-line contains infinitely many sinusoidal zeros.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -1808,16 +1808,16 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
         try {
             Math::solve('abs(cos(x^2)) = 0.25', 'x', 2.0, \INF);
             self::fail('A one-sided unbounded interval contains infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         self::assertSame([], Math::solve('abs(sin(x)) = 1.01', 'x', -\INF, \INF));
@@ -2260,8 +2260,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -5.0, 5.0);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -2280,8 +2280,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -2.0, 5.0);
                 self::fail('Expected infinitely many shape-recurrence solutions for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -2304,8 +2304,8 @@ final class EquationSolverTest extends TestCase
             );
         } catch (InfiniteSolutionSetException) {
             self::fail('The recurrence denominator must use gamma(x + 1).');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         try {
@@ -2317,8 +2317,8 @@ final class EquationSolverTest extends TestCase
             );
         } catch (InfiniteSolutionSetException) {
             self::fail('The reverse lower-Gamma recurrence correction has the wrong sign.');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -2343,8 +2343,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -5.0, 5.0);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -2352,16 +2352,16 @@ final class EquationSolverTest extends TestCase
             Math::solve('digamma(x + 1) = digamma(x) + 2/x', 'x', -5.0, 5.0);
         } catch (InfiniteSolutionSetException) {
             self::fail('A scaled reciprocal term is not the digamma recurrence.');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         try {
             Math::solve('digamma(x) = digamma(x + 1) + 1/x', 'x', -5.0, 5.0);
         } catch (InfiniteSolutionSetException) {
             self::fail('The reverse recurrence correction has the wrong sign.');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
     }
@@ -2395,8 +2395,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -2.0, 5.0);
                 self::fail('Expected infinitely many positive-domain solutions for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -2419,8 +2419,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -5.0, -0.1);
                 self::fail('Expected infinitely many non-pole solutions for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -2430,8 +2430,8 @@ final class EquationSolverTest extends TestCase
             Math::solve('lgamma(x + 1) = lgamma(x) + ln(abs(2*x))', 'x', -5.0, -0.1);
         } catch (InfiniteSolutionSetException) {
             self::fail('The shifted logarithm argument does not match the recurrence.');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
     }
@@ -3633,8 +3633,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -2.0, 4.0);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -3663,8 +3663,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -3687,8 +3687,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -3725,8 +3725,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertSame(
@@ -3871,8 +3871,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected an infinite rational-domain solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertSame(
@@ -3946,8 +3946,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -3972,8 +3972,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected infinitely many solutions where x^2 lies within the asin principal branch.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         self::assertSame(
@@ -4007,8 +4007,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected the small but positive principal-branch interval to contain infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -4023,8 +4023,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected infinitely many roots where 1/x lies inside the asin principal branch.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         self::assertSame(
@@ -4057,8 +4057,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected infinitely many roots on the valid pieces around the pole.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -4079,8 +4079,8 @@ final class EquationSolverTest extends TestCase
                     solverOptions: new SolverOptions(scanSteps: 1),
                 );
                 self::fail('Expected a nonempty open principal-branch interval for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -4124,8 +4124,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected infinitely many roots on the defined portion of the square-root domain.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         $domainBoundaryRoot = Math::solve(
@@ -4158,8 +4158,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected infinitely many solutions on the nonempty nested domain interval.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         self::assertSame(
@@ -4194,8 +4194,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected infinitely many solutions on the two defined domain components.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -4311,8 +4311,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -4952,6 +4952,8 @@ final class EquationSolverTest extends TestCase
 
         self::assertIsArray($bounds);
         self::assertCount(2, $bounds);
+        self::assertIsFloat($bounds[0]);
+        self::assertIsFloat($bounds[1]);
         self::assertTrue(\is_finite($bounds[0]));
         self::assertTrue(\is_finite($bounds[1]));
         self::assertLessThan($bounds[1], $bounds[0]);
@@ -5854,8 +5856,8 @@ final class EquationSolverTest extends TestCase
                     solverOptions: new SolverOptions(scanSteps: 1),
                 );
                 self::fail('Expected an infinite root set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -5880,8 +5882,8 @@ final class EquationSolverTest extends TestCase
                     solverOptions: new SolverOptions(scanSteps: 1),
                 );
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -5917,8 +5919,8 @@ final class EquationSolverTest extends TestCase
                 try {
                     Math::solve($identity, 'x', -\INF, \INF);
                     self::fail('Expected an infinite Bessel identity.');
-                } catch (InfiniteSolutionSetException) {
-                    self::assertTrue(true);
+                } catch (InfiniteSolutionSetException $exception) {
+                    self::assertNotEmpty($exception->getMessage());
                 }
             } else {
                 self::assertSame([], Math::solve($identity, 'x', -\INF, \INF));
@@ -5934,8 +5936,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve('x = 0', 'x', $lower, $upper);
                 self::fail('Invalid infinite interval bounds must be rejected.');
-            } catch (\InvalidArgumentException) {
-                self::assertTrue(true);
+            } catch (\InvalidArgumentException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -5967,6 +5969,9 @@ final class EquationSolverTest extends TestCase
             self::assertIsFloat($upperBound);
             $exactFloatRatio = $floatRatioMethod->invoke($solver, $upperBound, $integerArithmetic);
             self::assertIsArray($exactFloatRatio);
+            self::assertCount(2, $exactFloatRatio);
+            self::assertIsString($exactFloatRatio[0]);
+            self::assertIsString($exactFloatRatio[1]);
             $comparison = $integerArithmetic->compareIntegerRatioToFraction(
                 $numerator,
                 $denominator,
@@ -15746,8 +15751,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('An identity on a nonempty domain must report infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         foreach (
@@ -15800,8 +15805,8 @@ final class EquationSolverTest extends TestCase
                     solverOptions: new SolverOptions(scanSteps: 1),
                 );
                 self::fail($function . ' identity should have infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -16862,8 +16867,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('Expected an infinite set of roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -19803,8 +19808,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -19815,8 +19820,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail("Expected an infinite solution set for {$equation}.");
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -19832,8 +19837,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail("Expected an infinite solution set for {$equation}.");
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertSame([], Math::solve('floor(x - x) = 3', 'x', -\INF, \INF));
@@ -19853,8 +19858,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail("Expected an infinite solution set for {$equation}.");
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -19874,8 +19879,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail("Expected an infinite solution set for {$equation}.");
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -19987,8 +19992,8 @@ final class EquationSolverTest extends TestCase
         try {
             Math::solve('min(x^2, 0) = sin(x)', 'x', -\INF, \INF);
             self::fail('The equation reduces to sin(x) = 0 on an unbounded interval.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         $minimumOfTwoPolynomials = Math::solve(
@@ -20085,8 +20090,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected an infinite solution set for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -20115,8 +20120,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail("Expected an infinite solution set for {$equation}.");
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -20135,8 +20140,8 @@ final class EquationSolverTest extends TestCase
         try {
             Math::solve('sign(x) = sin(x)', 'x', -\INF, \INF);
             self::fail('The positive and negative tails each contain infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -20342,8 +20347,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail("Expected an infinite solution set for {$equation}.");
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -21025,8 +21030,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -21079,8 +21084,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -21722,8 +21727,8 @@ final class EquationSolverTest extends TestCase
                 try {
                     Math::solve($equation, 'x', $lowerBound, $upperBound);
                     self::fail('Expected infinitely many Beta recurrence solutions for ' . $equation);
-                } catch (InfiniteSolutionSetException) {
-                    self::assertTrue(true);
+                } catch (InfiniteSolutionSetException $exception) {
+                    self::assertNotEmpty($exception->getMessage());
                 }
             }
         }
@@ -21737,16 +21742,16 @@ final class EquationSolverTest extends TestCase
             Math::solve('beta(x + 1, 2) = x / (x + 3) * beta(x, 2)', 'x', 0.1, 5.0);
         } catch (InfiniteSolutionSetException) {
             self::fail('A changed Beta recurrence denominator is not an identity.');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         try {
             Math::solve('beta(x + 1, -2) = x / (x - 2) * beta(x, -2)', 'x', 3.0, 5.0);
         } catch (InfiniteSolutionSetException) {
             self::fail('A pole-valued fixed Beta parameter has no defined recurrence domain.');
-        } catch (RootSearchLimitException) {
-            self::assertTrue(true);
+        } catch (RootSearchLimitException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -22177,8 +22182,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', $lowerBound, $upperBound);
                 self::fail('An interval containing infinitely many trivial zeros must be classified.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -22205,8 +22210,8 @@ final class EquationSolverTest extends TestCase
         try {
             Math::solve('zeta(-x^2) = 0', 'x', 0.0, \INF);
             self::fail('A polynomial phase unbounded below contains infinitely many trivial zeros.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -24783,7 +24788,9 @@ final class EquationSolverTest extends TestCase
         self::assertCount(6367, $solutions);
         self::assertLessThan(0.0, $solutions[0]->value);
         self::assertEqualsWithDelta(0.0, $solutions[3182]->value, 1.0E-10);
-        self::assertGreaterThan(0.0, $solutions[\array_key_last($solutions)]->value);
+        $lastSolutionIndex = \array_key_last($solutions);
+        self::assertNotNull($lastSolutionIndex);
+        self::assertGreaterThan(0.0, $solutions[$lastSolutionIndex]->value);
         foreach ($solutions as $index => $solution) {
             self::assertLessThanOrEqual(1.0E-9, $solution->residual);
             if ($index > 0) {
@@ -25712,7 +25719,8 @@ final class EquationSolverTest extends TestCase
                     solverOptions: new SolverOptions(scanSteps: 1),
                 );
                 self::fail('Expected accumulating periodic roots for ' . $equation);
-            } catch (InfiniteRootAccumulationException) {
+            } catch (InfiniteRootAccumulationException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -27023,8 +27031,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail($equation . ' should have infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -27037,8 +27045,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', -\INF, \INF);
                 self::fail($equation . ' should have infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertSame(
@@ -28272,7 +28280,8 @@ final class EquationSolverTest extends TestCase
                 solverOptions: new SolverOptions(scanSteps: 1),
             );
             self::fail('Expected the cancelled exponential identity to report infinitely many solutions.');
-        } catch (\DomainException) {
+        } catch (\DomainException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
 
         self::assertSame(
@@ -29252,8 +29261,8 @@ final class EquationSolverTest extends TestCase
             try {
                 Math::solve($equation, 'x', 0.0, 1.0);
                 self::fail('Expected infinitely many roots for ' . $equation);
-            } catch (InfiniteRootAccumulationException) {
-                self::assertTrue(true);
+            } catch (InfiniteRootAccumulationException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertSame([], Math::solve('sin(1/x)=2', 'x', 0.0, 1.0));
