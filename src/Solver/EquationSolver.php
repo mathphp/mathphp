@@ -198,6 +198,20 @@ final class EquationSolver
         [$leftExpression, $rightExpression, $rightOffset] = $this->splitEquation($equation);
         $left = $this->parseSide($leftExpression, 0, $evaluationOptions);
         $right = $this->parseSide($rightExpression, $rightOffset, $evaluationOptions);
+        $nestedSelfCompositionSolutions = $this->solveNestedSelfCompositionFixedPoint(
+            $left,
+            $right,
+            $rightOffset,
+            $variable,
+            $lowerBound,
+            $upperBound,
+            $parameters,
+            $evaluationOptions,
+            $solverOptions,
+        );
+        if ($nestedSelfCompositionSolutions !== null) {
+            return $nestedSelfCompositionSolutions;
+        }
         foreach ([[$left, $right], [$right, $left]] as [$functionSide, $targetSide]) {
             $functionSide = $this->unwrapGrouping($functionSide);
             if (
@@ -13140,6 +13154,89 @@ final class EquationSolver
                 $this->nestedInverseSolveBudget = null;
             }
         }
+    }
+
+    /**
+     * @param array<string, int|float> $parameters
+     * @return list<EquationSolution>|null
+     */
+    private function solveNestedSelfCompositionFixedPoint(
+        Node $left,
+        Node $right,
+        int $rightOffset,
+        string $variable,
+        float $lowerBound,
+        float $upperBound,
+        array $parameters,
+        EvaluationOptions $evaluationOptions,
+        SolverOptions $solverOptions,
+    ): ?array {
+        $aliases = [
+            'arcsin' => 'asin',
+            'arcsinh' => 'asinh',
+            'arctan' => 'atan',
+            'arctanh' => 'atanh',
+        ];
+        $fixedPointFunctions = ['asin', 'asinh', 'atan', 'atanh', 'sin', 'tanh'];
+
+        foreach ([[$left, $right], [$right, $left]] as [$compositionNode, $targetNode]) {
+            $outer = $this->unwrapGrouping($compositionNode);
+            $target = $this->unwrapGrouping($targetNode);
+            if (
+                !$outer instanceof FunctionCallNode
+                || \count($outer->arguments) !== 1
+                || !$target instanceof VariableNode
+                || $target->name !== $variable
+                || !$evaluationOptions->functions->isBuiltIn($outer->name)
+            ) {
+                continue;
+            }
+
+            $inner = $this->unwrapGrouping($outer->arguments[0]);
+            if (
+                !$inner instanceof FunctionCallNode
+                || \count($inner->arguments) !== 1
+                || !$evaluationOptions->functions->isBuiltIn($inner->name)
+            ) {
+                continue;
+            }
+            $argument = $this->unwrapGrouping($inner->arguments[0]);
+            if (!$argument instanceof VariableNode || $argument->name !== $variable) {
+                continue;
+            }
+
+            $outerName = $aliases[$outer->name] ?? $outer->name;
+            $innerName = $aliases[$inner->name] ?? $inner->name;
+            if (
+                $outerName !== $innerName
+                || !\in_array($outerName, $fixedPointFunctions, true)
+            ) {
+                continue;
+            }
+
+            if ($lowerBound > 0.0 || $upperBound < 0.0) {
+                return [];
+            }
+
+            // These odd monotone functions strictly expand or shrink positive magnitudes,
+            // so a nonzero fixed point of the double composition is impossible.
+            $residual = $this->residualAt(
+                $left,
+                $right,
+                $rightOffset,
+                $variable,
+                0.0,
+                $parameters,
+                $evaluationOptions,
+            );
+            if ($residual === null) {
+                return null;
+            }
+
+            return [new EquationSolution(0.0, \abs($residual), 0)];
+        }
+
+        return null;
     }
 
     /**
