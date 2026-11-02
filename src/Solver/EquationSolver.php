@@ -13228,7 +13228,7 @@ final class EquationSolver
                     }
                 }
             }
-            while ($depth === 0 && $current instanceof FunctionCallNode) {
+            while ($current instanceof FunctionCallNode) {
                 if (
                     \count($current->arguments) !== 1
                     || !$evaluationOptions->functions->isBuiltIn($current->name)
