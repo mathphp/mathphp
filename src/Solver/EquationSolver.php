@@ -10170,6 +10170,7 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @return list<EquationSolution>|null
      */
     private function solveSelfQuotientLevelEquation(
         Node $quotientSide,
@@ -13143,6 +13144,7 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @return list<EquationSolution>|null
      */
     private function solveNestedInverseLevelIdentity(
         Node $left,
@@ -13358,6 +13360,7 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @return list<EquationSolution>|null
      */
     private function solveNestedInverseCompositionEquation(
         Node $left,
@@ -26221,8 +26224,8 @@ final class EquationSolver
             }
         }
         $targetDerivativeNumerator = $this->subtractScaledPolynomials(
-            $this->multiplyPolynomials($numeratorDerivative ?: [0.0], $denominator),
-            $this->multiplyPolynomials($numerator, $denominatorDerivative ?: [0.0]),
+            $this->multiplyPolynomials(\array_values($numeratorDerivative ?: [0.0]), $denominator),
+            $this->multiplyPolynomials($numerator, \array_values($denominatorDerivative ?: [0.0])),
             1.0,
         );
         if ($targetDerivativeNumerator === null) {
@@ -26244,8 +26247,8 @@ final class EquationSolver
             }
         }
         $derivativeNumerator = $this->subtractScaledPolynomials(
-            $argumentDerivativeTerm,
-            $targetDerivativeTerm,
+            \array_values($argumentDerivativeTerm),
+            \array_values($targetDerivativeTerm),
             1.0,
         );
         if ($derivativeNumerator === null) {
@@ -31867,7 +31870,7 @@ final class EquationSolver
                         $functionSourceOffset,
                         $targetCoefficients,
                         $numerator,
-                        $amplitudeCoefficients,
+                        \array_values($amplitudeCoefficients),
                         $phaseCoefficients,
                         $denominatorCoefficients,
                         $denominatorRemainderBound,
@@ -31956,7 +31959,7 @@ final class EquationSolver
                 $numerator->arguments[0]->span()->start - $functionSourceOffset,
                 $numerator->arguments[0]->span()->length(),
             );
-            $amplitudeSource = $this->polynomialCoefficientsSource($amplitudeCoefficients, $variable);
+            $amplitudeSource = $this->polynomialCoefficientsSource(\array_values($amplitudeCoefficients), $variable);
             $denominatorSource = $this->polynomialCoefficientsSource($denominatorCoefficients, $variable);
             if ($phaseSource === '' || $amplitudeSource === null || $denominatorSource === null) {
                 continue;
@@ -34909,15 +34912,18 @@ final class EquationSolver
                         return null;
                     }
                     $boundaryRoots = [...$lowerRoots, ...$upperRoots];
-                    if ((!\is_finite($lowerBound) || !\is_finite($upperBound)) && $boundaryRoots === []) {
+                    if (!\is_finite($lowerBound) && $boundaryRoots === []) {
+                        return [];
+                    }
+                    if (!\is_finite($upperBound) && $boundaryRoots === []) {
                         return [];
                     }
                     $effectiveLower = \is_finite($lowerBound)
                         ? $lowerBound
-                        : \min(\array_map(static fn (EquationSolution $root): float => $root->value, $boundaryRoots));
+                        : \min(...\array_map(static fn (EquationSolution $root): float => $root->value, $boundaryRoots));
                     $effectiveUpper = \is_finite($upperBound)
                         ? $upperBound
-                        : \max(\array_map(static fn (EquationSolution $root): float => $root->value, $boundaryRoots));
+                        : \max(...\array_map(static fn (EquationSolution $root): float => $root->value, $boundaryRoots));
                     if ($effectiveLower > $effectiveUpper) {
                         return [];
                     }
@@ -35496,6 +35502,7 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @return list<EquationSolution>|null
      */
     private function solveUnboundedAffineHyperbolicEquation(
         string $equation,
@@ -36726,11 +36733,25 @@ final class EquationSolver
         }
         $integerArithmetic = new IntegerPolynomialExtractor('', []);
         $rootCounter = new ExactPolynomialRootCounter();
-        $compareFractions = static fn (array $first, array $second): int =>
-            $integerArithmetic->compareIntegerValues(
-                $integerArithmetic->multiplyIntegerValues($first[0], $second[1]),
-                $integerArithmetic->multiplyIntegerValues($second[0], $first[1]),
+        $compareFractions = static function (array $first, array $second) use ($integerArithmetic): int {
+            $firstNumerator = $first[0] ?? null;
+            $firstDenominator = $first[1] ?? null;
+            $secondNumerator = $second[0] ?? null;
+            $secondDenominator = $second[1] ?? null;
+            if (
+                !\is_string($firstNumerator)
+                || !\is_string($firstDenominator)
+                || !\is_string($secondNumerator)
+                || !\is_string($secondDenominator)
+            ) {
+                throw new \LogicException('Rational root bounds must contain two integer strings.');
+            }
+
+            return $integerArithmetic->compareIntegerValues(
+                $integerArithmetic->multiplyIntegerValues($firstNumerator, $secondDenominator),
+                $integerArithmetic->multiplyIntegerValues($secondNumerator, $firstDenominator),
             );
+        };
         \usort(
             $rootIntervals,
             static fn (RationalRootInterval $first, RationalRootInterval $second): int =>
@@ -52540,6 +52561,7 @@ final class EquationSolver
         callable $residualAt,
         callable $candidateScaleAt,
     ): ?array {
+        $base = \array_values(\array_map(static fn (int|float $coefficient): float => (float) $coefficient, $base));
         $baseRange = $this->polynomialRange($base, $lowerBound, $upperBound, $options);
         if ($baseRange === null || $baseRange[1] >= 0.0 || $target === 0.0) {
             return null;
@@ -52776,6 +52798,7 @@ final class EquationSolver
         callable $candidateScaleAt,
     ): array {
         $polynomialSolver = new PolynomialSolver();
+        $base = \array_values(\array_map(static fn (int|float $coefficient): float => (float) $coefficient, $base));
         $solutions = [];
         foreach ($candidates as $candidate) {
             $baseValue = $polynomialSolver->evaluatePolynomial($base, $candidate->value);
@@ -53404,6 +53427,11 @@ final class EquationSolver
         return null;
     }
 
+    /**
+     * @param callable(float): ?float $residualAt
+     * @param callable(float): ?float $candidateScaleAt
+     * @return list<EquationSolution>|null
+     */
     private function solveExponentialPolynomialEquation(
         Node $left,
         Node $right,
@@ -53654,7 +53682,7 @@ final class EquationSolver
         $exactIntegerCoefficients = $exactPhaseShift !== null
             ? $this->exactExponentialPolynomialIntegerCoefficients(
                 $terms,
-                $frequencies,
+                \array_values($frequencies),
                 $minimumFrequency,
                 \count($coefficients),
                 $exactPhaseShift,
@@ -53785,7 +53813,10 @@ final class EquationSolver
         return \exp($logBound);
     }
 
-    /** @param list<float> $coefficients @return list<float>|null */
+    /**
+     * @param list<float> $coefficients
+     * @return list<float>|null
+     */
     private function scaledQuadraticRoots(array $coefficients): ?array
     {
         [$constant, $linear, $quadratic] = $coefficients;
@@ -53892,6 +53923,11 @@ final class EquationSolver
         return $shift ?? 0.0;
     }
 
+    /**
+     * @param list<array{coefficient: float, slope: float, offset: float}> $terms
+     * @param list<int> $frequencies
+     * @return list<string>|null
+     */
     private function exactExponentialPolynomialIntegerCoefficients(
         array $terms,
         array $frequencies,
@@ -53956,6 +53992,11 @@ final class EquationSolver
         return \abs($offset - $expectedOffset) <= $tolerance;
     }
 
+    /**
+     * @param list<float> $coefficients
+     * @param list<string>|null $exactIntegerCoefficients
+     * @return list<float>|null
+     */
     private function exactExponentialPolynomialRoots(
         array $coefficients,
         float $lower,
@@ -56302,7 +56343,7 @@ final class EquationSolver
         $searchLowerBound = $lowerBound;
         $searchUpperBound = $upperBound;
         if (!\is_finite($lowerBound) || !\is_finite($upperBound)) {
-            $rootBound = $this->positivePolynomialRootBound(\array_map('\\abs', $level));
+            $rootBound = $this->positivePolynomialRootBound(\array_values(\array_map('\\abs', $level)));
             if ($rootBound === null) {
                 return null;
             }
@@ -56314,6 +56355,7 @@ final class EquationSolver
         }
 
         $polynomialSolver = new PolynomialSolver();
+        $level = \array_values($level);
         $roots = $polynomialSolver->solve(
             $level,
             $searchLowerBound,
@@ -59004,6 +59046,10 @@ final class EquationSolver
         return \is_float($ratio) && \is_finite($ratio) && $ratio !== 0.0 ? $ratio : null;
     }
 
+    /**
+     * @param list<float> $numerator
+     * @param list<float> $denominator
+     */
     private function approximatelyProportionalPolynomialRatio(
         array $numerator,
         array $denominator,
@@ -68395,6 +68441,9 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @param callable(float): ?float $residualAt
+     * @param callable(float): ?float $residualScaleAt
+     * @return list<EquationSolution>|null
      */
     private function solveAffineLogarithmicTrigonometricEquation(
         Node $left,
@@ -68562,6 +68611,7 @@ final class EquationSolver
 
     /**
      * @param array<string, int|float> $parameters
+     * @return array{float, float}|null
      */
     private function affineVariableBaseLogIntervalRange(
         Node $argument,
@@ -96084,7 +96134,7 @@ final class EquationSolver
             $polynomial = $quotient;
         }
 
-        $coefficient = $this->polynomialValue($polynomial, $root);
+        $coefficient = $this->polynomialValue(\array_values($polynomial), $root);
         if ($coefficient === null || $coefficient === 0.0) {
             return 0;
         }
