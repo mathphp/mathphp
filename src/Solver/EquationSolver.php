@@ -14676,10 +14676,8 @@ final class EquationSolver
             } elseif ($outerName === 'erfinv') {
                 if (
                     $exactTarget !== null
-                    && (
-                        !\is_finite($target[0])
-                        || ($exactTarget->compareLowerToRational('0', '1') !== 0 && $target[0] === 0.0)
-                    )
+                    && $exactTarget->compareLowerToRational('0', '1') !== 0
+                    && $target[0] === 0.0
                 ) {
                     return null;
                 }
@@ -14687,10 +14685,8 @@ final class EquationSolver
             } elseif ($outerName === 'erfcinv') {
                 if (
                     $exactTarget !== null
-                    && (
-                        !\is_finite($target[0])
-                        || ($exactTarget->compareLowerToRational('0', '1') !== 0 && $target[0] === 0.0)
-                    )
+                    && $exactTarget->compareLowerToRational('0', '1') !== 0
+                    && $target[0] === 0.0
                 ) {
                     return null;
                 }
@@ -14698,10 +14694,8 @@ final class EquationSolver
             } elseif ($outerName === 'erfi') {
                 if (
                     $exactTarget !== null
-                    && (
-                        !\is_finite($target[0])
-                        || ($exactTarget->compareLowerToRational('0', '1') !== 0 && $target[0] === 0.0)
-                    )
+                    && $exactTarget->compareLowerToRational('0', '1') !== 0
+                    && $target[0] === 0.0
                 ) {
                     return null;
                 }
@@ -14744,9 +14738,6 @@ final class EquationSolver
                     && $exactTarget->compareLowerToRational('0', '1') !== 0
                     && $target[0] === 0.0
                 ) {
-                    return null;
-                }
-                if ($exactTarget !== null && !\is_finite($target[0])) {
                     return null;
                 }
                 try {
