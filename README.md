@@ -646,8 +646,8 @@ Equations applying the same `exp`, `expm1`, `sinh`, `tanh`, `asinh`, `atan`,
 argument equality. Alias spellings are normalized across sides, so `atan()`
 and `arctan()` (or `asinh()` and `arcsinh()`) can be mixed in one equation.
 Nested fixed points formed by applying at least two odd functions from the
-strictly expanding group (`asin`, `atanh`) or the strictly contracting group
-(`asinh`, `atan`, `sin`, `tanh`) reduce to `x = 0`, including aliases and
+strictly expanding group (`asin`, `atanh`, `sinh`) or the strictly contracting
+group (`asinh`, `atan`, `sin`, `tanh`) reduce to `x = 0`, including aliases and
 reversed equation sides. Mixed expansion and contraction chains remain on the
 general solver path; inverse-function domain restrictions still apply.
 Equal `lambertw()` calls also reduce to equality of their arguments when both

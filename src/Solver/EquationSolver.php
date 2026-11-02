@@ -13178,6 +13178,7 @@ final class EquationSolver
         $magnitudeBehavior = [
             'asin' => 'expand',
             'atanh' => 'expand',
+            'sinh' => 'expand',
             'asinh' => 'contract',
             'atan' => 'contract',
             'sin' => 'contract',
