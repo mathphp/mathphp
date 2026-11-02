@@ -91,6 +91,9 @@ final class PolynomialRootCountingSolver
     /** @var array<string, ExactRationalInterval|null> */
     private static array $inverseErrorFunctionLevelCache = [];
 
+    /** @var array<string, ExactRationalInterval> */
+    private static array $certifiedAsinhLevelCache = [];
+
     /** @var array<string, list<ExactRationalInterval>|null> */
     private static array $inverseDawsonLevelCache = [];
 
@@ -6991,6 +6994,12 @@ final class PolynomialRootCountingSolver
             : $target;
         try {
             $value = new ExactRationalInterval($positivePoint, $positivePoint);
+            $cacheKey = $value->lower[0] . '/' . $value->lower[1];
+            if (isset(self::$certifiedAsinhLevelCache[$cacheKey])) {
+                $cached = self::$certifiedAsinhLevelCache[$cacheKey];
+
+                return $negative ? $cached->negateInterval() : $cached;
+            }
             $one = new ExactRationalInterval(['1', '1'], ['1', '1']);
             $two = new ExactRationalInterval(['2', '1'], ['2', '1']);
             $half = 0;
@@ -7020,6 +7029,7 @@ final class PolynomialRootCountingSolver
                 $scale = $scale->multiply($two);
             }
             $result = $result->multiply($scale);
+            self::$certifiedAsinhLevelCache[$cacheKey] = $result;
 
             return $negative ? $result->negateInterval() : $result;
         } catch (\DomainException | \LengthException) {
