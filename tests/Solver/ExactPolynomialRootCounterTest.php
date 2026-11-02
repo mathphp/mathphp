@@ -615,12 +615,14 @@ final class ExactPolynomialRootCounterTest extends TestCase
             '0',
             '3',
         ));
-        self::assertCount(1, Math::isolatePolynomialRootsInRationalInterval(
+        $irrationalSumRoots = Math::isolatePolynomialRootsInRationalInterval(
             'x=sqrt(2)+sqrt(3)',
             'x',
             '3',
             '4',
-        ));
+        );
+        self::assertNotNull($irrationalSumRoots);
+        self::assertCount(1, $irrationalSumRoots);
         self::assertSame(1, Math::countPolynomialRootsInRationalInterval(
             'x+1=sqrt(2)+sqrt(3)',
             'x',
@@ -3249,22 +3251,22 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 Math::countPolynomialRootsOnRealLine($equation, 'x');
                 self::fail('Expected the inverse-error-function identity to have infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
             try {
                 Math::isolatePolynomialRootsOnRealLine($equation, 'x');
                 self::fail(
                     'Expected restricted inverse identity isolation to reject infinite roots: ' . $equation,
                 );
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
             try {
                 Math::countPolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
                 self::fail('Expected the inverse-error-function identity to have infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
 
@@ -3293,14 +3295,14 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 Math::countPolynomialRootsOnRealLine($equation, 'x');
                 self::fail('Expected the log1p/expm1 identity to have infinitely many roots.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
             try {
                 Math::isolatePolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
                 self::fail('Expected inverse identity isolation to reject an infinite root set: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertNull(
@@ -3315,8 +3317,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine('sinh(asinh(x^2 - 3)) = x^2 - 3', 'x');
             self::fail('Expected the sinh/asinh identity to have infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -3328,8 +3330,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine('tan(arctan(x)) = x', 'x');
             self::fail('Expected the tangent/arctangent identity to have infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -3366,24 +3368,24 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 Math::countPolynomialRootsOnRealLine($equation, 'x');
                 self::fail('Expected a restricted inverse identity to have infinitely many roots: ' . $equation);
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
             try {
                 Math::countPolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
                 self::fail(
                     'Expected a restricted inverse identity to have infinitely many interval roots: ' . $equation,
                 );
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
             try {
                 Math::isolatePolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
                 self::fail(
                     'Expected restricted inverse identity isolation to reject infinite roots: ' . $equation,
                 );
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertNull(
@@ -3397,8 +3399,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::isolatePolynomialRootsOnRealLine('cot(acot(x)) = x', 'x');
             self::fail('Expected the cotangent/inverse-cotangent identity to have infinitely many roots.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -7868,8 +7870,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
@@ -7905,8 +7907,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
@@ -7999,20 +8001,20 @@ final class ExactPolynomialRootCounterTest extends TestCase
                 '2',
             );
             self::fail('An identity on open subintervals must be reported as infinite.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         try {
             Math::isolatePolynomialRootsOnRealLine('atanh(1/(1+x^2))=acoth(1+x^2)', 'x');
             self::fail('All-real isolation must report an infinite identity solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         try {
             Math::countPolynomialRootsOnRealLine('atanh(1/(1+x^2))=acoth(1+x^2)', 'x');
             self::fail('An identity on open real intervals must be reported as infinite.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -8053,8 +8055,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -8097,8 +8099,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -8141,8 +8143,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -8191,8 +8193,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -8238,8 +8240,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -8276,8 +8278,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
@@ -8322,8 +8324,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-2', '2');
@@ -8360,8 +8362,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -8404,8 +8406,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($equation, 'x');
             self::fail('Expected an infinite all-real solution set.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $this->expectException(InfiniteSolutionSetException::class);
         Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1/2', '1/2');
@@ -9487,6 +9489,7 @@ final class ExactPolynomialRootCounterTest extends TestCase
             '-1',
             '4',
         );
+        self::assertNotNull($roots);
         self::assertCount(2, $roots);
         self::assertNotSame(2, Math::countPolynomialRootsInRationalInterval(
             'sin(x)=(0/x)*csc(x+1)',
@@ -9580,7 +9583,9 @@ final class ExactPolynomialRootCounterTest extends TestCase
         self::assertSame(2, Math::countPolynomialRootsOnRealLine('2^(x*x)=2', 'x'));
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('2^(1/x)=1', 'x'));
         self::assertSame(1, Math::countPolynomialRootsInRationalInterval('2^(1/x)=2', 'x', '1/2', '2'));
-        self::assertCount(1, Math::isolatePolynomialRootsOnRealLine('2^(1/x)=1/2', 'x'));
+        $halfPowerRoots = Math::isolatePolynomialRootsOnRealLine('2^(1/x)=1/2', 'x');
+        self::assertNotNull($halfPowerRoots);
+        self::assertCount(1, $halfPowerRoots);
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('2^(1/x)=4', 'x'));
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('2^(1/x)=1/4', 'x'));
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('2^(1/x)=1125899906842624', 'x'));
@@ -9600,7 +9605,9 @@ final class ExactPolynomialRootCounterTest extends TestCase
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('4^((x*x-1)/(x-1))=16', 'x'));
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('512^(1/x)=4', 'x'));
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('512^(1/x)=1/4', 'x'));
-        self::assertCount(1, Math::isolatePolynomialRootsInRationalInterval('4^(1/x)=8', 'x', '1/2', '1'));
+        $rationalPowerRoots = Math::isolatePolynomialRootsInRationalInterval('4^(1/x)=8', 'x', '1/2', '1');
+        self::assertNotNull($rationalPowerRoots);
+        self::assertCount(1, $rationalPowerRoots);
         $limited = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 0.4));
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('4^(1/x)=2', 'x', [], $limited));
         $unitLimit = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 1));
@@ -9623,6 +9630,7 @@ final class ExactPolynomialRootCounterTest extends TestCase
             ] as [$equation, $numerator, $denominator]
         ) {
             $roots = Math::isolatePolynomialRootsOnRealLine($equation, 'x');
+            self::assertNotNull($roots);
             self::assertCount(1, $roots);
             self::assertTrue($roots[0]->isExactRoot);
             self::assertSame($numerator, $roots[0]->lowerNumerator);
@@ -9672,8 +9680,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 $solve();
                 self::fail('Expected an infinite solution set.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -9691,8 +9699,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 $solve();
                 self::fail('Expected an infinite solution set.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('1^((x-100)/(x-100))=1', 'x', [], $limited));
@@ -9700,15 +9708,15 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsOnRealLine($stationaryEquation, 'x', [], $limited);
             self::fail('Expected an infinite solution set around the stationary point.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $rationalEquation = '1^(((x-100)*(x-100)+1/4)/((x-100)*(x-100)+1))=1';
         try {
             Math::countPolynomialRootsOnRealLine($rationalEquation, 'x', [], $limited);
             self::fail('Expected an infinite solution set around the rational stationary point.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -9717,15 +9725,23 @@ final class ExactPolynomialRootCounterTest extends TestCase
         $zeroLimit = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 0));
         foreach (['1^x=1', '1^(x*x)=1'] as $equation) {
             self::assertSame(1, Math::countPolynomialRootsOnRealLine($equation, 'x', [], $zeroLimit));
-            self::assertCount(1, Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $zeroLimit));
+            $realLineRoots = Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $zeroLimit);
+            self::assertNotNull($realLineRoots);
+            self::assertCount(1, $realLineRoots);
             self::assertSame(
                 1,
                 Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1', '1', [], $zeroLimit),
             );
-            self::assertCount(
-                1,
-                Math::isolatePolynomialRootsInRationalInterval($equation, 'x', '-1', '1', [], $zeroLimit),
+            $intervalRoots = Math::isolatePolynomialRootsInRationalInterval(
+                $equation,
+                'x',
+                '-1',
+                '1',
+                [],
+                $zeroLimit,
             );
+            self::assertNotNull($intervalRoots);
+            self::assertCount(1, $intervalRoots);
         }
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('1^(1/x)=1', 'x', [], $zeroLimit));
         $this->expectException(InfiniteSolutionSetException::class);
@@ -9735,11 +9751,15 @@ final class ExactPolynomialRootCounterTest extends TestCase
     public function testZeroBaseRationalExponentLevels(): void
     {
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('0^(x*x)=1', 'x'));
-        self::assertCount(1, Math::isolatePolynomialRootsOnRealLine('0^(x*x)=1', 'x'));
+        $zeroBaseRoots = Math::isolatePolynomialRootsOnRealLine('0^(x*x)=1', 'x');
+        self::assertNotNull($zeroBaseRoots);
+        self::assertCount(1, $zeroBaseRoots);
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('0^(1/x)=1', 'x'));
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('0^(1/x)=2', 'x'));
         self::assertSame(0, Math::countPolynomialRootsInRationalInterval('0^(1/x)=-1', 'x', '-1', '1'));
-        self::assertCount(1, Math::isolatePolynomialRootsInRationalInterval('0^(x*x)=1', 'x', '-1', '1'));
+        $zeroBaseIntervalRoots = Math::isolatePolynomialRootsInRationalInterval('0^(x*x)=1', 'x', '-1', '1');
+        self::assertNotNull($zeroBaseIntervalRoots);
+        self::assertCount(1, $zeroBaseIntervalRoots);
         $zeroLimit = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 0));
         self::assertSame(0, Math::countPolynomialRootsOnRealLine('0^(x*x)=0', 'x', [], $zeroLimit));
         foreach (['0^(-x*x)=0', '0^(-x*x-1)=0', '0^(-1/(x*x+1))=0', '0^(-x/x)=0'] as $equation) {
@@ -9756,8 +9776,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
         try {
             Math::countPolynomialRootsInRationalInterval('0^(1/x)=0', 'x', '-1', '1');
             self::fail('Expected the positive-exponent half-interval to contain infinitely many solutions.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
         $unitLimit = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 1));
         self::assertSame(0, Math::countPolynomialRootsInRationalInterval('0^x=0', 'x', '2', '3', [], $unitLimit));
@@ -9781,8 +9801,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 $solve();
                 self::fail('Expected infinitely many zero-base solutions.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -9794,8 +9814,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 Math::countPolynomialRootsInRationalInterval($equation, 'x', '0', '1000', [], $limited);
                 self::fail('Expected an infinite solution set near the open endpoint.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         $this->expectException(InfiniteSolutionSetException::class);
@@ -9809,8 +9829,8 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 Math::countPolynomialRootsInRationalInterval($equation, 'x', '0', '1000', [], $limited);
                 self::fail('Expected an infinite solution set at a tiny exponent limit.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
     }
@@ -9905,7 +9925,9 @@ final class ExactPolynomialRootCounterTest extends TestCase
         $limited = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 1));
         foreach (['0^(x*x+1)=0', '0^((2*x*x+1)/(x*x+1))=0'] as $equation) {
             self::assertSame(1, Math::countPolynomialRootsOnRealLine($equation, 'x', [], $limited));
-            self::assertCount(1, Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $limited));
+            $roots = Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $limited);
+            self::assertNotNull($roots);
+            self::assertCount(1, $roots);
             self::assertSame(1, Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1', '1', [], $limited));
         }
         self::assertNotSame(1, Math::countPolynomialRootsOnRealLine('0^(-x*x-1)=0', 'x', [], $limited));
@@ -9929,16 +9951,16 @@ final class ExactPolynomialRootCounterTest extends TestCase
             try {
                 $solve();
                 self::fail('Expected an infinite solution set at the exponent boundary.');
-            } catch (InfiniteSolutionSetException) {
-                self::assertTrue(true);
+            } catch (InfiniteSolutionSetException $exception) {
+                self::assertNotEmpty($exception->getMessage());
             }
         }
         $third = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 1 / 3));
         try {
             Math::countPolynomialRootsOnRealLine('1^((x/x)/3)=1', 'x', [], $third);
             self::fail('Expected an infinite solution set at the fractional exponent boundary.');
-        } catch (InfiniteSolutionSetException) {
-            self::assertTrue(true);
+        } catch (InfiniteSolutionSetException $exception) {
+            self::assertNotEmpty($exception->getMessage());
         }
     }
 
@@ -9947,7 +9969,9 @@ final class ExactPolynomialRootCounterTest extends TestCase
         $limited = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 1));
         foreach (['1^(x*x+1)=1', '1^(-x*x-1)=1'] as $equation) {
             self::assertSame(1, Math::countPolynomialRootsOnRealLine($equation, 'x', [], $limited));
-            self::assertCount(1, Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $limited));
+            $roots = Math::isolatePolynomialRootsOnRealLine($equation, 'x', [], $limited);
+            self::assertNotNull($roots);
+            self::assertCount(1, $roots);
             self::assertSame(1, Math::countPolynomialRootsInRationalInterval($equation, 'x', '-1', '1', [], $limited));
         }
         self::assertNull(Math::countPolynomialRootsOnRealLine('1^(x*x+2)=1', 'x', [], $limited));
@@ -9958,19 +9982,33 @@ final class ExactPolynomialRootCounterTest extends TestCase
         self::assertSame(1, Math::countPolynomialRootsOnRealLine('1^((2*x*x+1)/(-x*x-1))=1', 'x', [], $limited));
         $twoLimit = new EvaluationOptions(limits: new ResourceLimits(maxExponentMagnitude: 2));
         self::assertSame(2, Math::countPolynomialRootsOnRealLine('1^((x*x+1)/x)=1', 'x', [], $twoLimit));
-        self::assertCount(2, Math::isolatePolynomialRootsOnRealLine('1^((x*x+1)/x)=1', 'x', [], $twoLimit));
+        $twoLimitRoots = Math::isolatePolynomialRootsOnRealLine('1^((x*x+1)/x)=1', 'x', [], $twoLimit);
+        self::assertNotNull($twoLimitRoots);
+        self::assertCount(2, $twoLimitRoots);
         self::assertSame(
             2,
             Math::countPolynomialRootsOnRealLine('1^(((x*x+1)*x)/(x*x))=1', 'x', [], $twoLimit),
         );
-        self::assertCount(
-            1,
-            Math::isolatePolynomialRootsInRationalInterval('1^((x*x+1)/x)=1', 'x', '1/2', '2', [], $twoLimit),
+        $rationalTwoLimitRoots = Math::isolatePolynomialRootsInRationalInterval(
+            '1^((x*x+1)/x)=1',
+            'x',
+            '1/2',
+            '2',
+            [],
+            $twoLimit,
         );
-        self::assertCount(
-            1,
-            Math::isolatePolynomialRootsInRationalInterval('1^((2*x*x+1)/(x*x+1))=1', 'x', '-1', '1', [], $limited),
+        self::assertNotNull($rationalTwoLimitRoots);
+        self::assertCount(1, $rationalTwoLimitRoots);
+        $boundedRoots = Math::isolatePolynomialRootsInRationalInterval(
+            '1^((2*x*x+1)/(x*x+1))=1',
+            'x',
+            '-1',
+            '1',
+            [],
+            $limited,
         );
+        self::assertNotNull($boundedRoots);
+        self::assertCount(1, $boundedRoots);
         self::assertSame(
             0,
             Math::countPolynomialRootsOnRealLine('1^(((2*x*x+1)*x*x)/((x*x+1)*x*x))=1', 'x', [], $limited),
