@@ -1612,7 +1612,7 @@ final class EquationSetSolverTest extends TestCase
         ) {
             $solutions = Math::solveEquationSet($equation, 'x', $lowerBound, $upperBound);
 
-            if ($lowerBound <= 0.0 && $upperBound >= 0.0) {
+            if ($lowerBound <= 0.0) {
                 self::assertCount(1, $solutions, $equation);
                 self::assertSame(0.0, $solutions[0]->lowerBound, $equation);
                 self::assertSame(0.0, $solutions[0]->upperBound, $equation);
