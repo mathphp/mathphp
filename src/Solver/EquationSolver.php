@@ -198,7 +198,7 @@ final class EquationSolver
         [$leftExpression, $rightExpression, $rightOffset] = $this->splitEquation($equation);
         $left = $this->parseSide($leftExpression, 0, $evaluationOptions);
         $right = $this->parseSide($rightExpression, $rightOffset, $evaluationOptions);
-        $nestedSelfCompositionSolutions = $this->solveNestedSelfCompositionFixedPoint(
+        $oddCompositionFixedPointSolutions = $this->solveStrictMagnitudeOddCompositionFixedPoint(
             $left,
             $right,
             $rightOffset,
@@ -208,8 +208,8 @@ final class EquationSolver
             $parameters,
             $evaluationOptions,
         );
-        if ($nestedSelfCompositionSolutions !== null) {
-            return $nestedSelfCompositionSolutions;
+        if ($oddCompositionFixedPointSolutions !== null) {
+            return $oddCompositionFixedPointSolutions;
         }
         foreach ([[$left, $right], [$right, $left]] as [$functionSide, $targetSide]) {
             $functionSide = $this->unwrapGrouping($functionSide);
@@ -13159,7 +13159,7 @@ final class EquationSolver
      * @param array<string, int|float> $parameters
      * @return list<EquationSolution>|null
      */
-    private function solveNestedSelfCompositionFixedPoint(
+    private function solveStrictMagnitudeOddCompositionFixedPoint(
         Node $left,
         Node $right,
         int $rightOffset,
@@ -13175,7 +13175,14 @@ final class EquationSolver
             'arctan' => 'atan',
             'arctanh' => 'atanh',
         ];
-        $fixedPointFunctions = ['asin', 'asinh', 'atan', 'atanh', 'sin', 'tanh'];
+        $magnitudeBehavior = [
+            'asin' => 'expand',
+            'atanh' => 'expand',
+            'asinh' => 'contract',
+            'atan' => 'contract',
+            'sin' => 'contract',
+            'tanh' => 'contract',
+        ];
 
         foreach ([[$left, $right], [$right, $left]] as [$compositionNode, $targetNode]) {
             $target = $this->unwrapGrouping($targetNode);
@@ -13187,7 +13194,7 @@ final class EquationSolver
             }
 
             $current = $this->unwrapGrouping($compositionNode);
-            $commonFunction = null;
+            $commonBehavior = null;
             $depth = 0;
             while ($current instanceof FunctionCallNode) {
                 if (
@@ -13198,14 +13205,12 @@ final class EquationSolver
                     break;
                 }
                 $function = $aliases[$current->name] ?? $current->name;
-                if (
-                    !\in_array($function, $fixedPointFunctions, true)
-                    || ($commonFunction !== null && $commonFunction !== $function)
-                ) {
+                $behavior = $magnitudeBehavior[$function] ?? null;
+                if ($behavior === null || ($commonBehavior !== null && $commonBehavior !== $behavior)) {
                     $depth = 0;
                     break;
                 }
-                $commonFunction = $function;
+                $commonBehavior = $behavior;
                 ++$depth;
                 $current = $this->unwrapGrouping($current->arguments[0]);
             }
@@ -13221,8 +13226,8 @@ final class EquationSolver
                 return [];
             }
 
-            // These odd monotone functions strictly expand or shrink positive magnitudes,
-            // so a nonzero fixed point of any repeated composition is impossible.
+            // A chain of strictly magnitude-expanding or -contracting odd functions
+            // cannot return a nonzero input to itself.
             $residual = $this->residualAt(
                 $left,
                 $right,

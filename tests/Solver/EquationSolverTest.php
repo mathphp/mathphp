@@ -3651,7 +3651,7 @@ final class EquationSolverTest extends TestCase
         }
     }
 
-    public function testNestedOddSelfCompositionsHaveOnlyZeroAsFixedPoint(): void
+    public function testNestedOddCompositionsHaveOnlyZeroAsFixedPoint(): void
     {
         foreach (
             [
@@ -3668,6 +3668,11 @@ final class EquationSolverTest extends TestCase
                 ['sin(sin(sin(x))) = x', -2.0, 2.0, [0.0]],
                 ['tanh(tanh(x)) = x', -\INF, \INF, [0.0]],
                 ['tanh(tanh(tanh(x))) = x', -2.0, 2.0, [0.0]],
+                ['sin(tanh(x)) = x', -2.0, 2.0, [0.0]],
+                ['atan(asinh(x)) = x', -2.0, 2.0, [0.0]],
+                ['asinh(tanh(x)) = x', -2.0, 2.0, [0.0]],
+                ['asin(atanh(x)) = x', -2.0, 2.0, [0.0]],
+                ['atanh(asin(x)) = x', -2.0, 2.0, [0.0]],
                 ['sin(sin(x)) = x', 1.0, 2.0, []],
             ] as [$equation, $lowerBound, $upperBound, $expectedRoots]
         ) {
